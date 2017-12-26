@@ -37,6 +37,7 @@ int shapeToId(std::vector<int> &shape, std::vector<cv::KeyPoint> &keypoints) {
 }
 
 int shapeToCornerNum(std::vector<int> &shape, std::vector<cv::KeyPoint> &keypoints) {
+  if (keypoints[shape[2]].octave < 0 || keypoints[shape[2]].octave > 3) return -1;
   return keypoints[shape[2]].octave;
 }
 
@@ -139,16 +140,18 @@ int main(int argc, char **argv) {
           int id = shapeToId(shape, keypoints);
           int cornerNum = shapeToCornerNum(shape, keypoints);
 
-          seenIds.insert(id);
-          if (pointsById.count(id) == 0) pointsById[id] = std::vector<cv::Point>(4);
-          pointsById[id][cornerNum] = keypoints[shape[2]].pt;
-          putText(displayLab, std::to_string(id) + "," + cornerNames[cornerNum], (keypoints[shape[0]].pt + keypoints[shape[4]].pt) / 2, CV_FONT_HERSHEY_DUPLEX, 0.3, cv::Scalar(255, 0, 0));
+          if (cornerNum > -1) {
+            seenIds.insert(id);
+            if (pointsById.count(id) == 0) pointsById[id] = std::vector<cv::Point>(4);
+            pointsById[id][cornerNum] = keypoints[shape[2]].pt;
+            putText(displayLab, std::to_string(id) + "," + cornerNames[cornerNum], (keypoints[shape[0]].pt + keypoints[shape[4]].pt) / 2, CV_FONT_HERSHEY_DUPLEX, 0.3, cv::Scalar(255, 0, 0));
+          }
         }
       }
     }
 
     std::vector<int> idsToErase;
-    for (auto const& entry : pointsById) {
+    for (auto &entry : pointsById) {
       if (seenIds.count(entry.first) == 0) {
         idsToErase.push_back(entry.first);
       } else if (entry.second[0] != nullPoint && entry.second[1] != nullPoint &&
