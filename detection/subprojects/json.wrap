@@ -1,0 +1,4 @@
+[wrap-git]
+directory=json
+url=https://github.com/nlohmann/json.git
+revision=master
