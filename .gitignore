@@ -1,3 +1,4 @@
+.babel-cache/
 build/
 node_modules/
 *.pdf

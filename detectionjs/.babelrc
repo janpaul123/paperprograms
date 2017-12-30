@@ -1,0 +1,17 @@
+{
+  "presets": [
+    [
+      "env",
+      {
+        "targets": [
+          "last 1 Chrome version",
+        ]
+      }
+    ]
+  ],
+  "plugins": [
+    "transform-class-properties",
+    "transform-exponentiation-operator",
+    "transform-object-rest-spread"
+  ]
+}
