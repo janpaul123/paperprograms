@@ -4,10 +4,47 @@ import React from 'react';
 
 import detectPrograms from './detectPrograms';
 
+class Knob extends React.Component {
+  onMouseDown = () => {
+    const mouseMoveHandler = event => {
+      const parentOffset = this._el.offsetParent.getBoundingClientRect();
+      this.props.onChange({
+        x: event.pageX - parentOffset.left,
+        y: event.pageY - parentOffset.top,
+      });
+    };
+    const mouseUpHandler = () => {
+      document.body.removeEventListener('mousemove', mouseMoveHandler, true);
+      document.body.removeEventListener('mouseup', mouseUpHandler, true);
+    };
+    document.body.addEventListener('mousemove', mouseMoveHandler, true);
+    document.body.addEventListener('mouseup', mouseUpHandler, true);
+  };
+
+  render() {
+    const size = 10;
+    return (
+      <div
+        style={{
+          position: 'absolute',
+          left: this.props.x - size / 2,
+          top: this.props.y - size / 2,
+          width: size,
+          height: size,
+          border: '1px solid red',
+          borderRadius: size,
+        }}
+        onMouseDown={this.onMouseDown}
+        ref={el => (this._el = el)}
+      />
+    );
+  }
+}
+
 export default class Main extends React.Component {
   constructor(props) {
     super(props);
-    this.state = { framerate: 0 };
+    this.state = { framerate: 0, cameraOutputHeight: 0 };
   }
 
   componentDidMount() {
@@ -27,6 +64,9 @@ export default class Main extends React.Component {
             video.play();
             video.width = video.videoWidth;
             video.height = video.videoHeight;
+            this.setState({
+              cameraOutputHeight: this.props.config.cameraOutputWidth / video.width * video.height,
+            });
             this._videoCapture = new cv.VideoCapture(video);
             this._pointsById = {};
             this._processVideo();
@@ -59,10 +99,29 @@ export default class Main extends React.Component {
   };
 
   render() {
+    const width = this.props.config.cameraOutputWidth;
+    const height = this.state.cameraOutputHeight;
     return (
       <div>
         <video id="videoInput" style={{ display: 'none' }} ref={el => (this._videoInput = el)} />
-        <canvas id="canvasOutput" style={{ maxWidth: '100%' }} ref={el => (this._canvas = el)} />
+        <div style={{ position: 'relative', width, height }}>
+          <canvas id="canvasOutput" style={{ width, height }} ref={el => (this._canvas = el)} />
+          {[0, 1, 2, 3].map(position => {
+            const point = this.props.config.knobPoints[position];
+            return (
+              <Knob
+                key={position}
+                x={point.x * width}
+                y={point.y * height}
+                onChange={point => {
+                  const knobPoints = this.props.config.knobPoints.slice();
+                  knobPoints[position] = { x: point.x / width, y: point.y / height };
+                  this.props.onChange({ ...this.props.config, knobPoints });
+                }}
+              />
+            );
+          })}
+        </div>
         <div
           style={{ position: 'absolute', top: 20, left: 20, font: '12px Courier', color: 'white' }}
         >

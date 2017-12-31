@@ -13,9 +13,14 @@ export function diff(v1, v2) {
   return v1.map((value, index) => value - v2[index]);
 }
 
-export function div(v, s) {
-  if (v.x !== undefined) return { x: v.x / s, y: v.y / s };
-  return v.map(value => value / s);
+export function mult(v1, v2) {
+  if (v1.x !== undefined) return { x: v1.x * v2.x, y: v1.y * v2.y };
+  return v1.map((value, index) => value * v2[index]);
+}
+
+export function div(v1, v2) {
+  if (v1.x !== undefined) return { x: v1.x / v2.x, y: v1.y / v2.y };
+  return v1.map((value, index) => value / v2[index]);
 }
 
 export function cross(v1, v2) {

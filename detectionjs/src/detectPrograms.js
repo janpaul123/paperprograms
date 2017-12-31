@@ -3,7 +3,7 @@
 import colorDiff from 'color-diff';
 import sortBy from 'lodash/sortBy';
 
-import { add, cross, diff, div, norm } from './utils';
+import { add, cross, diff, div, mult, norm } from './utils';
 import simpleBlobDetector from './simpleBlobDetector';
 
 const colorNames = ['R', 'O', 'G', 'B', 'P'];
@@ -53,6 +53,14 @@ function shapeToCornerNum(shape, keyPoints) {
   return keyPoints[shape[2]].colorIndex;
 }
 
+function knobPointsToROI(knobPoints, videoMat) {
+  const minX = Math.min(...knobPoints.map(point => point.x * videoMat.cols));
+  const minY = Math.min(...knobPoints.map(point => point.y * videoMat.rows));
+  const maxX = Math.max(...knobPoints.map(point => point.x * videoMat.cols));
+  const maxY = Math.max(...knobPoints.map(point => point.y * videoMat.rows));
+  return { x: minX, y: minY, width: maxX - minX, height: maxY - minY };
+}
+
 export default function detectPrograms({ config, videoCapture, previousPointsById, displayMat }) {
   const startTime = Date.now();
 
@@ -61,14 +69,33 @@ export default function detectPrograms({ config, videoCapture, previousPointsByI
   const videoMat = new cv.Mat(videoCapture.video.height, videoCapture.video.width, cv.CV_8UC4);
   videoCapture.read(videoMat);
 
-  if (displayMat) videoMat.copyTo(displayMat);
+  if (displayMat) {
+    videoMat.copyTo(displayMat);
+    const multiplier = { x: videoMat.cols, y: videoMat.rows };
 
-  let keyPoints = simpleBlobDetector(videoMat, {
+    for (let i = 0; i < config.knobPoints.length; i++) {
+      cv.line(
+        displayMat,
+        mult(config.knobPoints[i], multiplier),
+        mult(config.knobPoints[(i + 1) % config.knobPoints.length], multiplier),
+        [255, 0, 0, 255]
+      );
+    }
+  }
+
+  const videoROI = knobPointsToROI(config.knobPoints, videoMat);
+  const clippedVideoMat = videoMat.roi(videoROI);
+  let keyPoints = simpleBlobDetector(clippedVideoMat, {
     filterByCircularity: true,
     minCircularity: 0.9,
     minArea: 80,
     filterByInertia: false,
     faster: true,
+  });
+  clippedVideoMat.delete();
+  keyPoints.forEach(keyPoint => {
+    keyPoint.x += videoROI.x;
+    keyPoint.y += videoROI.y;
   });
 
   // Sort by x position. We rely on this when scanning through the circles
@@ -161,7 +188,7 @@ export default function detectPrograms({ config, videoCapture, previousPointsByI
             cv.putText(
               displayMat,
               `${id},${cornerNames[cornerNum]}`,
-              div(add(keyPoints[shape[0]].pt, keyPoints[shape[4]].pt), 2),
+              div(add(keyPoints[shape[0]].pt, keyPoints[shape[4]].pt), { x: 2, y: 2 }),
               cv.FONT_HERSHEY_DUPLEX,
               0.5,
               [0, 0, 255, 255]
@@ -189,8 +216,8 @@ export default function detectPrograms({ config, videoCapture, previousPointsByI
           cv.line(displayMat, points[3], points[0], [0, 0, 255, 255]);
           cv.line(
             displayMat,
-            div(add(points[2], points[3]), 2),
-            div(add(points[0], points[1]), 2),
+            div(add(points[2], points[3]), { x: 2, y: 2 }),
+            div(add(points[0], points[1]), { x: 2, y: 2 }),
             [0, 0, 255, 255]
           );
         }
