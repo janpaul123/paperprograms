@@ -27,3 +27,7 @@ export function cross(v1, v2) {
   if (v1.x === undefined || v2.x === undefined) throw new Error('Must be points');
   return v1.x * v2.y - v1.y * v2.x;
 }
+
+export function clip(value, min, max) {
+  return Math.max(min, Math.min(max, value));
+}

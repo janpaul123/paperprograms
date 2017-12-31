@@ -9,8 +9,8 @@ class Knob extends React.Component {
     const mouseMoveHandler = event => {
       const parentOffset = this._el.offsetParent.getBoundingClientRect();
       this.props.onChange({
-        x: event.pageX - parentOffset.left,
-        y: event.pageY - parentOffset.top,
+        x: event.clientX - parentOffset.left,
+        y: event.clientY - parentOffset.top,
       });
     };
     const mouseUpHandler = () => {

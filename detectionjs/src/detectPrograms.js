@@ -3,7 +3,7 @@
 import colorDiff from 'color-diff';
 import sortBy from 'lodash/sortBy';
 
-import { add, cross, diff, div, mult, norm } from './utils';
+import { add, clip, cross, diff, div, mult, norm } from './utils';
 import simpleBlobDetector from './simpleBlobDetector';
 
 const colorNames = ['R', 'O', 'G', 'B', 'P'];
@@ -54,10 +54,14 @@ function shapeToCornerNum(shape, keyPoints) {
 }
 
 function knobPointsToROI(knobPoints, videoMat) {
-  const minX = Math.min(...knobPoints.map(point => point.x * videoMat.cols));
-  const minY = Math.min(...knobPoints.map(point => point.y * videoMat.rows));
-  const maxX = Math.max(...knobPoints.map(point => point.x * videoMat.cols));
-  const maxY = Math.max(...knobPoints.map(point => point.y * videoMat.rows));
+  const clippedKnobPoints = knobPoints.map(point => ({
+    x: clip(point.x, 0, 1),
+    y: clip(point.y, 0, 1),
+  }));
+  const minX = Math.min(...clippedKnobPoints.map(point => point.x * videoMat.cols));
+  const minY = Math.min(...clippedKnobPoints.map(point => point.y * videoMat.rows));
+  const maxX = Math.max(...clippedKnobPoints.map(point => point.x * videoMat.cols));
+  const maxY = Math.max(...clippedKnobPoints.map(point => point.y * videoMat.rows));
   return { x: minX, y: minY, width: maxX - minX, height: maxY - minY };
 }
 
@@ -94,8 +98,8 @@ export default function detectPrograms({ config, videoCapture, previousPointsByI
   });
   clippedVideoMat.delete();
   keyPoints.forEach(keyPoint => {
-    keyPoint.x += videoROI.x;
-    keyPoint.y += videoROI.y;
+    keyPoint.pt.x += videoROI.x;
+    keyPoint.pt.y += videoROI.y;
   });
 
   // Sort by x position. We rely on this when scanning through the circles
