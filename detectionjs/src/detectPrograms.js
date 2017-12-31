@@ -11,8 +11,8 @@ const cornerNames = ['TL', 'TR', 'BR', 'BL'];
 
 function keyPointToAvgColor(keyPoint, videoMat) {
   const circleROI = videoMat.roi({
-    x: keyPoint.pt.x - keyPoint.size / 2,
-    y: keyPoint.pt.y - keyPoint.size / 2,
+    x: Math.floor(keyPoint.pt.x - keyPoint.size / 2),
+    y: Math.floor(keyPoint.pt.y - keyPoint.size / 2),
     width: keyPoint.size,
     height: keyPoint.size,
   });
@@ -20,7 +20,7 @@ function keyPointToAvgColor(keyPoint, videoMat) {
   const circleMask = cv.Mat.zeros(keyPoint.size, keyPoint.size, cv.CV_8UC1);
   cv.circle(
     circleMask,
-    { x: keyPoint.size / 2, y: keyPoint.size / 2 },
+    { x: Math.floor(keyPoint.size / 2), y: Math.floor(keyPoint.size / 2) },
     keyPoint.size / 2 - 1,
     [255, 255, 255, 0],
     -1
