@@ -206,10 +206,15 @@ export default function simpleBlobDetector(image, params) {
     }
     sumPoint.x *= 1 / normalizer;
     sumPoint.y *= 1 / normalizer;
-    keyPoints.push({
-      pt: sumPoint,
-      size: Math.round(centers[i][Math.floor(centers[i].length / 2)].radius * 2),
-    });
+    let size = Math.round(centers[i][Math.floor(centers[i].length / 2)].radius * 2);
+    size = Math.min(
+      size,
+      sumPoint.x * 2,
+      sumPoint.y * 2,
+      (image.cols - sumPoint.x) * 2,
+      (image.rows - sumPoint.y) * 2
+    );
+    keyPoints.push({ pt: sumPoint, size });
   }
 
   return keyPoints;
