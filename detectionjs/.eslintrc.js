@@ -1,15 +1,13 @@
 module.exports = {
+  parser: 'babel-eslint',
   extends: ['eslint:recommended', 'prettier'],
-  plugins: ['prettier'],
+  plugins: ['prettier', 'react'],
   rules: {
     'prettier/prettier': ['error', { singleQuote: true, trailingComma: 'es5', printWidth: 100 }],
-  },
-  parserOptions: {
-    ecmaVersion: 6,
-    ecmaFeatures: {
-      experimentalObjectRestSpread: true,
-    },
-    sourceType: 'module',
+
+    // Per https://stackoverflow.com/a/46809082
+    'react/jsx-uses-react': 'error',
+    'react/jsx-uses-vars': 'error',
   },
   env: {
     browser: true,

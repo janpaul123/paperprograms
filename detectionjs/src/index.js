@@ -1,6 +1,7 @@
-/* global cv */
+import React from 'react';
+import ReactDOM from 'react-dom';
 
-import detectPrograms from './detectPrograms';
+import Main from './main';
 
 const defaultConfig = {
   colorsRGB: [
@@ -10,7 +11,6 @@ const defaultConfig = {
     [65, 80, 84, 255],
     [92, 36, 42, 255],
   ],
-  showOutputCanvas: true,
 };
 
 localStorage.dynazarConfig = JSON.stringify({
@@ -18,47 +18,19 @@ localStorage.dynazarConfig = JSON.stringify({
   ...JSON.parse(localStorage.dynazarConfig || '{}'),
 });
 
-function processVideo({ videoCapture, previousPointsById }) {
-  const config = JSON.parse(localStorage.dynazarConfig);
+const element = document.createElement('div');
+document.body.appendChild(element);
 
-  const displayMat =
-    config.showOutputCanvas &&
-    new cv.Mat(videoCapture.video.height, videoCapture.video.width, cv.CV_8UC4);
-
-  const { newPointsById, framerate } = detectPrograms({
-    config,
-    videoCapture,
-    previousPointsById,
-    displayMat,
-  });
-
-  if (config.showOutputCanvas) {
-    cv.imshow('canvasOutput', displayMat);
-    displayMat.delete();
-  }
-
-  document.getElementById('framerate').innerText = framerate;
-
-  setTimeout(() => processVideo({ videoCapture, previousPointsById: newPointsById }));
+function render() {
+  ReactDOM.render(
+    <Main
+      config={JSON.parse(localStorage.dynazarConfig)}
+      onChange={config => {
+        localStorage.dynazarConfig = JSON.stringify(config);
+        render();
+      }}
+    />,
+    element
+  );
 }
-
-cv.onRuntimeInitialized = function() {
-  const video = document.getElementById('videoInput'); // video is the id of video tag
-  navigator.mediaDevices
-    .getUserMedia({
-      audio: false,
-      video: {
-        width: { ideal: 100000 },
-        height: { ideal: 100000 },
-      },
-    })
-    .then(function(stream) {
-      video.srcObject = stream;
-      video.onloadedmetadata = function() {
-        video.play();
-        video.width = video.videoWidth;
-        video.height = video.videoHeight;
-        processVideo({ videoCapture: new cv.VideoCapture(video), previousPointsById: {} });
-      };
-    });
-};
+render();
