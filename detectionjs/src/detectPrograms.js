@@ -67,6 +67,8 @@ export default function detectPrograms({ config, videoCapture, previousPointsByI
     filterByCircularity: true,
     minCircularity: 0.9,
     minArea: 80,
+    filterByInertia: false,
+    faster: true,
   });
 
   // Sort by x position. We rely on this when scanning through the circles

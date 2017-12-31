@@ -3,6 +3,8 @@
 import { diff, norm } from './utils';
 
 // Port of https://github.com/opencv/opencv/blob/a50a355/modules/features2d/src/blobdetector.cpp
+// But with special `faster` option which has slightly different semantics,
+// but is a whole bunch faster.
 
 const defaultParams = {
   thresholdStep: 10,
@@ -31,38 +33,58 @@ const defaultParams = {
   //minConvexity: 0.8,
   minConvexity: 0.95,
   maxConvexity: 1000000,
+
+  faster: false,
 };
 
 function findBlobs(image, binaryImage, params) {
   const contours = new cv.MatVector();
   const hierarchy = new cv.Mat();
-  cv.findContours(binaryImage, contours, hierarchy, cv.RETR_LIST, cv.CHAIN_APPROX_NONE);
+  if (params.faster) {
+    cv.findContours(binaryImage, contours, hierarchy, cv.RETR_LIST, cv.CHAIN_APPROX_SIMPLE);
+  } else {
+    cv.findContours(binaryImage, contours, hierarchy, cv.RETR_LIST, cv.CHAIN_APPROX_NONE);
+  }
   hierarchy.delete();
 
   const centers = [];
   for (let i = 0; i < contours.size(); i++) {
     const contour = contours.get(i);
-    const moms = cv.moments(contour);
+    const area = cv.contourArea(contour);
 
-    if (moms.m00 == 0.0) continue;
-    const center = {
-      confidence: 1,
-      location: { x: moms.m10 / moms.m00, y: moms.m01 / moms.m00 },
-    };
+    if (area == 0) continue;
+
+    let center, moms;
+    if (params.faster) {
+      const { x, y, width, height } = cv.boundingRect(contour);
+      center = {
+        confidence: 1,
+        location: { x: x + width / 2, y: y + height / 2 },
+        radius: (width + height) / 4,
+      };
+    } else {
+      moms = cv.moments(contour);
+      center = {
+        confidence: 1,
+        location: { x: moms.m10 / moms.m00, y: moms.m01 / moms.m00 },
+      };
+    }
 
     if (params.filterByArea) {
-      const area = moms.m00;
       if (area < params.minArea || area >= params.maxArea) continue;
     }
 
     if (params.filterByCircularity) {
-      const area = moms.m00;
       const perimeter = cv.arcLength(contour, true);
       const ratio = 4 * cv.CV_PI * area / (perimeter * perimeter);
       if (ratio < params.minCircularity || ratio >= params.maxCircularity) continue;
     }
 
     if (params.filterByInertia) {
+      if (params.faster) {
+        throw new Error('Cannot both set params.faster and params.filterByInertia');
+      }
+
       const denominator = Math.sqrt(
         Math.pow(2 * moms.mu11, 2) + Math.pow(moms.mu20 - moms.mu02, 2)
       );
@@ -94,7 +116,6 @@ function findBlobs(image, binaryImage, params) {
     if (params.filterByConvexity) {
       const hull = new cv.Mat();
       cv.convexHull(contour, hull);
-      const area = cv.contourArea(contour);
       const hullArea = cv.contourArea(hull);
       const ratio = area / hullArea;
       hull.delete();
@@ -109,7 +130,7 @@ function findBlobs(image, binaryImage, params) {
         continue;
     }
 
-    {
+    if (!params.faster) {
       const dists = [];
       for (let pointIdx = 0; pointIdx < contour.size().height; pointIdx++) {
         const pt = contour.intPtr(pointIdx);
