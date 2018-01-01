@@ -26,6 +26,7 @@
     "color-diff": "^1.1.0",
     "dotenv": "^4.0.0",
     "express": "^4.16.2",
+    "heroku-ssl-redirect": "0.0.4",
     "hsl-to-hex": "^1.0.0",
     "knex": "^0.14.2",
     "lodash": "^4.17.4",
