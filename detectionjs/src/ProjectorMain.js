@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { forwardProjectionMatrixForPoints, mult, projectPoint } from './utils';
+import { forwardProjectionMatrixForPoints, mult } from './utils';
 
 function matrixToCssTransform(matrix) {
   /* eslint-disable prettier/prettier */
