@@ -48,8 +48,10 @@ function findBlobs(image, binaryImage, params) {
   hierarchy.delete();
 
   const centers = [];
+  const objectsToDelete = [];
   for (let i = 0; i < contours.size(); i++) {
     const contour = contours.get(i);
+    objectsToDelete.push(contour);
     const area = cv.contourArea(contour);
 
     if (area == 0) continue;
@@ -143,6 +145,7 @@ function findBlobs(image, binaryImage, params) {
 
     centers.push(center);
   }
+  objectsToDelete.forEach(obj => obj.delete());
   contours.delete();
   return centers;
 }
