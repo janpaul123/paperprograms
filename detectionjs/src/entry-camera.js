@@ -1,7 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 
-import Main from './main';
+import CameraMain from './CameraMain';
 
 const defaultConfig = {
   colorsRGB: [
@@ -25,14 +25,20 @@ document.body.appendChild(element);
 
 function render() {
   ReactDOM.render(
-    <Main
+    <CameraMain
       config={JSON.parse(localStorage.dynazarConfig)}
-      onChange={config => {
+      onConfigChange={config => {
         localStorage.dynazarConfig = JSON.stringify(config);
         render();
+      }}
+      onProgramsChange={programs => {
+        localStorage.dynazarProgramsToRender = JSON.stringify(programs);
       }}
     />,
     element
   );
 }
 render();
+
+window.getDynazarConfig = () => JSON.parse(localStorage.dynazarConfig);
+window.setDynazarConfig = config => (localStorage.dynazarConfig = JSON.stringify(config));

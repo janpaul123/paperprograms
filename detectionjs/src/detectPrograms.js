@@ -111,7 +111,7 @@ export default function detectPrograms({ config, videoCapture, previousPointsByI
   let keyPoints = simpleBlobDetector(clippedVideoMat, {
     filterByCircularity: true,
     minCircularity: 0.9,
-    minArea: 80,
+    minArea: 25,
     filterByInertia: false,
     faster: true,
   });

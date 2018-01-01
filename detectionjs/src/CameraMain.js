@@ -41,7 +41,7 @@ class Knob extends React.Component {
   }
 }
 
-export default class Main extends React.Component {
+export default class CameraMain extends React.Component {
   constructor(props) {
     super(props);
     this.state = { framerate: 0, cameraOutputHeight: 0 };
@@ -82,13 +82,15 @@ export default class Main extends React.Component {
       cv.CV_8UC4
     );
 
-    const { newPointsById, framerate } = detectPrograms({
+    const { programsToRender, newPointsById, framerate } = detectPrograms({
       config: this.props.config,
       videoCapture: this._videoCapture,
       previousPointsById: this._pointsById,
       displayMat,
     });
     this._pointsById = newPointsById;
+
+    this.props.onProgramsChange(programsToRender);
 
     cv.imshow(this._canvas, displayMat);
     displayMat.delete();
@@ -116,7 +118,7 @@ export default class Main extends React.Component {
                 onChange={point => {
                   const knobPoints = this.props.config.knobPoints.slice();
                   knobPoints[position] = { x: point.x / width, y: point.y / height };
-                  this.props.onChange({ ...this.props.config, knobPoints });
+                  this.props.onConfigChange({ ...this.props.config, knobPoints });
                 }}
               />
             );
