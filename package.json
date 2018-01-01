@@ -1,38 +1,52 @@
 {
-  "name": "detectionjs",
-  "version": "1.0.0",
+  "name": "Dynazar",
+  "version": "0.0.1",
   "description": "",
-  "main": "opencv.js",
-  "dependencies": {
-    "color-diff": "^1.1.0",
-    "hsl-to-hex": "^1.0.0",
-    "lodash": "^4.17.4",
-    "node-matrices": "^1.0.0",
-    "pdfkit": "^0.8.3",
-    "react": "^16.2.0",
-    "react-dom": "^16.2.0"
+  "author": "Jan Paul Posma <j@npaulpos.ma>",
+  "license": "MIT",
+  "scripts": {
+    "start": "node server/entry-server.js",
+    "heroku-postbuild": "webpack"
   },
-  "devDependencies": {
+  "engines": {
+    "node": "9.3.x",
+    "npm": "5.6.x"
+  },
+  "cacheDirectories": [
+    ".babel-cache"
+  ],
+  "dependencies": {
     "babel": "^6.23.0",
     "babel-core": "^6.26.0",
-    "babel-eslint": "^8.1.2",
     "babel-loader": "^7.1.2",
     "babel-plugin-transform-class-properties": "^6.24.1",
     "babel-plugin-transform-object-rest-spread": "^6.26.0",
     "babel-preset-env": "^1.6.1",
     "babel-preset-react": "^6.24.1",
+    "color-diff": "^1.1.0",
+    "dotenv": "^4.0.0",
+    "express": "^4.16.2",
+    "hsl-to-hex": "^1.0.0",
+    "knex": "^0.14.2",
+    "lodash": "^4.17.4",
+    "morgan": "^1.9.0",
+    "node-matrices": "^1.0.0",
+    "pdfkit": "^0.8.3",
+    "pg": "^7.4.0",
+    "react": "^16.2.0",
+    "react-dom": "^16.2.0",
+    "webpack": "^3.10.0"
+  },
+  "devDependencies": {
+    "babel-eslint": "^8.1.2",
     "eslint": "*",
     "eslint-config-prettier": "*",
     "eslint-plugin-prettier": "*",
     "eslint-plugin-react": "^7.5.1",
+    "nodemon": "^1.14.7",
     "prettier": "*",
-    "webpack": "^3.10.0",
-    "webpack-dev-server": "^2.9.7"
-  },
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "webpack-dev-server"
-  },
-  "author": "",
-  "license": "ISC"
+    "webpack-dev-middleware": "^2.0.3",
+    "webpack-dev-server": "^2.9.7",
+    "webpack-hot-middleware": "^2.21.0"
+  }
 }

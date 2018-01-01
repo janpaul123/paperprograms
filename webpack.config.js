@@ -1,11 +1,13 @@
-/* global module, __dirname */
+const path = require('path');
+const webpack = require('webpack');
+
 module.exports = {
   entry: {
-    camera: './src/entry-camera.js',
-    projector: './src/entry-projector.js',
+    camera: ['./client/entry-camera.js'],
+    projector: ['./client/entry-projector.js'],
   },
   output: {
-    path: __dirname,
+    path: path.join(__dirname, 'www'),
     filename: '[name].js',
   },
   module: {
@@ -21,4 +23,12 @@ module.exports = {
       },
     ],
   },
+  plugins: [],
 };
+
+if (process.env.NODE_ENV !== 'production') {
+  module.exports.plugins.push(new webpack.HotModuleReplacementPlugin());
+  Object.values(module.exports.entry).forEach(entry => {
+    entry.unshift('webpack-hot-middleware/client?reload=true');
+  });
+}
