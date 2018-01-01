@@ -6,6 +6,7 @@
   "license": "MIT",
   "scripts": {
     "start": "node server/entry-server.js",
+    "migrate": "knex migrate:latest",
     "heroku-postbuild": "webpack"
   },
   "engines": {
