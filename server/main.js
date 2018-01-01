@@ -1,11 +1,9 @@
 const express = require('express');
-const morgan = require('morgan');
 const path = require('path');
-const sslRedirect = require('heroku-ssl-redirect');
 
 const app = express();
-app.use(morgan('short'));
-app.use(sslRedirect(['production']));
+app.use(require('morgan')('short'));
+app.use(require('heroku-ssl-redirect')(['production']));
 app.use(express.static(path.join(__dirname, '..', 'www')));
 
 if (process.env.NODE_ENV !== 'production') {
