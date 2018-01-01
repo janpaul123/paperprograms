@@ -3,7 +3,17 @@
 import colorDiff from 'color-diff';
 import sortBy from 'lodash/sortBy';
 
-import { add, clip, cross, diff, div, mult, norm } from './utils';
+import {
+  add,
+  clip,
+  cross,
+  diff,
+  div,
+  forwardProjectionMatrixForPoints,
+  mult,
+  norm,
+  projectPoint,
+} from './utils';
 import simpleBlobDetector from './simpleBlobDetector';
 
 const colorNames = ['R', 'O', 'G', 'B', 'P'];
@@ -65,6 +75,16 @@ function knobPointsToROI(knobPoints, videoMat) {
   return { x: minX, y: minY, width: maxX - minX, height: maxY - minY };
 }
 
+let projectPointToUnitSquarePreviousKnobPoints;
+let projectPointToUnitSquarePreviousMatrix;
+function projectPointToUnitSquare(point, videoMat, knobPoints) {
+  let matrix = projectPointToUnitSquarePreviousMatrix;
+  if (!matrix || knobPoints !== projectPointToUnitSquarePreviousKnobPoints) {
+    matrix = forwardProjectionMatrixForPoints(knobPoints).adjugate();
+  }
+  return projectPoint(div(point, { x: videoMat.cols, y: videoMat.rows }), matrix);
+}
+
 export default function detectPrograms({ config, videoCapture, previousPointsById, displayMat }) {
   const startTime = Date.now();
 
@@ -75,15 +95,14 @@ export default function detectPrograms({ config, videoCapture, previousPointsByI
 
   if (displayMat) {
     videoMat.copyTo(displayMat);
-    const multiplier = { x: videoMat.cols, y: videoMat.rows };
+    const matrix = forwardProjectionMatrixForPoints(config.knobPoints);
 
-    for (let i = 0; i < config.knobPoints.length; i++) {
-      cv.line(
-        displayMat,
-        mult(config.knobPoints[i], multiplier),
-        mult(config.knobPoints[(i + 1) % config.knobPoints.length], multiplier),
-        [255, 0, 0, 255]
-      );
+    const knobPoints = [{ x: 0, y: 0 }, { x: 1, y: 0 }, { x: 1, y: 1 }, { x: 0, y: 1 }].map(point =>
+      mult(projectPoint(point, matrix), { x: videoMat.cols, y: videoMat.rows })
+    );
+
+    for (let i = 0; i < 4; i++) {
+      cv.line(displayMat, knobPoints[i], knobPoints[(i + 1) % 4], [255, 0, 0, 255]);
     }
   }
 
@@ -211,17 +230,26 @@ export default function detectPrograms({ config, videoCapture, previousPointsByI
     } else {
       const points = pointsById[id];
       if (points[0] && points[1] && points[2] && points[3]) {
-        programsToRender.push({ points, id });
+        const programToRender = {
+          points: points.map(point => projectPointToUnitSquare(point, videoMat, config.knobPoints)),
+          id,
+        };
+        programsToRender.push(programToRender);
 
         if (displayMat) {
-          cv.line(displayMat, points[0], points[1], [0, 0, 255, 255]);
-          cv.line(displayMat, points[2], points[1], [0, 0, 255, 255]);
-          cv.line(displayMat, points[2], points[3], [0, 0, 255, 255]);
-          cv.line(displayMat, points[3], points[0], [0, 0, 255, 255]);
+          const matrix = forwardProjectionMatrixForPoints(config.knobPoints);
+          const reprojectedPoints = programToRender.points.map(point =>
+            mult(projectPoint(point, matrix), { x: videoMat.cols, y: videoMat.rows })
+          );
+
+          cv.line(displayMat, reprojectedPoints[0], reprojectedPoints[1], [0, 0, 255, 255]);
+          cv.line(displayMat, reprojectedPoints[2], reprojectedPoints[1], [0, 0, 255, 255]);
+          cv.line(displayMat, reprojectedPoints[2], reprojectedPoints[3], [0, 0, 255, 255]);
+          cv.line(displayMat, reprojectedPoints[3], reprojectedPoints[0], [0, 0, 255, 255]);
           cv.line(
             displayMat,
-            div(add(points[2], points[3]), { x: 2, y: 2 }),
-            div(add(points[0], points[1]), { x: 2, y: 2 }),
+            div(add(reprojectedPoints[2], reprojectedPoints[3]), { x: 2, y: 2 }),
+            div(add(reprojectedPoints[0], reprojectedPoints[1]), { x: 2, y: 2 }),
             [0, 0, 255, 255]
           );
         }
