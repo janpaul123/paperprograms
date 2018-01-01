@@ -41227,8 +41227,10 @@ function findBlobs(image, binaryImage, params) {
   hierarchy.delete();
 
   var centers = [];
+  var objectsToDelete = [];
   for (var i = 0; i < contours.size(); i++) {
     var contour = contours.get(i);
+    objectsToDelete.push(contour);
     var area = cv.contourArea(contour);
 
     if (area == 0) continue;
@@ -41315,6 +41317,9 @@ function findBlobs(image, binaryImage, params) {
 
     centers.push(center);
   }
+  objectsToDelete.forEach(function (obj) {
+    return obj.delete();
+  });
   contours.delete();
   return centers;
 }

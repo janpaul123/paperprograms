@@ -5,8 +5,10 @@
   "main": "opencv.js",
   "dependencies": {
     "color-diff": "^1.1.0",
+    "hsl-to-hex": "^1.0.0",
     "lodash": "^4.17.4",
     "node-matrices": "^1.0.0",
+    "pdfkit": "^0.8.3",
     "react": "^16.2.0",
     "react-dom": "^16.2.0"
   },
