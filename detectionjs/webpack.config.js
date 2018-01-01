@@ -1,9 +1,12 @@
 /* global module, __dirname */
 module.exports = {
-  entry: './src/index.js',
+  entry: {
+    camera: './src/entry-camera.js',
+    projector: './src/entry-projector.js',
+  },
   output: {
     path: __dirname,
-    filename: 'bundle.js',
+    filename: '[name].js',
   },
   module: {
     rules: [
