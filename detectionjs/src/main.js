@@ -31,7 +31,7 @@ class Knob extends React.Component {
           top: this.props.y - size / 2,
           width: size,
           height: size,
-          border: '1px solid red',
+          boxShadow: '0 0 0 1px red',
           borderRadius: size,
         }}
         onMouseDown={this.onMouseDown}
