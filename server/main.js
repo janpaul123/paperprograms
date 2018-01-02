@@ -1,3 +1,4 @@
+const api = require('./api');
 const express = require('express');
 const path = require('path');
 
@@ -5,6 +6,7 @@ const app = express();
 app.use(require('morgan')('short'));
 app.use(require('heroku-ssl-redirect')(['production']));
 app.use(express.static(path.join(__dirname, '..', 'www')));
+app.use('/api', api);
 
 if (process.env.NODE_ENV !== 'production') {
   const compiler = require('webpack')(require('../webpack.config.js'));

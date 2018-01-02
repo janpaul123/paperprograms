@@ -1,5 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
+import uuidv4 from 'uuid/v4';
 
 import CameraMain from './CameraMain';
 
@@ -20,6 +21,7 @@ const defaultConfig = {
   showOverlayComponentLines: true,
   showOverlayShapeId: true,
   showOverlayProgram: true,
+  spaceUrl: new URL(`api/spaces/${uuidv4().slice(0, 8)}`, window.location.origin).toString(),
 };
 
 localStorage.dynazarConfig = JSON.stringify({

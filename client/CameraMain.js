@@ -1,6 +1,7 @@
 /* global cv */
 
 import React from 'react';
+import xhr from 'xhr';
 
 import { colorNames } from './constants';
 import detectPrograms from './detectPrograms';
@@ -191,13 +192,29 @@ class CameraVideo extends React.Component {
 export default class CameraMain extends React.Component {
   constructor(props) {
     super(props);
-    this.state = { pageWidth: 1, framerate: 0, selectedColorIndex: -1 };
+    this.state = { pageWidth: 1, framerate: 0, selectedColorIndex: -1, spaceData: {} };
   }
 
   componentDidMount() {
     window.addEventListener('resize', this._updatePageWidth);
     this._updatePageWidth();
+    this._pollSpaceUrl();
   }
+
+  _pollSpaceUrl = () => {
+    const targetTimeMs = 500;
+    const beginTimeMs = Date.now();
+    xhr.get(this.props.config.spaceUrl, (error, response) => {
+      if (error) {
+        console.error(error); // eslint-disable-line no-console
+      } else {
+        this.setState({ spaceData: JSON.parse(response.body) });
+      }
+
+      const elapsedTimeMs = Date.now() - beginTimeMs;
+      setTimeout(this._pollSpaceUrl, Math.max(0, targetTimeMs - elapsedTimeMs));
+    });
+  };
 
   _updatePageWidth = () => {
     this.setState({ pageWidth: document.body.clientWidth });
@@ -241,6 +258,20 @@ export default class CameraMain extends React.Component {
             fontWeight: 300,
           }}
         >
+          <div style={{ marginBottom: padding }}>
+            space url{' '}
+            <input
+              value={this.props.config.spaceUrl}
+              onChange={event =>
+                this.props.onConfigChange({ ...this.props.config, spaceUrl: event.target.value })
+              }
+            />
+          </div>
+
+          <div style={{ marginBottom: padding, wordBreak: 'break-all' }}>
+            editor url <strong>{this.state.spaceData.editorUrl}</strong>
+          </div>
+
           <div style={{ marginBottom: padding }}>
             framerate <strong>{this.state.framerate}</strong>
           </div>
