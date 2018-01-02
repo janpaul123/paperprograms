@@ -45,7 +45,7 @@ class Knob extends React.Component {
 class CameraVideo extends React.Component {
   constructor(props) {
     super(props);
-    this.state = { videoWidth: 1, videoHeight: 1 };
+    this.state = { keyPoints: [], videoWidth: 1, videoHeight: 1 };
   }
 
   componentDidMount() {
@@ -81,7 +81,7 @@ class CameraVideo extends React.Component {
       cv.CV_8UC4
     );
 
-    const { programsToRender, newPointsById, framerate } = detectPrograms({
+    const { programsToRender, keyPoints, newPointsById, framerate } = detectPrograms({
       config: this.props.config,
       videoCapture: this._videoCapture,
       previousPointsById: this._pointsById,
@@ -92,6 +92,7 @@ class CameraVideo extends React.Component {
     cv.imshow(this._canvas, displayMat);
     displayMat.delete();
 
+    this.setState({ keyPoints });
     this.props.onProcessVideo({ programsToRender, framerate });
 
     setTimeout(this._processVideo);
@@ -121,6 +122,23 @@ class CameraVideo extends React.Component {
               />
             );
           })}
+          {this.props.allowSelectingDetectedPoints &&
+            this.state.keyPoints.map((point, index) => (
+              <div
+                key={index}
+                style={{
+                  position: 'absolute',
+                  left: (point.pt.x - point.size / 2) / this.state.videoWidth * width,
+                  top: (point.pt.y - point.size / 2) / this.state.videoHeight * height,
+                  width: point.size / this.state.videoWidth * width,
+                  height: point.size / this.state.videoHeight * height,
+                  background: 'rgba(255,255,255,0.5)',
+                  borderRadius: 1000,
+                  cursor: 'pointer',
+                }}
+                onClick={() => this.props.onSelectColor(point.avgColor)}
+              />
+            ))}
         </div>
       </div>
     );
@@ -130,7 +148,7 @@ class CameraVideo extends React.Component {
 export default class CameraMain extends React.Component {
   constructor(props) {
     super(props);
-    this.state = { pageWidth: 1, framerate: 0 };
+    this.state = { pageWidth: 1, framerate: 0, selectedColorIndex: -1 };
   }
 
   componentDidMount() {
@@ -157,6 +175,15 @@ export default class CameraMain extends React.Component {
               this.setState({ framerate });
               this.props.onProgramsChange(programsToRender);
             }}
+            allowSelectingDetectedPoints={this.state.selectedColorIndex !== -1}
+            onSelectColor={color => {
+              if (this.state.selectedColorIndex === -1) return;
+
+              const colorsRGB = this.props.config.colorsRGB.slice();
+              colorsRGB[this.state.selectedColorIndex] = color.map(value => Math.round(value));
+              this.props.onConfigChange({ ...this.props.config, colorsRGB });
+              this.setState({ selectedColorIndex: -1 });
+            }}
           />
         </div>
         <div
@@ -175,10 +202,11 @@ export default class CameraMain extends React.Component {
           </div>
 
           <div style={{ marginBottom: padding }}>
-            <div style={{ marginBottom: padding / 2 }}>colors</div>
+            <div style={{ marginBottom: padding / 4 }}>colors</div>
             <div>
               {this.props.config.colorsRGB.map((color, colorIndex) => (
                 <div
+                  key={colorIndex}
                   style={{
                     display: 'inline-block',
                     width: 20,
@@ -190,7 +218,15 @@ export default class CameraMain extends React.Component {
                     fontSize: 14,
                     textAlign: 'center',
                     lineHeight: '20px',
+                    cursor: 'pointer',
+                    boxShadow:
+                      this.state.selectedColorIndex === colorIndex ? '0 0 0 3px white' : '',
                   }}
+                  onClick={() =>
+                    this.setState(state => ({
+                      selectedColorIndex: state.selectedColorIndex === colorIndex ? -1 : colorIndex,
+                    }))
+                  }
                 >
                   {colorNames[colorIndex]}
                 </div>

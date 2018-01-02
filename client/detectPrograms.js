@@ -78,11 +78,19 @@ function knobPointsToROI(knobPoints, videoMat) {
 let projectPointToUnitSquarePreviousKnobPoints;
 let projectPointToUnitSquarePreviousMatrix;
 function projectPointToUnitSquare(point, videoMat, knobPoints) {
-  let matrix = projectPointToUnitSquarePreviousMatrix;
-  if (!matrix || knobPoints !== projectPointToUnitSquarePreviousKnobPoints) {
-    matrix = forwardProjectionMatrixForPoints(knobPoints).adjugate();
+  if (
+    !projectPointToUnitSquarePreviousMatrix ||
+    projectPointToUnitSquarePreviousKnobPoints !== knobPoints
+  ) {
+    projectPointToUnitSquarePreviousKnobPoints = knobPoints;
+    projectPointToUnitSquarePreviousMatrix = forwardProjectionMatrixForPoints(
+      knobPoints
+    ).adjugate();
   }
-  return projectPoint(div(point, { x: videoMat.cols, y: videoMat.rows }), matrix);
+  return projectPoint(
+    div(point, { x: videoMat.cols, y: videoMat.rows }),
+    projectPointToUnitSquarePreviousMatrix
+  );
 }
 
 export default function detectPrograms({ config, videoCapture, previousPointsById, displayMat }) {
@@ -126,11 +134,9 @@ export default function detectPrograms({ config, videoCapture, previousPointsByI
   keyPoints = sortBy(keyPoints, keyPoint => keyPoint.pt.x);
 
   keyPoints.forEach(keyPoint => {
-    // Give every `keyPoint` a `colorIndex`.
-    keyPoint.colorIndex = colorIndexForColor(
-      keyPointToAvgColor(keyPoint, videoMat),
-      config.colorsRGB
-    );
+    // Give each `keyPoint` an `avgColor` and `colorIndex`.
+    keyPoint.avgColor = keyPointToAvgColor(keyPoint, videoMat);
+    keyPoint.colorIndex = colorIndexForColor(keyPoint.avgColor, config.colorsRGB);
 
     if (displayMat) {
       // Draw circles around `keyPoints`.
@@ -260,6 +266,7 @@ export default function detectPrograms({ config, videoCapture, previousPointsByI
   videoMat.delete();
 
   return {
+    keyPoints,
     programsToRender,
     newPointsById: pointsById,
     framerate: Math.round(1000 / (Date.now() - startTime)),
