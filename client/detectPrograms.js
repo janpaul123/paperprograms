@@ -14,9 +14,9 @@ import {
   norm,
   projectPoint,
 } from './utils';
+import { colorNames } from './constants';
 import simpleBlobDetector from './simpleBlobDetector';
 
-const colorNames = ['R', 'O', 'G', 'B', 'P'];
 const cornerNames = ['TL', 'TR', 'BR', 'BL'];
 
 function keyPointToAvgColor(keyPoint, videoMat) {

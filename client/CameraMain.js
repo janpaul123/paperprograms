@@ -2,6 +2,7 @@
 
 import React from 'react';
 
+import { colorNames } from './constants';
 import detectPrograms from './detectPrograms';
 
 class Knob extends React.Component {
@@ -169,8 +170,32 @@ export default class CameraMain extends React.Component {
             fontWeight: 300,
           }}
         >
-          <div>
+          <div style={{ marginBottom: padding }}>
             framerate <strong>{this.state.framerate}</strong>
+          </div>
+
+          <div style={{ marginBottom: padding }}>
+            <div style={{ marginBottom: padding / 2 }}>colors</div>
+            <div>
+              {this.props.config.colorsRGB.map((color, colorIndex) => (
+                <div
+                  style={{
+                    display: 'inline-block',
+                    width: 20,
+                    height: 20,
+                    background: `rgb(${color.slice(0, 3).join(',')})`,
+                    borderRadius: 20,
+                    marginRight: 5,
+                    color: 'white',
+                    fontSize: 14,
+                    textAlign: 'center',
+                    lineHeight: '20px',
+                  }}
+                >
+                  {colorNames[colorIndex]}
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </div>
