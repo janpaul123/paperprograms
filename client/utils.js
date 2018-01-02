@@ -30,7 +30,7 @@ export function cross(v1, v2) {
   return v1.x * v2.y - v1.y * v2.x;
 }
 
-export function clip(value, min, max) {
+export function clamp(value, min, max) {
   return Math.max(min, Math.min(max, value));
 }
 

@@ -5,7 +5,7 @@ import sortBy from 'lodash/sortBy';
 
 import {
   add,
-  clip,
+  clamp,
   cross,
   diff,
   div,
@@ -64,14 +64,14 @@ function shapeToCornerNum(shape, keyPoints) {
 }
 
 function knobPointsToROI(knobPoints, videoMat) {
-  const clippedKnobPoints = knobPoints.map(point => ({
-    x: clip(point.x, 0, 1),
-    y: clip(point.y, 0, 1),
+  const clampedKnobPoints = knobPoints.map(point => ({
+    x: clamp(point.x, 0, 1),
+    y: clamp(point.y, 0, 1),
   }));
-  const minX = Math.min(...clippedKnobPoints.map(point => point.x * videoMat.cols));
-  const minY = Math.min(...clippedKnobPoints.map(point => point.y * videoMat.rows));
-  const maxX = Math.max(...clippedKnobPoints.map(point => point.x * videoMat.cols));
-  const maxY = Math.max(...clippedKnobPoints.map(point => point.y * videoMat.rows));
+  const minX = Math.min(...clampedKnobPoints.map(point => point.x * videoMat.cols));
+  const minY = Math.min(...clampedKnobPoints.map(point => point.y * videoMat.rows));
+  const maxX = Math.max(...clampedKnobPoints.map(point => point.x * videoMat.cols));
+  const maxY = Math.max(...clampedKnobPoints.map(point => point.y * videoMat.rows));
   return { x: minX, y: minY, width: maxX - minX, height: maxY - minY };
 }
 
@@ -139,19 +139,23 @@ export default function detectPrograms({ config, videoCapture, previousPointsByI
     keyPoint.colorIndex = colorIndexForColor(keyPoint.avgColor, config.colorsRGB);
 
     if (displayMat) {
-      // Draw circles around `keyPoints`.
-      const color = config.colorsRGB[keyPoint.colorIndex];
-      cv.circle(displayMat, keyPoint.pt, keyPoint.size / 2 + 3, color, 2);
+      if (config.showOverlayKeyPointCircles) {
+        // Draw circles around `keyPoints`.
+        const color = config.colorsRGB[keyPoint.colorIndex];
+        cv.circle(displayMat, keyPoint.pt, keyPoint.size / 2 + 3, color, 2);
+      }
 
-      // Draw text inside circles.
-      cv.putText(
-        displayMat,
-        colorNames[keyPoint.colorIndex],
-        add(keyPoint.pt, { x: -6, y: 6 }),
-        cv.FONT_HERSHEY_DUPLEX,
-        0.6,
-        [255, 255, 255, 255]
-      );
+      if (config.showOverlayKeyPointText) {
+        // Draw text inside circles.
+        cv.putText(
+          displayMat,
+          colorNames[keyPoint.colorIndex],
+          add(keyPoint.pt, { x: -6, y: 6 }),
+          cv.FONT_HERSHEY_DUPLEX,
+          0.6,
+          [255, 255, 255, 255]
+        );
+      }
     }
   });
 
@@ -173,7 +177,7 @@ export default function detectPrograms({ config, videoCapture, previousPointsByI
         neighborIndexes[i].push(j);
         neighborIndexes[j].push(i);
 
-        if (displayMat) {
+        if (displayMat && config.showOverlayComponentLines) {
           // Draw lines between components.
           cv.line(displayMat, keyPoints[i].pt, keyPoints[j].pt, [255, 255, 255, 255]);
         }
@@ -212,7 +216,7 @@ export default function detectPrograms({ config, videoCapture, previousPointsByI
           pointsById[id] = pointsById[id] || [];
           pointsById[id][cornerNum] = keyPoints[shape[2]].pt;
 
-          if (displayMat) {
+          if (displayMat && config.showOverlayShapeId) {
             // Draw id and corner name.
             cv.putText(
               displayMat,
@@ -242,7 +246,7 @@ export default function detectPrograms({ config, videoCapture, previousPointsByI
         };
         programsToRender.push(programToRender);
 
-        if (displayMat) {
+        if (displayMat && config.showOverlayProgram) {
           const matrix = forwardProjectionMatrixForPoints(config.knobPoints);
           const reprojectedPoints = programToRender.points.map(point =>
             mult(projectPoint(point, matrix), { x: videoMat.cols, y: videoMat.rows })

@@ -6,7 +6,7 @@ import { colorNames } from './constants';
 import detectPrograms from './detectPrograms';
 
 class Knob extends React.Component {
-  onMouseDown = () => {
+  _onMouseDown = () => {
     const mouseMoveHandler = event => {
       const parentOffset = this._el.offsetParent.getBoundingClientRect();
       this.props.onChange({
@@ -35,7 +35,7 @@ class Knob extends React.Component {
           boxShadow: '0 0 0 1px red',
           borderRadius: size,
         }}
-        onMouseDown={this.onMouseDown}
+        onMouseDown={this._onMouseDown}
         ref={el => (this._el = el)}
       />
     );
@@ -74,6 +74,27 @@ class CameraVideo extends React.Component {
     };
   }
 
+  _onMouseDown = mouseDownEvent => {
+    const startCanvasX = this.props.config.zoomCanvasX;
+    const startCanvasY = this.props.config.zoomCanvasY;
+    const startClientX = mouseDownEvent.clientX;
+    const startClientY = mouseDownEvent.clientY;
+
+    const mouseMoveHandler = event => {
+      this.props.onConfigChange({
+        ...this.props.config,
+        zoomCanvasX: startCanvasX + event.clientX - startClientX,
+        zoomCanvasY: startCanvasY + event.clientY - startClientY,
+      });
+    };
+    const mouseUpHandler = () => {
+      document.body.removeEventListener('mousemove', mouseMoveHandler, true);
+      document.body.removeEventListener('mouseup', mouseUpHandler, true);
+    };
+    document.body.addEventListener('mousemove', mouseMoveHandler, true);
+    document.body.addEventListener('mouseup', mouseUpHandler, true);
+  };
+
   _processVideo = () => {
     const displayMat = new cv.Mat(
       this._videoCapture.video.height,
@@ -99,14 +120,36 @@ class CameraVideo extends React.Component {
   };
 
   render() {
-    const { width } = this.props;
+    const width = this.props.width * this.props.zoom;
     const height = width / this.state.videoWidth * this.state.videoHeight;
+    const outerWidth = this.props.width;
+    const outerHeight = this.props.width / this.state.videoWidth * this.state.videoHeight;
 
     return (
-      <div>
+      <div
+        ref={el => (this._el = el)}
+        style={{
+          width: outerWidth,
+          height: outerHeight,
+          overflow: 'hidden',
+        }}
+      >
         <video id="videoInput" style={{ display: 'none' }} ref={el => (this._videoInput = el)} />
-        <div style={{ position: 'relative', width, height }}>
-          <canvas id="canvasOutput" style={{ width, height }} ref={el => (this._canvas = el)} />
+        <div
+          style={{
+            position: 'relative',
+            width,
+            height,
+            left: this.props.config.zoomCanvasX,
+            top: this.props.config.zoomCanvasY,
+          }}
+        >
+          <canvas
+            id="canvasOutput"
+            style={{ width, height }}
+            ref={el => (this._canvas = el)}
+            onMouseDown={this._onMouseDown}
+          />
           {[0, 1, 2, 3].map(position => {
             const point = this.props.config.knobPoints[position];
             return (
@@ -169,6 +212,7 @@ export default class CameraMain extends React.Component {
         <div style={{ position: 'absolute', left: padding, top: padding }}>
           <CameraVideo
             width={this.state.pageWidth - padding * 3 - sidebarWidth}
+            zoom={this.props.config.zoom}
             config={this.props.config}
             onConfigChange={this.props.onConfigChange}
             onProcessVideo={({ programsToRender, framerate }) => {
@@ -202,6 +246,94 @@ export default class CameraMain extends React.Component {
           </div>
 
           <div style={{ marginBottom: padding }}>
+            zoom{' '}
+            <input
+              type="range"
+              min="1"
+              max="4"
+              step="0.25"
+              value={this.props.config.zoom}
+              onChange={event =>
+                this.props.onConfigChange({ ...this.props.config, zoom: event.target.value })
+              }
+            />
+          </div>
+
+          <div style={{ marginBottom: padding }}>
+            <div style={{ marginBottom: padding / 4 }}>show overlay</div>
+
+            <div style={{ marginBottom: padding / 4 }}>
+              <input
+                type="checkbox"
+                checked={this.props.config.showOverlayKeyPointCircles}
+                onChange={() =>
+                  this.props.onConfigChange({
+                    ...this.props.config,
+                    showOverlayKeyPointCircles: !this.props.config.showOverlayKeyPointCircles,
+                  })
+                }
+              />{' '}
+              keypoint circles
+            </div>
+
+            <div style={{ marginBottom: padding / 4 }}>
+              <input
+                type="checkbox"
+                checked={this.props.config.showOverlayKeyPointText}
+                onChange={() =>
+                  this.props.onConfigChange({
+                    ...this.props.config,
+                    showOverlayKeyPointText: !this.props.config.showOverlayKeyPointText,
+                  })
+                }
+              />{' '}
+              keypoint text
+            </div>
+
+            <div style={{ marginBottom: padding / 4 }}>
+              <input
+                type="checkbox"
+                checked={this.props.config.showOverlayComponentLines}
+                onChange={() =>
+                  this.props.onConfigChange({
+                    ...this.props.config,
+                    showOverlayComponentLines: !this.props.config.showOverlayComponentLines,
+                  })
+                }
+              />{' '}
+              component lines
+            </div>
+
+            <div style={{ marginBottom: padding / 4 }}>
+              <input
+                type="checkbox"
+                checked={this.props.config.showOverlayShapeId}
+                onChange={() =>
+                  this.props.onConfigChange({
+                    ...this.props.config,
+                    showOverlayShapeId: !this.props.config.showOverlayShapeId,
+                  })
+                }
+              />{' '}
+              shape ids
+            </div>
+
+            <div style={{ marginBottom: padding / 4 }}>
+              <input
+                type="checkbox"
+                checked={this.props.config.showOverlayProgram}
+                onChange={() =>
+                  this.props.onConfigChange({
+                    ...this.props.config,
+                    showOverlayProgram: !this.props.config.showOverlayProgram,
+                  })
+                }
+              />{' '}
+              programs
+            </div>
+          </div>
+
+          <div style={{ marginBottom: padding }}>
             <div style={{ marginBottom: padding / 4 }}>colors</div>
             <div>
               {this.props.config.colorsRGB.map((color, colorIndex) => (
@@ -228,7 +360,7 @@ export default class CameraMain extends React.Component {
                     }))
                   }
                 >
-                  {colorNames[colorIndex]}
+                  <strong>{colorNames[colorIndex]}</strong>
                 </div>
               ))}
             </div>

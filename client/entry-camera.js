@@ -12,6 +12,14 @@ const defaultConfig = {
     [92, 36, 42, 255],
   ],
   knobPoints: [{ x: 0, y: 0 }, { x: 1, y: 0 }, { x: 0, y: 1 }, { x: 0, y: 1 }],
+  zoom: 1,
+  zoomCanvasX: 0,
+  zoomCanvasY: 0,
+  showOverlayKeyPointCircles: true,
+  showOverlayKeyPointText: true,
+  showOverlayComponentLines: true,
+  showOverlayShapeId: true,
+  showOverlayProgram: true,
 };
 
 localStorage.dynazarConfig = JSON.stringify({
