@@ -14,49 +14,62 @@ function matrixToCssTransform(matrix) {
   return `matrix3d(${values.join(',')})`;
 }
 
-const canvasSize = 100;
+const canvasWidth = 100;
+const canvasHeight = 150;
 const canvasSizeMatrix = forwardProjectionMatrixForPoints([
   { x: 0, y: 0 },
-  { x: canvasSize, y: 0 },
-  { x: canvasSize, y: canvasSize },
-  { x: 0, y: canvasSize },
+  { x: canvasWidth, y: 0 },
+  { x: canvasWidth, y: canvasHeight },
+  { x: 0, y: canvasHeight },
 ]).adjugate();
 
-export default class ProjectorMain extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = {};
+class Program extends React.Component {
+  componentDidMount() {
+    this._worker = new Worker('worker.js');
+
+    var offscreen = this._canvas.transferControlToOffscreen();
+    this._worker.postMessage({ canvas: offscreen }, [offscreen]);
+  }
+
+  componentWillUnmount() {
+    this._worker.terminate();
   }
 
   render() {
     const width = document.body.clientWidth;
     const height = document.body.clientHeight;
+    const { program } = this.props;
+    const matrix = forwardProjectionMatrixForPoints(
+      program.points.map(point => mult(point, { x: width, y: height }))
+    ).multiply(canvasSizeMatrix);
 
     return (
-      <div>
-        {this.props.programsToRender.map(program => {
-          const matrix = forwardProjectionMatrixForPoints(
-            program.points.map(point => mult(point, { x: width, y: height }))
-          ).multiply(canvasSizeMatrix);
+      <canvas
+        key={program.id}
+        ref={el => (this._canvas = el)}
+        width={canvasWidth}
+        height={canvasHeight}
+        style={{
+          position: 'absolute',
+          left: 0,
+          top: 0,
+          width: canvasWidth,
+          height: canvasHeight,
+          transform: matrixToCssTransform(matrix),
+          transformOrigin: '0 0 0',
+          boxSizing: 'border-box',
+          border: '10px solid black',
+        }}
+      />
+    );
+  }
+}
 
-          return (
-            <div
-              key={program.id}
-              style={{
-                position: 'absolute',
-                left: 0,
-                top: 0,
-                width: canvasSize,
-                height: canvasSize,
-                transform: matrixToCssTransform(matrix),
-                transformOrigin: '0 0',
-                background: 'white',
-                boxSizing: 'border-box',
-                border: '10px solid black',
-              }}
-            />
-          );
-        })}
+export default class ProjectorMain extends React.Component {
+  render() {
+    return (
+      <div>
+        {this.props.programsToRender.map(program => <Program key={program.id} program={program} />)}
       </div>
     );
   }
