@@ -93,6 +93,22 @@ function projectPointToUnitSquare(point, videoMat, knobPoints) {
   );
 }
 
+// Depth-first search until a streak of `lengthLeft` has been found.
+// Should be initialised with at least one item in `shapeToFill`.
+function findShape(shapeToFill, neighborIndexes, lengthLeft) {
+  if (lengthLeft === 0) return true;
+
+  const lastIndex = shapeToFill[shapeToFill.length - 1];
+  for (const index of neighborIndexes[lastIndex]) {
+    if (shapeToFill.includes(index)) continue;
+    shapeToFill.push(index);
+    if (findShape(shapeToFill, neighborIndexes, lengthLeft - 1)) return true;
+    shapeToFill.pop();
+  }
+
+  return false;
+}
+
 export default function detectPrograms({ config, videoCapture, previousPointsById, displayMat }) {
   const startTime = Date.now();
 
@@ -190,14 +206,10 @@ export default function detectPrograms({ config, videoCapture, previousPointsByI
   const seenIds = new window.Set();
   for (let i = 0; i < keyPoints.length; i++) {
     if (neighborIndexes[i].length == 1 && !seenIndexes.has(i)) {
-      let index = i;
-      const shape = [];
-      while (index !== undefined) {
-        shape.push(index);
-        seenIndexes.add(index);
-        index = neighborIndexes[index].find(potentialIndex => !seenIndexes.has(potentialIndex));
-      }
-      if (shape.length == 5) {
+      const shape = [i]; // Initialise with the first index, then run findShape with 5-1.
+      if (findShape(shape, neighborIndexes, 5 - 1)) {
+        shape.forEach(index => seenIndexes.add(index));
+
         // Reverse the array if it's the wrong way around.
         const mag = cross(
           diff(keyPoints[shape[0]].pt, keyPoints[shape[2]].pt),
