@@ -11,7 +11,6 @@ const defaultConfig = {
     [65, 80, 84, 255],
     [92, 36, 42, 255],
   ],
-  cameraOutputWidth: 800,
   knobPoints: [{ x: 0, y: 0 }, { x: 1, y: 0 }, { x: 0, y: 1 }, { x: 0, y: 1 }],
 };
 

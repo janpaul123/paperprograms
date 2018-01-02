@@ -41,10 +41,10 @@ class Knob extends React.Component {
   }
 }
 
-export default class CameraMain extends React.Component {
+class CameraVideo extends React.Component {
   constructor(props) {
     super(props);
-    this.state = { framerate: 0, cameraOutputHeight: 0 };
+    this.state = { videoWidth: 1, videoHeight: 1 };
   }
 
   componentDidMount() {
@@ -64,9 +64,7 @@ export default class CameraMain extends React.Component {
             video.play();
             video.width = video.videoWidth;
             video.height = video.videoHeight;
-            this.setState({
-              cameraOutputHeight: this.props.config.cameraOutputWidth / video.width * video.height,
-            });
+            this.setState({ videoWidth: video.width, videoHeight: video.height });
             this._videoCapture = new cv.VideoCapture(video);
             this._pointsById = {};
             this._processVideo();
@@ -90,19 +88,18 @@ export default class CameraMain extends React.Component {
     });
     this._pointsById = newPointsById;
 
-    this.props.onProgramsChange(programsToRender);
-
     cv.imshow(this._canvas, displayMat);
     displayMat.delete();
 
-    this.setState({ framerate });
+    this.props.onProcessVideo({ programsToRender, framerate });
 
     setTimeout(this._processVideo);
   };
 
   render() {
-    const width = this.props.config.cameraOutputWidth;
-    const height = this.state.cameraOutputHeight;
+    const { width } = this.props;
+    const height = width / this.state.videoWidth * this.state.videoHeight;
+
     return (
       <div>
         <video id="videoInput" style={{ display: 'none' }} ref={el => (this._videoInput = el)} />
@@ -124,10 +121,57 @@ export default class CameraMain extends React.Component {
             );
           })}
         </div>
+      </div>
+    );
+  }
+}
+
+export default class CameraMain extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { pageWidth: 1, framerate: 0 };
+  }
+
+  componentDidMount() {
+    window.addEventListener('resize', this._updatePageWidth);
+    this._updatePageWidth();
+  }
+
+  _updatePageWidth = () => {
+    this.setState({ pageWidth: document.body.clientWidth });
+  };
+
+  render() {
+    const padding = 20;
+    const sidebarWidth = 300;
+
+    return (
+      <div>
+        <div style={{ position: 'absolute', left: padding, top: padding }}>
+          <CameraVideo
+            width={this.state.pageWidth - padding * 3 - sidebarWidth}
+            config={this.props.config}
+            onConfigChange={this.props.onConfigChange}
+            onProcessVideo={({ programsToRender, framerate }) => {
+              this.setState({ framerate });
+              this.props.onProgramsChange(programsToRender);
+            }}
+          />
+        </div>
         <div
-          style={{ position: 'absolute', top: 20, left: 20, font: '12px Courier', color: 'white' }}
+          style={{
+            position: 'absolute',
+            top: padding,
+            right: padding,
+            width: sidebarWidth,
+            color: 'white',
+            font: '20px sans-serif',
+            fontWeight: 300,
+          }}
         >
-          {this.state.framerate}
+          <div>
+            framerate <strong>{this.state.framerate}</strong>
+          </div>
         </div>
       </div>
     );
