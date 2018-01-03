@@ -3,6 +3,7 @@ import React from 'react';
 import xhr from 'xhr';
 
 import { codeToName, getApiUrl } from './utils';
+import styles from './EditorMain.css';
 
 export default class EditorMain extends React.Component {
   constructor(props) {
@@ -81,22 +82,11 @@ export default class EditorMain extends React.Component {
 
   render() {
     const selectedProgram = this._selectedProgram(this.state.selectedProgramNumber);
-    const sidebarWidth = 300;
-    const padding = 20;
 
     return (
-      <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}>
+      <div className={styles.root}>
         {selectedProgram && (
-          <div
-            style={{
-              position: 'absolute',
-              top: 0,
-              bottom: 0,
-              left: 0,
-              right: sidebarWidth,
-              overflow: 'hidden',
-            }}
-          >
+          <div className={styles.editor}>
             <MonacoEditor
               language="javascript"
               theme="vs-dark"
@@ -106,20 +96,8 @@ export default class EditorMain extends React.Component {
             />
           </div>
         )}
-        <div
-          style={{
-            position: 'absolute',
-            top: 0,
-            bottom: 0,
-            width: sidebarWidth,
-            right: 0,
-            font: '20px sans-serif',
-            fontWeight: 300,
-            padding,
-            boxSizing: 'border-box',
-          }}
-        >
-          <div style={{ marginBottom: padding }}>
+        <div className={styles.sidebar}>
+          <div className={styles.sidebarSection}>
             <select
               value={this.state.selectedProgramNumber}
               onChange={event => {
@@ -143,7 +121,7 @@ export default class EditorMain extends React.Component {
           </div>
 
           {selectedProgram && (
-            <div style={{ marginBottom: padding }}>
+            <div className={styles.sidebarSection}>
               <button onClick={this._update}>update</button>{' '}
               <button onClick={this._print}>print new</button>{' '}
               <button onClick={this._restore}>restore original</button>

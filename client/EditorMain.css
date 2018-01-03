@@ -1,0 +1,35 @@
+@value sidebarWidth: 300px;
+@value paddingSize: 20px;
+
+:local(.root) {
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  right: 0px;
+  bottom: 0px;
+}
+
+:local(.editor) {
+  position: absolute;
+  top: 0px;
+  bottom: 0px;
+  left: 0px;
+  right: sidebarWidth;
+  overflow: hidden;
+}
+
+:local(.sidebar) {
+  position: absolute;
+  top: 0px;
+  bottom: 0px;
+  width: sidebarWidth;
+  right: 0px;
+  font: 20px sans-serif;
+  font-weight: 300;
+  padding: paddingSize;
+  box-sizing: border-box;
+}
+
+:local(.sidebarSection) {
+  margin-bottom: paddingSize;
+}
