@@ -3,7 +3,7 @@
 import React from 'react';
 import xhr from 'xhr';
 
-import { codeToName, getApiUrl } from './utils';
+import { codeToName, codeToPrint, getApiUrl } from './utils';
 import { colorNames } from './constants';
 import { printCalibrationPage, printPage } from './printPdf';
 import detectPrograms from './detectPrograms';
@@ -229,7 +229,7 @@ export default class CameraMain extends React.Component {
   };
 
   _print = program => {
-    printPage(program.number, codeToName(program.originalCode));
+    printPage(program.number, codeToName(program.originalCode), codeToPrint(program.originalCode));
   };
 
   _printCalibration = () => {

@@ -54,7 +54,7 @@ function drawPagePatterns({ doc, patterns, width, height, circleRadius, circleDi
   });
 }
 
-function drawPage({ patterns, text, metadata }) {
+function drawPage({ patterns, title, code, metadata }) {
   const doc = new PDFDocument({ margin: 0 });
   const { width, height } = doc.page;
 
@@ -70,7 +70,7 @@ function drawPage({ patterns, text, metadata }) {
   const titleVOffset = -3;
   const titleSize = 24;
   const titleTop = margin + circleRadius - doc.currentLineHeight() / 2 + titleVOffset;
-  doc.fontSize(titleSize).text(text, textLeft, titleTop, { width: textWidth, align: 'center' });
+  doc.fontSize(titleSize).text(title, textLeft, titleTop, { width: textWidth, align: 'center' });
 
   const metadataVOffset = 5;
   const metadataSize = 14;
@@ -82,6 +82,17 @@ function drawPage({ patterns, text, metadata }) {
   doc
     .fontSize(metadataSize)
     .text(metadata, textLeft, metadataTop, { width: textWidth, align: 'center' });
+
+  const codeMargin = 15;
+  const codeMarginTotal = margin + circleRadius * 2 + codeMargin;
+  doc
+    .font('Courier')
+    .fontSize(11)
+    .fillColor('#888888')
+    .text(code, codeMarginTotal, codeMarginTotal, {
+      width: width - codeMarginTotal,
+      height: height - codeMarginTotal,
+    });
 
   doc.end();
   return doc;
@@ -135,11 +146,12 @@ function printDoc(doc) {
 
 const allColors = ['#ff0000', '#ff9900', '#51ff00', '#00ccff', '#dd00ff'];
 
-export function printPage(number, name) {
+export function printPage(number, name, code) {
   printDoc(
     drawPage({
       patterns: generatePatterns({ number, allColors }),
-      text: name,
+      title: name,
+      code,
       metadata: `${number} @ ${new Date().toISOString().split('T')[0]}`,
     })
   );

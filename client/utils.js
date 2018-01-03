@@ -66,9 +66,19 @@ export function getApiUrl(spaceName, suffix) {
   return new URL(`api/spaces/${spaceName}${suffix}`, window.location.origin).toString();
 }
 
+const commentRegex = /\s*\/\/\s*(.+)/;
 export function codeToName(code) {
   const firstLine = code.split('\n')[0];
-  const match = firstLine.match(/\/\/\w*(.+)/);
+  const match = firstLine.match(commentRegex);
   if (match) return match[1].trim();
   else return '???';
+}
+
+export function codeToPrint(code) {
+  let lines = code.split('\n');
+  let i = 0;
+  for (; i < lines.length; i++) {
+    if (!lines[i].match(commentRegex) && lines[i].trim().length !== 0) break;
+  }
+  return lines.slice(i).join('\n');
 }
