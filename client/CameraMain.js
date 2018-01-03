@@ -198,15 +198,16 @@ export default class CameraMain extends React.Component {
   _pollSpaceUrl = () => {
     const targetTimeMs = 500;
     const beginTimeMs = Date.now();
-    xhr.get(this.props.config.spaceUrl, (error, response) => {
+    xhr.get(this.props.config.spaceUrl, { json: true }, (error, response) => {
       if (error) {
         console.error(error); // eslint-disable-line no-console
       } else {
-        this.setState({ spaceData: JSON.parse(response.body) });
+        this.setState({ spaceData: response.body });
       }
 
       const elapsedTimeMs = Date.now() - beginTimeMs;
-      setTimeout(this._pollSpaceUrl, Math.max(0, targetTimeMs - elapsedTimeMs));
+      clearTimeout(this._timeout);
+      this._timeout = setTimeout(this._pollSpaceUrl, Math.max(0, targetTimeMs - elapsedTimeMs));
     });
   };
 
@@ -220,6 +221,20 @@ export default class CameraMain extends React.Component {
 
   _printCalibration = () => {
     printCalibrationPage();
+  };
+
+  _markPrinted = program => {
+    xhr.post(
+      getApiUrl(this.state.spaceData.spaceName, `/programs/${program.number}/markPrinted`),
+      { json: true },
+      (error, response) => {
+        if (error) {
+          console.error(error); // eslint-disable-line no-console
+        } else {
+          this.setState({ spaceData: response.body });
+        }
+      }
+    );
   };
 
   _createHelloWorld = () => {
@@ -309,7 +324,16 @@ export default class CameraMain extends React.Component {
                   className={styles.printQueueItem}
                   onClick={() => this._print(program)}
                 >
-                  <strong>#{program.number}</strong> {codeToName(program.originalCode)}
+                  <strong>#{program.number}</strong> {codeToName(program.originalCode)}{' '}
+                  <span
+                    className={styles.printQueueItemPrinted}
+                    onClick={event => {
+                      event.stopPropagation();
+                      this._markPrinted(program);
+                    }}
+                  >
+                    [done]
+                  </span>
                 </div>
               ))}
             </div>

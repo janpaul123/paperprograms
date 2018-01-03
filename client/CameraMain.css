@@ -59,6 +59,17 @@
   background: #666;
 }
 
+:local(.printQueueItemPrinted) {
+  visibility: hidden;
+  cursor: pointer;
+}
+:local(.printQueueItem):hover > :local(.printQueueItemPrinted) {
+  visibility: visible;
+}
+:local(.printQueueItemPrinted):hover {
+  background: #999;
+}
+
 :local(.colorListItem) {
   display: inline-block;
   width: 20px;

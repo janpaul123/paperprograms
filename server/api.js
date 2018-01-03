@@ -66,4 +66,17 @@ router.put('/spaces/:spaceName/programs/:number', function(req, res) {
     });
 });
 
+router.post('/spaces/:spaceName/programs/:number/markPrinted', function(req, res) {
+  const { spaceName, number } = req.params;
+
+  knex('programs')
+    .update({ printed: true })
+    .where({ spaceName, number })
+    .then(() => {
+      getSpaceData(req, spaceData => {
+        res.json(spaceData);
+      });
+    });
+});
+
 module.exports = router;
