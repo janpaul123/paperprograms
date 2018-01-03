@@ -53,7 +53,7 @@ export default class EditorMain extends React.Component {
         if (error) {
           console.error(error); // eslint-disable-line no-console
         } else {
-          const body = JSON.parse(response.body);
+          const { body } = response;
           this.setState({ code, selectedProgramNumber: body.number, spaceData: body.spaceData });
         }
       }
@@ -115,6 +115,7 @@ export default class EditorMain extends React.Component {
               {this.state.spaceData.programs.map(program => (
                 <option key={program.number} value={program.number}>
                   #{program.number} {codeToName(program.currentCode)}
+                  {program.printed ? '' : ' (queued)'}
                 </option>
               ))}
             </select>
