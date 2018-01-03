@@ -2,6 +2,10 @@ const api = require('./api');
 const express = require('express');
 const path = require('path');
 
+process.on('unhandledRejection', error => {
+  console.error('unhandledRejection', error.message);
+});
+
 const app = express();
 app.use(require('morgan')('short'));
 app.use(require('heroku-ssl-redirect')(['production']));

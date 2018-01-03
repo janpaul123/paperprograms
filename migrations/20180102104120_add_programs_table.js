@@ -1,11 +1,17 @@
 exports.up = function(knex) {
   return knex.schema.createTable('programs', function(table) {
-    table.string('spaceName');
-    table.integer('number');
-    table.text('originalCode');
-    table.text('currentCode');
-    table.boolean('printed');
-    table.text('debugInfo');
+    table.string('spaceName').notNullable();
+    table.integer('number').notNullable();
+    table.text('originalCode').notNullable();
+    table.text('currentCode').notNullable();
+    table
+      .boolean('printed')
+      .notNullable()
+      .defaultTo(false);
+    table
+      .text('debugInfo')
+      .notNullable()
+      .defaultTo('');
     table.primary(['spaceName', 'number']);
   });
 };

@@ -1,3 +1,4 @@
+const helloWorld = `
 onmessage = function(evt) {
   const canvas = evt.data.canvas;
   const ctx = canvas.getContext('2d');
@@ -14,4 +15,5 @@ onmessage = function(evt) {
     ctx.fillText(Date.now(), canvas.width / 2, canvas.height / 2 + 20);
     ctx.commit();
   }, 100);
-};
+};`;
+export default helloWorld;

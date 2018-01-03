@@ -1,16 +1,6 @@
-#!/usr/bin/env node
+import blobStream from 'blob-stream';
 
 const PDFDocument = require('pdfkit');
-const fs = require('fs');
-const hsl = require('hsl-to-hex');
-
-// Never exit implicitly. See https://stackoverflow.com/a/47456805
-// setInterval(() => {}, 100000);
-
-process.on('unhandledRejection', error => {
-  console.log('unhandledRejection', error.message);
-  process.exit(1);
-});
 
 // Draws a pattern using colours from `pattern` like:
 // 2 3 4
@@ -35,9 +25,33 @@ function drawLPattern({ doc, pattern, x, y, angle, circleRadius, circleDistance 
 function drawPagePatterns({ doc, patterns, width, height, circleRadius, circleDistance, margin }) {
   const m = margin + circleRadius;
   drawLPattern({ doc, pattern: patterns[0], x: m, y: m, angle: 0, circleRadius, circleDistance });
-  drawLPattern({ doc, pattern: patterns[1], x: width - m, y: m, angle: 90, circleRadius, circleDistance });
-  drawLPattern({ doc, pattern: patterns[2], x: width - m, y: height - m, angle: 180, circleRadius, circleDistance });
-  drawLPattern({ doc, pattern: patterns[3], x: m, y: height - m, angle: 270, circleRadius, circleDistance });
+  drawLPattern({
+    doc,
+    pattern: patterns[1],
+    x: width - m,
+    y: m,
+    angle: 90,
+    circleRadius,
+    circleDistance,
+  });
+  drawLPattern({
+    doc,
+    pattern: patterns[2],
+    x: width - m,
+    y: height - m,
+    angle: 180,
+    circleRadius,
+    circleDistance,
+  });
+  drawLPattern({
+    doc,
+    pattern: patterns[3],
+    x: m,
+    y: height - m,
+    angle: 270,
+    circleRadius,
+    circleDistance,
+  });
 }
 
 function drawPage({ patterns, text, metadata }) {
@@ -47,7 +61,7 @@ function drawPage({ patterns, text, metadata }) {
   const circleRadius = 20;
   const circleDistance = 20;
   const margin = 10;
-  drawPagePatterns({ doc, patterns, circleRadius, circleDistance, margin, width, height })
+  drawPagePatterns({ doc, patterns, circleRadius, circleDistance, margin, width, height });
 
   const textMargin = 10;
   const textLeft = margin + circleRadius * 6 + circleDistance * 2 + textMargin;
@@ -60,8 +74,14 @@ function drawPage({ patterns, text, metadata }) {
 
   const metadataVOffset = 5;
   const metadataSize = 14;
-  const metadataTop = height - doc.currentLineHeight() - (margin + circleRadius - doc.currentLineHeight() / 2) + metadataVOffset;
-  doc.fontSize(metadataSize).text(metadata, textLeft, metadataTop, { width: textWidth, align: 'center' });
+  const metadataTop =
+    height -
+    doc.currentLineHeight() -
+    (margin + circleRadius - doc.currentLineHeight() / 2) +
+    metadataVOffset;
+  doc
+    .fontSize(metadataSize)
+    .text(metadata, textLeft, metadataTop, { width: textWidth, align: 'center' });
 
   doc.end();
   return doc;
@@ -71,30 +91,60 @@ function drawCalibrationPage({ allColors }) {
   const doc = new PDFDocument({ layout: 'landscape' });
   const circleRadius = 20;
   const circleDistance = 20;
-  doc.fontSize(35).text("Calibration page", 0, 30, { width: doc.page.width, align: 'center' });
+  doc.fontSize(35).text('Calibration page', 0, 30, { width: doc.page.width, align: 'center' });
 
   const offsetPerCircle = circleRadius * 2 + circleDistance;
   const marginLeft = (doc.page.width - allColors.length * offsetPerCircle) / 2;
   allColors.forEach((color, i) => {
-    doc.circle(marginLeft + i * offsetPerCircle + circleRadius, doc.page.height / 2, circleRadius).fill(color);
+    doc
+      .circle(marginLeft + i * offsetPerCircle + circleRadius, doc.page.height / 2, circleRadius)
+      .fill(color);
   });
   doc.end();
   return doc;
 }
 
-function generatePatterns({ id, allColors }) {
-  const string = id.toString(5).padStart(4, "0");
+function generatePatterns({ number, allColors }) {
+  const string = number.toString(5).padStart(4, '0');
   if (string.length !== 4) throw new Error('Incorrect string length');
 
   function posToCol(index) {
     return allColors[parseInt(string[index], 10)];
   }
 
-  return [0, 1, 2, 3].map((i) => [posToCol(0), posToCol(1), allColors[i], posToCol(2), posToCol(3)]);
+  return [0, 1, 2, 3].map(i => [posToCol(0), posToCol(1), allColors[i], posToCol(2), posToCol(3)]);
 }
 
-const allColors = ['#ff0000', '#ff9900', '#51ff00', '#00ccff', '#dd00ff']
+function printDoc(doc) {
+  const stream = doc.pipe(blobStream());
+  stream.on('finish', () => {
+    const iframe = document.createElement('iframe');
+    iframe.onload = () => {
+      iframe.contentWindow.print();
+      // TODO: figure out when to call:
+      // document.body.removeChild(iframe);
+    };
+    iframe.style.visibility = 'hidden';
+    iframe.style.position = 'fixed';
+    iframe.style.right = '0';
+    iframe.style.bottom = '0';
+    iframe.src = stream.toBlobURL('application/pdf');
+    document.body.appendChild(iframe);
+  });
+}
 
-drawPage({ patterns: generatePatterns({ id: 123, allColors }), text: 'Test program', metadata: `123 @ ${new Date().toISOString().split('T')[0]}` }).pipe(fs.createWriteStream('output.pdf'));
+const allColors = ['#ff0000', '#ff9900', '#51ff00', '#00ccff', '#dd00ff'];
 
-drawCalibrationPage({ allColors }).pipe(fs.createWriteStream('calibration.pdf'));
+export function printPage(number, name) {
+  printDoc(
+    drawPage({
+      patterns: generatePatterns({ number, allColors }),
+      text: name,
+      metadata: `${number} @ ${new Date().toISOString().split('T')[0]}`,
+    })
+  );
+}
+
+export function printCalibrationPage() {
+  printDoc(drawCalibrationPage({ allColors }));
+}

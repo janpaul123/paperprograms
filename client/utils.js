@@ -61,3 +61,14 @@ export function projectPoint(point, projectionMatrix) {
     y: pointMatrix.get(1, 0) / pointMatrix.get(2, 0),
   };
 }
+
+export function getApiUrl(spaceName, suffix) {
+  return new URL(`api/spaces/${spaceName}${suffix}`, window.location.origin).toString();
+}
+
+export function codeToName(code) {
+  const firstLine = code.split('\n')[0];
+  const match = firstLine.match(/\/\/\w*(.+)/);
+  if (match) return match[1].trim();
+  else return '???';
+}

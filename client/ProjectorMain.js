@@ -25,7 +25,7 @@ const canvasSizeMatrix = forwardProjectionMatrixForPoints([
 
 class Program extends React.Component {
   componentDidMount() {
-    this._worker = new Worker('worker.js');
+    this._worker = new Worker(URL.createObjectURL(new Blob([this.props.program.currentCode])));
 
     var offscreen = this._canvas.transferControlToOffscreen();
     this._worker.postMessage({ canvas: offscreen }, [offscreen]);
@@ -69,7 +69,9 @@ export default class ProjectorMain extends React.Component {
   render() {
     return (
       <div>
-        {this.props.programsToRender.map(program => <Program key={program.id} program={program} />)}
+        {this.props.programsToRender.map(program => (
+          <Program key={`${program.id}-${program.currentCode}`} program={program} />
+        ))}
       </div>
     );
   }

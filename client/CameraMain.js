@@ -3,8 +3,11 @@
 import React from 'react';
 import xhr from 'xhr';
 
+import { codeToName, getApiUrl } from './utils';
 import { colorNames } from './constants';
+import { printCalibrationPage, printPage } from './printPdf';
 import detectPrograms from './detectPrograms';
+import helloWorld from './helloWorld';
 
 class Knob extends React.Component {
   _onMouseDown = () => {
@@ -115,7 +118,7 @@ class CameraVideo extends React.Component {
     displayMat.delete();
 
     this.setState({ keyPoints });
-    this.props.onProcessVideo({ programsToRender, framerate });
+    this.props.onProcessVideo({ programsToRender: programsToRender, framerate });
 
     setTimeout(this._processVideo);
   };
@@ -192,7 +195,12 @@ class CameraVideo extends React.Component {
 export default class CameraMain extends React.Component {
   constructor(props) {
     super(props);
-    this.state = { pageWidth: 1, framerate: 0, selectedColorIndex: -1, spaceData: {} };
+    this.state = {
+      pageWidth: 1,
+      framerate: 0,
+      selectedColorIndex: -1,
+      spaceData: { programs: [] },
+    };
   }
 
   componentDidMount() {
@@ -220,6 +228,26 @@ export default class CameraMain extends React.Component {
     this.setState({ pageWidth: document.body.clientWidth });
   };
 
+  _print = program => {
+    printPage(program.number, codeToName(program.originalCode));
+  };
+
+  _printCalibration = () => {
+    printCalibrationPage();
+  };
+
+  _createHelloWorld = () => {
+    xhr.post(
+      getApiUrl(this.state.spaceData.spaceName, '/programs'),
+      { json: { code: helloWorld } },
+      error => {
+        if (error) {
+          console.error(error); // eslint-disable-line no-console
+        }
+      }
+    );
+  };
+
   render() {
     const padding = 20;
     const sidebarWidth = 300;
@@ -234,7 +262,21 @@ export default class CameraMain extends React.Component {
             onConfigChange={this.props.onConfigChange}
             onProcessVideo={({ programsToRender, framerate }) => {
               this.setState({ framerate });
-              this.props.onProgramsChange(programsToRender);
+              this.props.onProgramsChange(
+                programsToRender
+                  .map(program => {
+                    const programWithData = this.state.spaceData.programs.find(
+                      program2 => program2.number.toString() === program.id.toString()
+                    );
+                    if (!programWithData) return;
+                    return {
+                      ...program,
+                      originalCode: programWithData.originalCode,
+                      currentCode: programWithData.currentCode,
+                    };
+                  })
+                  .filter(Boolean)
+              );
             }}
             allowSelectingDetectedPoints={this.state.selectedColorIndex !== -1}
             onSelectColor={color => {
@@ -269,11 +311,34 @@ export default class CameraMain extends React.Component {
           </div>
 
           <div style={{ marginBottom: padding, wordBreak: 'break-all' }}>
-            editor url <strong>{this.state.spaceData.editorUrl}</strong>
+            editor url{' '}
+            <strong>
+              {new URL(
+                `editor.html?${this.state.spaceData.spaceName}`,
+                window.location.origin
+              ).toString()}
+            </strong>
           </div>
 
           <div style={{ marginBottom: padding }}>
             framerate <strong>{this.state.framerate}</strong>
+          </div>
+
+          <div style={{ marginBottom: padding }}>
+            <div style={{ marginBottom: padding / 4 }}>print queue</div>
+            <div>
+              {this.state.spaceData.programs.filter(program => !program.printed).map(program => (
+                <div
+                  key={program.number}
+                  style={{ cursor: 'pointer', marginBottom: padding / 4 }}
+                  onClick={() => this._print(program)}
+                >
+                  <strong>#{program.number}</strong> {codeToName(program.originalCode)}
+                </div>
+              ))}
+            </div>
+            <button onClick={this._printCalibration}>print calibration page</button>{' '}
+            <button onClick={this._createHelloWorld}>create hello world program</button>
           </div>
 
           <div style={{ marginBottom: padding }}>
@@ -288,6 +353,39 @@ export default class CameraMain extends React.Component {
                 this.props.onConfigChange({ ...this.props.config, zoom: event.target.value })
               }
             />
+          </div>
+
+          <div style={{ marginBottom: padding }}>
+            <div style={{ marginBottom: padding / 4 }}>colors</div>
+            <div>
+              {this.props.config.colorsRGB.map((color, colorIndex) => (
+                <div
+                  key={colorIndex}
+                  style={{
+                    display: 'inline-block',
+                    width: 20,
+                    height: 20,
+                    background: `rgb(${color.slice(0, 3).join(',')})`,
+                    borderRadius: 20,
+                    marginRight: 5,
+                    color: 'white',
+                    fontSize: 14,
+                    textAlign: 'center',
+                    lineHeight: '20px',
+                    cursor: 'pointer',
+                    boxShadow:
+                      this.state.selectedColorIndex === colorIndex ? '0 0 0 3px white' : '',
+                  }}
+                  onClick={() =>
+                    this.setState(state => ({
+                      selectedColorIndex: state.selectedColorIndex === colorIndex ? -1 : colorIndex,
+                    }))
+                  }
+                >
+                  <strong>{colorNames[colorIndex]}</strong>
+                </div>
+              ))}
+            </div>
           </div>
 
           <div style={{ marginBottom: padding }}>
@@ -361,39 +459,6 @@ export default class CameraMain extends React.Component {
                 }
               />{' '}
               programs
-            </div>
-          </div>
-
-          <div style={{ marginBottom: padding }}>
-            <div style={{ marginBottom: padding / 4 }}>colors</div>
-            <div>
-              {this.props.config.colorsRGB.map((color, colorIndex) => (
-                <div
-                  key={colorIndex}
-                  style={{
-                    display: 'inline-block',
-                    width: 20,
-                    height: 20,
-                    background: `rgb(${color.slice(0, 3).join(',')})`,
-                    borderRadius: 20,
-                    marginRight: 5,
-                    color: 'white',
-                    fontSize: 14,
-                    textAlign: 'center',
-                    lineHeight: '20px',
-                    cursor: 'pointer',
-                    boxShadow:
-                      this.state.selectedColorIndex === colorIndex ? '0 0 0 3px white' : '',
-                  }}
-                  onClick={() =>
-                    this.setState(state => ({
-                      selectedColorIndex: state.selectedColorIndex === colorIndex ? -1 : colorIndex,
-                    }))
-                  }
-                >
-                  <strong>{colorNames[colorIndex]}</strong>
-                </div>
-              ))}
             </div>
           </div>
         </div>
