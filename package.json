@@ -5,8 +5,11 @@
   "author": "Jan Paul Posma <j@npaulpos.ma>",
   "license": "MIT",
   "scripts": {
-    "start": "node server/entry-server.js",
+    "dev": "npm run createdb && npm run migrate && npm start",
+    "createdb": "psql -c \"SELECT 1\" dynazar_development 2>/dev/null 1>/dev/null || createdb dynazar_development",
     "migrate": "knex migrate:latest",
+    "start": "node server/entry-server.js",
+    "dropdb": "dropdb --if-exists dynazar_development",
     "heroku-postbuild": "webpack"
   },
   "engines": {
