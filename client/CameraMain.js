@@ -8,6 +8,7 @@ import { colorNames } from './constants';
 import { printCalibrationPage, printPage } from './printPdf';
 import detectPrograms from './detectPrograms';
 import helloWorld from './helloWorld';
+import styles from './CameraMain.css';
 
 class Knob extends React.Component {
   _onMouseDown = () => {
@@ -27,18 +28,10 @@ class Knob extends React.Component {
   };
 
   render() {
-    const size = 10;
     return (
       <div
-        style={{
-          position: 'absolute',
-          left: this.props.x - size / 2,
-          top: this.props.y - size / 2,
-          width: size,
-          height: size,
-          boxShadow: '0 0 0 1px red',
-          borderRadius: size,
-        }}
+        className={styles.knob}
+        style={{ left: this.props.x, top: this.props.y }}
         onMouseDown={this._onMouseDown}
         ref={el => (this._el = el)}
       />
@@ -132,11 +125,7 @@ class CameraVideo extends React.Component {
     return (
       <div
         ref={el => (this._el = el)}
-        style={{
-          width: outerWidth,
-          height: outerHeight,
-          overflow: 'hidden',
-        }}
+        style={{ width: outerWidth, height: outerHeight, overflow: 'hidden' }}
       >
         <video id="videoInput" style={{ display: 'none' }} ref={el => (this._videoInput = el)} />
         <div
@@ -173,15 +162,12 @@ class CameraVideo extends React.Component {
             this.state.keyPoints.map((point, index) => (
               <div
                 key={index}
+                className={styles.keyPoint}
                 style={{
-                  position: 'absolute',
                   left: (point.pt.x - point.size / 2) / this.state.videoWidth * width,
                   top: (point.pt.y - point.size / 2) / this.state.videoHeight * height,
                   width: point.size / this.state.videoWidth * width,
                   height: point.size / this.state.videoHeight * height,
-                  background: 'rgba(255,255,255,0.5)',
-                  borderRadius: 1000,
-                  cursor: 'pointer',
                 }}
                 onClick={() => this.props.onSelectColor(point.avgColor)}
               />
@@ -249,12 +235,12 @@ export default class CameraMain extends React.Component {
   };
 
   render() {
-    const padding = 20;
-    const sidebarWidth = 300;
+    const padding = parseInt(styles.cameraMainPadding);
+    const sidebarWidth = parseInt(styles.cameraMainSidebarWidth);
 
     return (
       <div>
-        <div style={{ position: 'absolute', left: padding, top: padding }}>
+        <div className={styles.video}>
           <CameraVideo
             width={this.state.pageWidth - padding * 3 - sidebarWidth}
             zoom={this.props.config.zoom}
@@ -289,18 +275,8 @@ export default class CameraMain extends React.Component {
             }}
           />
         </div>
-        <div
-          style={{
-            position: 'absolute',
-            top: padding,
-            right: padding,
-            width: sidebarWidth,
-            color: 'white',
-            font: '20px sans-serif',
-            fontWeight: 300,
-          }}
-        >
-          <div style={{ marginBottom: padding }}>
+        <div className={styles.sidebar}>
+          <div className={styles.sidebarSection}>
             space url{' '}
             <input
               value={this.props.config.spaceUrl}
@@ -310,7 +286,7 @@ export default class CameraMain extends React.Component {
             />
           </div>
 
-          <div style={{ marginBottom: padding, wordBreak: 'break-all' }}>
+          <div className={styles.sidebarSection}>
             editor url{' '}
             <strong>
               {new URL(
@@ -320,17 +296,17 @@ export default class CameraMain extends React.Component {
             </strong>
           </div>
 
-          <div style={{ marginBottom: padding }}>
+          <div className={styles.sidebarSection}>
             framerate <strong>{this.state.framerate}</strong>
           </div>
 
-          <div style={{ marginBottom: padding }}>
-            <div style={{ marginBottom: padding / 4 }}>print queue</div>
+          <div className={styles.sidebarSection}>
+            <div className={styles.sidebarSectionSection}>print queue</div>
             <div>
               {this.state.spaceData.programs.filter(program => !program.printed).map(program => (
                 <div
                   key={program.number}
-                  style={{ cursor: 'pointer', marginBottom: padding / 4 }}
+                  className={styles.printQueueItem}
                   onClick={() => this._print(program)}
                 >
                   <strong>#{program.number}</strong> {codeToName(program.originalCode)}
@@ -341,7 +317,7 @@ export default class CameraMain extends React.Component {
             <button onClick={this._createHelloWorld}>create hello world program</button>
           </div>
 
-          <div style={{ marginBottom: padding }}>
+          <div className={styles.sidebarSection}>
             zoom{' '}
             <input
               type="range"
@@ -355,27 +331,17 @@ export default class CameraMain extends React.Component {
             />
           </div>
 
-          <div style={{ marginBottom: padding }}>
-            <div style={{ marginBottom: padding / 4 }}>colors</div>
+          <div className={styles.sidebarSection}>
+            <div className={styles.sidebarSectionSection}>colors</div>
             <div>
               {this.props.config.colorsRGB.map((color, colorIndex) => (
                 <div
                   key={colorIndex}
-                  style={{
-                    display: 'inline-block',
-                    width: 20,
-                    height: 20,
-                    background: `rgb(${color.slice(0, 3).join(',')})`,
-                    borderRadius: 20,
-                    marginRight: 5,
-                    color: 'white',
-                    fontSize: 14,
-                    textAlign: 'center',
-                    lineHeight: '20px',
-                    cursor: 'pointer',
-                    boxShadow:
-                      this.state.selectedColorIndex === colorIndex ? '0 0 0 3px white' : '',
-                  }}
+                  className={[
+                    styles.colorListItem,
+                    this.state.selectedColorIndex === colorIndex && styles.colorListItemSelected,
+                  ].join(' ')}
+                  style={{ background: `rgb(${color.slice(0, 3).join(',')})` }}
                   onClick={() =>
                     this.setState(state => ({
                       selectedColorIndex: state.selectedColorIndex === colorIndex ? -1 : colorIndex,
@@ -388,10 +354,10 @@ export default class CameraMain extends React.Component {
             </div>
           </div>
 
-          <div style={{ marginBottom: padding }}>
-            <div style={{ marginBottom: padding / 4 }}>show overlay</div>
+          <div className={styles.sidebarSection}>
+            <div className={styles.sidebarSectionSection}>show overlay</div>
 
-            <div style={{ marginBottom: padding / 4 }}>
+            <div className={styles.sidebarSectionSection}>
               <input
                 type="checkbox"
                 checked={this.props.config.showOverlayKeyPointCircles}
@@ -405,7 +371,7 @@ export default class CameraMain extends React.Component {
               keypoint circles
             </div>
 
-            <div style={{ marginBottom: padding / 4 }}>
+            <div className={styles.sidebarSectionSection}>
               <input
                 type="checkbox"
                 checked={this.props.config.showOverlayKeyPointText}
@@ -419,7 +385,7 @@ export default class CameraMain extends React.Component {
               keypoint text
             </div>
 
-            <div style={{ marginBottom: padding / 4 }}>
+            <div className={styles.sidebarSectionSection}>
               <input
                 type="checkbox"
                 checked={this.props.config.showOverlayComponentLines}
@@ -433,7 +399,7 @@ export default class CameraMain extends React.Component {
               component lines
             </div>
 
-            <div style={{ marginBottom: padding / 4 }}>
+            <div className={styles.sidebarSectionSection}>
               <input
                 type="checkbox"
                 checked={this.props.config.showOverlayShapeId}
@@ -447,7 +413,7 @@ export default class CameraMain extends React.Component {
               shape ids
             </div>
 
-            <div style={{ marginBottom: padding / 4 }}>
+            <div className={styles.sidebarSectionSection}>
               <input
                 type="checkbox"
                 checked={this.props.config.showOverlayProgram}

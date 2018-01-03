@@ -1,0 +1,82 @@
+:local(.knob) {
+  @value size: 10px;
+  position: absolute;
+  margin-left: calc(size / -2);
+  margin-top: calc(size / -2);
+  width: size;
+  height: size;
+  box-shadow: 0 0 0 1px red;
+  border-radius: 1000px;
+  cursor: pointer;
+}
+:local(.knob):hover {
+  background: rgba(255, 0, 0, 0.5);
+}
+
+:local(.keyPoint) {
+  position: absolute;
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 1000px;
+  cursor: pointer;
+}
+:local(.keyPoint):hover {
+  background: rgba(255, 255, 255, 0.6);
+}
+
+@value cameraMainPadding: 20px;
+@value cameraMainSidebarWidth: 300px;
+
+:local(.video) {
+  position: absolute;
+  left: cameraMainPadding;
+  top: cameraMainPadding;
+}
+
+:local(.sidebar) {
+  position: absolute;
+  top: cameraMainPadding;
+  right: cameraMainPadding;
+  width: cameraMainSidebarWidth;
+  color: white;
+  font: 20px sans-serif;
+  font-weight: 300;
+}
+
+:local(.sidebarSection) {
+  margin-bottom: cameraMainPadding;
+  word-break: break-all;
+}
+
+:local(.sidebarSectionSection) {
+  margin-bottom: calc(cameraMainPadding / 4);
+}
+
+:local(.printQueueItem) {
+  margin-bottom: calc(cameraMainPadding / 4);
+  cursor: pointer;
+}
+:local(.printQueueItem):hover {
+  background: #666;
+}
+
+:local(.colorListItem) {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  border-radius: 20px;
+  margin-right: 5px;
+  color: white;
+  font-size: 14px;
+  text-align: center;
+  line-height: 20px;
+  cursor: pointer;
+}
+:local(.colorListItem):hover {
+  box-shadow: 0 0 0 20px rgba(255, 255, 255, 0.3) inset;
+}
+:local(.colorListItemSelected) {
+  box-shadow: 0 0 0 3px white;
+}
+:local(.colorListItemSelected):hover {
+  box-shadow: 0 0 0 3px white, 0 0 0 20px rgba(255, 255, 255, 0.3) inset;
+}
