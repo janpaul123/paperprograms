@@ -132,11 +132,23 @@ class Program extends React.Component {
 }
 
 export default class ProjectorMain extends React.Component {
+  componentDidMount() {
+    this._papersBroadcastChannel = new BroadcastChannel('papers');
+  }
+
+  componentWillUnmount() {
+    this._papersBroadcastChannel.close();
+  }
+
+  componentDidUpdate() {
+    this._papersBroadcastChannel.postMessage(this.props.programsToRender);
+  }
+
   render() {
     return (
       <div>
         {this.props.programsToRender.map(program => (
-          <Program key={`${program.id}-${program.currentCodeHash}`} program={program} />
+          <Program key={`${program.number}-${program.currentCodeHash}`} program={program} />
         ))}
       </div>
     );
