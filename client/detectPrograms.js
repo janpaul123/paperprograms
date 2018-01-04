@@ -254,7 +254,7 @@ export default function detectPrograms({ config, videoCapture, previousPointsByI
       if (points[0] && points[1] && points[2] && points[3]) {
         const programToRender = {
           points: points.map(point => projectPointToUnitSquare(point, videoMat, config.knobPoints)),
-          id,
+          number: id,
         };
         programsToRender.push(programToRender);
 

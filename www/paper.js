@@ -1,10 +1,21 @@
 (function(workerContext) {
+  const messageCallbacks = {};
+  let messageId = 0;
+
+  workerContext.onmessage = event => {
+    messageCallbacks[event.data.messageId](event.data.receiveData);
+  };
+
   workerContext.paper = {
-    init(callback) {
-      onmessage = function(event) {
-        const { canvas, programNumber } = event.data;
-        callback({ canvas, programNumber });
-      };
+    get(name, callback) {
+      messageId++;
+      workerContext.postMessage({ command: 'get', sendData: { name }, messageId });
+      return new workerContext.Promise(resolve => {
+        messageCallbacks[messageId] = data => {
+          if (callback) callback(data.object);
+          resolve(data.object);
+        };
+      });
     },
   };
 })(self);

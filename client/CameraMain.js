@@ -267,7 +267,7 @@ export default class CameraMain extends React.Component {
                 programsToRender
                   .map(program => {
                     const programWithData = this.state.spaceData.programs.find(
-                      program2 => program2.number.toString() === program.id.toString()
+                      program2 => program2.number.toString() === program.number.toString()
                     );
                     if (!programWithData) return;
                     return {

@@ -26,14 +26,27 @@ const canvasSizeMatrix = forwardProjectionMatrixForPoints([
 class Program extends React.Component {
   componentDidMount() {
     this._worker = new Worker(this.props.program.currentCodeUrl);
-
-    var offscreen = this._canvas.transferControlToOffscreen();
-    this._worker.postMessage({ canvas: offscreen }, [offscreen]);
+    this._worker.onmessage = this._receiveMessage;
   }
 
   componentWillUnmount() {
     this._worker.terminate();
   }
+
+  _receiveMessage = event => {
+    const { command, sendData, messageId } = event.data;
+
+    if (command === 'get') {
+      if (sendData.name === 'number') {
+        this._worker.postMessage({ messageId, receiveData: { object: this.props.program.number } });
+      } else if (sendData.name === 'canvas') {
+        this._offscreen = this._offscreen || this._canvas.transferControlToOffscreen();
+        this._worker.postMessage({ messageId, receiveData: { object: this._offscreen } }, [
+          this._offscreen,
+        ]);
+      }
+    }
+  };
 
   render() {
     const width = document.body.clientWidth;
