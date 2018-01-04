@@ -36,11 +36,22 @@ function keyPointToAvgColor(keyPoint, videoMat) {
     -1
   );
 
-  const mean = cv.mean(circleROI, circleMask);
+  const squareMean = cv.mean(circleROI);
+  const circleMean = cv.mean(circleROI, circleMask);
   circleROI.delete();
   circleMask.delete();
 
-  return mean;
+  // Color and intensity invariance, loosely per
+  // https://pdfs.semanticscholar.org/ce4c/69deb83cbbf39487987bd50a5c1d87765ec1.pdf
+  const avgColorInvariant = mult(div(circleMean, squareMean), [255, 255, 255, 255]);
+  const colorSum = avgColorInvariant[0] + avgColorInvariant[1] + avgColorInvariant[2];
+
+  return [
+    avgColorInvariant[0] / colorSum * 255,
+    avgColorInvariant[1] / colorSum * 255,
+    avgColorInvariant[2] / colorSum * 255,
+    255,
+  ];
 }
 
 function colorIndexForColor(matchColor, colors) {
