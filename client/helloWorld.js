@@ -1,7 +1,9 @@
 const helloWorld = `// Hello World!!!
 
-onmessage = function(evt) {
-  const canvas = evt.data.canvas;
+importScripts('paper.js')
+
+paper.init((data) => {
+  const canvas = data.canvas;
   const ctx = canvas.getContext('2d');
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   ctx.font = '20px sans-serif';
@@ -13,5 +15,5 @@ onmessage = function(evt) {
   ctx.fillStyle = 'rgb(100,100,255)';
   ctx.fillText('!!!', canvas.width / 2, canvas.height / 2 + 20);
   ctx.commit();
-};`;
+});`;
 export default helloWorld;

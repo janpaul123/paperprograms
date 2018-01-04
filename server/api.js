@@ -1,9 +1,22 @@
+const crypto = require('crypto');
 const express = require('express');
 
 const router = express.Router();
 router.use(express.json());
 
 const knex = require('knex')(require('../knexfile')[process.env.NODE_ENV || 'development']);
+
+router.get('/program.:spaceName.:number.js', (req, res) => {
+  const { spaceName, number } = req.params;
+  knex
+    .select('currentCode')
+    .from('programs')
+    .where({ spaceName, number })
+    .then(selectResult => {
+      res.set('Content-Type', 'text/javascript;charset=UTF-8');
+      res.send(selectResult[0].currentCode);
+    });
+});
 
 function getSpaceData(req, callback) {
   const { spaceName } = req.params;
@@ -12,20 +25,27 @@ function getSpaceData(req, callback) {
     .where({ spaceName })
     .then(programData => {
       callback({
-        programs: programData,
+        programs: programData.map(program => ({
+          ...program,
+          currentCodeUrl: `program.${spaceName}.${program.number}.js`,
+          currentCodeHash: crypto
+            .createHmac('sha256', '')
+            .update(program.currentCode)
+            .digest('hex'),
+        })),
         spaceName,
       });
     });
 }
 
-router.get('/spaces/:spaceName', function(req, res) {
+router.get('/api/spaces/:spaceName', (req, res) => {
   getSpaceData(req, spaceData => {
     res.json(spaceData);
   });
 });
 
 const maxNumber = 625;
-router.post('/spaces/:spaceName/programs', function(req, res) {
+router.post('/api/spaces/:spaceName/programs', (req, res) => {
   const { spaceName } = req.params;
   const { code } = req.body;
   if (!code) return res.status(400).send('Missing "code"');
@@ -53,7 +73,7 @@ router.post('/spaces/:spaceName/programs', function(req, res) {
     });
 });
 
-router.put('/spaces/:spaceName/programs/:number', function(req, res) {
+router.put('/api/spaces/:spaceName/programs/:number', (req, res) => {
   const { spaceName, number } = req.params;
   const { code } = req.body;
   if (!code) return res.status(400).send('Missing "code"');
@@ -66,7 +86,7 @@ router.put('/spaces/:spaceName/programs/:number', function(req, res) {
     });
 });
 
-router.post('/spaces/:spaceName/programs/:number/markPrinted', function(req, res) {
+router.post('/api/spaces/:spaceName/programs/:number/markPrinted', (req, res) => {
   const { spaceName, number } = req.params;
 
   knex('programs')
