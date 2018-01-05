@@ -115,7 +115,7 @@ export default class EditorMain extends React.Component {
               {this.state.spaceData.programs.map(program => (
                 <option key={program.number} value={program.number}>
                   #{program.number} {codeToName(program.currentCode)}
-                  {program.printed ? '' : ' (queued)'}
+                  {program.printed ? '' : ' (queued to print)'}
                 </option>
               ))}
             </select>
