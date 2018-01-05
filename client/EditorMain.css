@@ -1,4 +1,4 @@
-@value sidebarWidth: 300px;
+@value sidebarWidth: 400px;
 @value paddingSize: 20px;
 
 :local(.root) {
@@ -7,6 +7,13 @@
   left: 0px;
   right: 0px;
   bottom: 0px;
+}
+
+:local(.getStarted) {
+  position: absolute;
+  top: paddingSize;
+  left: paddingSize;
+  font: 22px sans-serif;
 }
 
 :local(.editor) {
@@ -28,8 +35,13 @@
   font-weight: 300;
   padding: paddingSize;
   box-sizing: border-box;
+  overflow: auto;
 }
 
 :local(.sidebarSection) {
   margin-bottom: paddingSize;
+}
+
+:local(.logline) {
+  font: 12px monospace;
 }

@@ -274,6 +274,7 @@ export default class CameraMain extends React.Component {
                       ...program,
                       currentCodeUrl: programWithData.currentCodeUrl,
                       currentCodeHash: programWithData.currentCodeHash,
+                      debugUrl: programWithData.debugUrl,
                     };
                   })
                   .filter(Boolean)

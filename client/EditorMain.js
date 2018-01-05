@@ -8,11 +8,17 @@ import styles from './EditorMain.css';
 export default class EditorMain extends React.Component {
   constructor(props) {
     super(props);
-    this.state = { selectedProgramNumber: '', spaceData: { programs: [] }, code: '' };
+    this.state = {
+      selectedProgramNumber: '',
+      spaceData: { programs: [] },
+      code: '',
+      debugInfo: {},
+    };
   }
 
   componentDidMount() {
     this._pollSpaceUrl();
+    this._pollDebugUrl();
   }
 
   _pollSpaceUrl = () => {
@@ -26,12 +32,43 @@ export default class EditorMain extends React.Component {
       }
 
       const elapsedTimeMs = Date.now() - beginTimeMs;
-      clearTimeout(this._timeout);
-      this._timeout = setTimeout(this._pollSpaceUrl, Math.max(0, targetTimeMs - elapsedTimeMs));
+      clearTimeout(this._pollSpaceUrlTimeout);
+      this._pollSpaceUrlTimeout = setTimeout(
+        this._pollSpaceUrl,
+        Math.max(0, targetTimeMs - elapsedTimeMs)
+      );
     });
   };
 
-  _update = () => {
+  _pollDebugUrl = () => {
+    const targetTimeMs = 250;
+    const beginTimeMs = Date.now();
+
+    const done = () => {
+      const elapsedTimeMs = Date.now() - beginTimeMs;
+      clearTimeout(this._pollDebugUrlTimeout);
+      this._pollDebugUrlTimeout = setTimeout(
+        this._pollDebugUrl,
+        Math.max(0, targetTimeMs - elapsedTimeMs)
+      );
+    };
+
+    const program = this._selectedProgram(this.state.selectedProgramNumber);
+    if (program) {
+      xhr.get(program.debugUrl, { json: true }, (error, response) => {
+        if (error) {
+          console.error(error); // eslint-disable-line no-console
+        } else {
+          this.setState({ debugInfo: response.body });
+        }
+        done();
+      });
+    } else {
+      done();
+    }
+  };
+
+  _save = () => {
     const { code, selectedProgramNumber } = this.state;
     xhr.put(
       getApiUrl(this.props.spaceName, `/programs/${selectedProgramNumber}`),
@@ -54,7 +91,12 @@ export default class EditorMain extends React.Component {
           console.error(error); // eslint-disable-line no-console
         } else {
           const { body } = response;
-          this.setState({ code, selectedProgramNumber: body.number, spaceData: body.spaceData });
+          this.setState({
+            code,
+            selectedProgramNumber: body.number,
+            spaceData: body.spaceData,
+            debugInfo: {},
+          });
         }
       }
     );
@@ -63,15 +105,21 @@ export default class EditorMain extends React.Component {
   _restore = () => {
     if (window.confirm('This will remove any changes, continue?')) {
       this.setState(
-        { code: this._selectedProgram(this.state.selectedProgramNumber).originalCode },
-        this._update
+        {
+          code: this._selectedProgram(this.state.selectedProgramNumber).originalCode,
+          debugInfo: {},
+        },
+        () => {
+          this._save();
+          this._pollDebugUrl();
+        }
       );
     }
   };
 
   _onEditorDidMount = (editor, monaco) => {
     editor.focus();
-    editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KEY_S, this._update);
+    editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KEY_S, this._save);
   };
 
   _selectedProgram = selectedProgramNumber => {
@@ -82,9 +130,13 @@ export default class EditorMain extends React.Component {
 
   render() {
     const selectedProgram = this._selectedProgram(this.state.selectedProgramNumber);
+    const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
 
     return (
       <div className={styles.root}>
+        {!selectedProgram && (
+          <div className={styles.getStarted}>Select a program on the right to get started!</div>
+        )}
         {selectedProgram && (
           <div className={styles.editor}>
             <MonacoEditor
@@ -102,12 +154,16 @@ export default class EditorMain extends React.Component {
               value={this.state.selectedProgramNumber}
               onChange={event => {
                 if (event.target.value !== '') {
-                  this.setState({
-                    selectedProgramNumber: event.target.value,
-                    code: this._selectedProgram(event.target.value).currentCode,
-                  });
+                  this.setState(
+                    {
+                      selectedProgramNumber: event.target.value,
+                      code: this._selectedProgram(event.target.value).currentCode,
+                      debugInfo: {},
+                    },
+                    () => this._pollDebugUrl()
+                  );
                 } else {
-                  this.setState({ selectedProgramNumber: '', code: '' });
+                  this.setState({ selectedProgramNumber: '', code: '', debugInfo: {} });
                 }
               }}
             >
@@ -123,9 +179,23 @@ export default class EditorMain extends React.Component {
 
           {selectedProgram && (
             <div className={styles.sidebarSection}>
-              <button onClick={this._update}>update</button>{' '}
-              <button onClick={this._print}>print new</button>{' '}
+              <button onClick={this._save}>save ({isMac ? 'cmd' : 'ctrl'}+s)</button>{' '}
+              <button onClick={this._print}>print as new paper</button>{' '}
               <button onClick={this._restore}>restore original</button>
+            </div>
+          )}
+
+          {selectedProgram && (
+            <div className={styles.sidebarSection}>
+              console:{' '}
+              {(this.state.debugInfo.logs || []).map(logLine => (
+                <div className={styles.logline}>
+                  <strong>
+                    {logLine.name}[line {logLine.lineNumber}]:
+                  </strong>{' '}
+                  {logLine.args.join(', ')}
+                </div>
+              ))}
             </div>
           )}
         </div>

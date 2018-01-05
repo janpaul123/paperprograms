@@ -32,6 +32,7 @@ function getSpaceData(req, callback) {
             .createHmac('sha256', '')
             .update(program.currentCode)
             .digest('hex'),
+          debugUrl: `/api/spaces/${spaceName}/programs/${program.number}/debugInfo`,
         })),
         spaceName,
       });
@@ -96,6 +97,30 @@ router.post('/api/spaces/:spaceName/programs/:number/markPrinted', (req, res) =>
       getSpaceData(req, spaceData => {
         res.json(spaceData);
       });
+    });
+});
+
+router.put('/api/spaces/:spaceName/programs/:number/debugInfo', (req, res) => {
+  const { spaceName, number } = req.params;
+
+  knex('programs')
+    .update({ debugInfo: JSON.stringify(req.body) })
+    .where({ spaceName, number })
+    .then(() => {
+      res.json({});
+    });
+});
+
+router.get('/api/spaces/:spaceName/programs/:number/debugInfo', (req, res) => {
+  const { spaceName, number } = req.params;
+
+  knex
+    .select('debugInfo')
+    .from('programs')
+    .where({ spaceName, number })
+    .then(selectResult => {
+      if (selectResult.length === 0) return res.status(404);
+      res.json(JSON.parse(selectResult[0].debugInfo || '{}'));
     });
 });
 

@@ -1,4 +1,5 @@
 import React from 'react';
+import xhr from 'xhr';
 
 import { forwardProjectionMatrixForPoints, mult } from './utils';
 
@@ -82,6 +83,8 @@ class Program extends React.Component {
           this._worker.postMessage({ messageId });
         });
       }
+    } else if (command === 'flushLogs') {
+      xhr.put(this.props.program.debugUrl, { json: { logs: sendData } }, () => {});
     }
   };
 
