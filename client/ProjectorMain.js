@@ -43,7 +43,10 @@ class Program extends React.Component {
 
     if (command === 'get') {
       if (sendData.name === 'number') {
-        this._worker.postMessage({ messageId, receiveData: { object: this.props.program.number } });
+        this._worker.postMessage({
+          messageId,
+          receiveData: { object: this.props.program.number.toString() },
+        });
       } else if (sendData.name === 'canvas') {
         if (this.state.showCanvas) {
           this._worker.postMessage({ messageId, receiveData: { object: null } });
@@ -72,6 +75,12 @@ class Program extends React.Component {
         }
       } else if (sendData.name === 'papers') {
         this._worker.postMessage({ messageId, receiveData: { object: this.props.papers } });
+      }
+    } else if (command === 'set') {
+      if (sendData.name === 'data') {
+        this.props.onDataChange(sendData.data, () => {
+          this._worker.postMessage({ messageId });
+        });
       }
     }
   };
@@ -153,6 +162,7 @@ export default class ProjectorMain extends React.Component {
           bottomLeft: mult(program.points[3], multPoint),
           center: mult(centerPoint, multPoint),
         },
+        data: this.props.dataByProgramNumber[program.number] || {},
       };
     });
 
@@ -165,6 +175,18 @@ export default class ProjectorMain extends React.Component {
             papers={papers}
             width={width}
             height={height}
+            onDataChange={(data, callback) => {
+              this.props.onDataByProgramNumberChange(
+                {
+                  ...this.props.dataByProgramNumber,
+                  [program.number]: {
+                    ...this.props.dataByProgramNumber[program.number],
+                    ...data,
+                  },
+                },
+                callback
+              );
+            }}
           />
         ))}
       </div>

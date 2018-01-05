@@ -17,5 +17,16 @@
         };
       });
     },
+
+    set(name, data, callback) {
+      messageId++;
+      workerContext.postMessage({ command: 'set', sendData: { name, data }, messageId });
+      return new workerContext.Promise(resolve => {
+        messageCallbacks[messageId] = () => {
+          if (callback) callback();
+          resolve();
+        };
+      });
+    },
   };
 })(self);
