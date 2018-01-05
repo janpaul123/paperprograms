@@ -34,6 +34,23 @@ export function clamp(value, min, max) {
   return Math.max(min, Math.min(max, value));
 }
 
+export function moveAlongVector(amount, vector) {
+  const size = norm(vector);
+  return { x: amount * vector.x / size, y: amount * vector.y / size };
+}
+
+export function shrinkPoints(amount, points) {
+  return [0, 1, 2, 3].map(index => {
+    const point = points[index];
+    const nextPoint = points[(index + 1) % 4];
+    const prevPoint = points[(index - 1 + 4) % 4];
+    return add(
+      add(point, moveAlongVector(amount, diff(nextPoint, point))),
+      moveAlongVector(amount, diff(prevPoint, point))
+    );
+  });
+}
+
 // Per http://graphics.cs.cmu.edu/courses/15-463/2008_fall/Papers/proj.pdf
 export function forwardProjectionMatrixForPoints(points) {
   const deltaX1 = points[1].x - points[2].x;

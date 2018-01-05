@@ -13,6 +13,7 @@ import {
   mult,
   norm,
   projectPoint,
+  shrinkPoints,
 } from './utils';
 import { colorNames } from './constants';
 import simpleBlobDetector from './simpleBlobDetector';
@@ -215,6 +216,7 @@ export default function detectPrograms({ config, videoCapture, previousPointsByI
   // Find acyclical shapes of 5, and put ids into `pointsById`.
   const seenIndexes = new window.Set();
   const seenIds = new window.Set();
+  const keyPointSizes = [];
   for (let i = 0; i < keyPoints.length; i++) {
     if (neighborIndexes[i].length == 1 && !seenIndexes.has(i)) {
       const shape = [i]; // Initialise with the first index, then run findShape with 5-1.
@@ -239,6 +241,8 @@ export default function detectPrograms({ config, videoCapture, previousPointsByI
           pointsById[id] = pointsById[id] || [];
           pointsById[id][cornerNum] = keyPoints[shape[2]].pt;
 
+          shape.forEach(index => keyPointSizes.push(keyPoints[index].size));
+
           if (displayMat && config.showOverlayShapeId) {
             // Draw id and corner name.
             cv.putText(
@@ -254,6 +258,8 @@ export default function detectPrograms({ config, videoCapture, previousPointsByI
       }
     }
   }
+  const avgKeyPointSize =
+    keyPointSizes.reduce((sum, value) => sum + value, 0) / keyPointSizes.length;
 
   const programsToRender = [];
   Object.keys(pointsById).forEach(id => {
@@ -264,7 +270,9 @@ export default function detectPrograms({ config, videoCapture, previousPointsByI
       const points = pointsById[id];
       if (points[0] && points[1] && points[2] && points[3]) {
         const programToRender = {
-          points: points.map(point => projectPointToUnitSquare(point, videoMat, config.knobPoints)),
+          points: shrinkPoints(avgKeyPointSize * 0.75, points).map(point =>
+            projectPointToUnitSquare(point, videoMat, config.knobPoints)
+          ),
           number: id,
         };
         programsToRender.push(programToRender);

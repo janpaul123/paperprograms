@@ -140,8 +140,6 @@ class Program extends React.Component {
               height: canvasHeight,
               transform: matrixToCssTransform(matrix),
               transformOrigin: '0 0 0',
-              boxSizing: 'border-box',
-              border: '10px solid black',
             }}
           />
         )}
