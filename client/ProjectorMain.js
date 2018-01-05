@@ -70,16 +70,16 @@ class Program extends React.Component {
           };
           this.setState({ showSupporterCanvas: true });
         }
+      } else if (sendData.name === 'papers') {
+        this._worker.postMessage({ messageId, receiveData: { object: this.props.papers } });
       }
     }
   };
 
   render() {
-    const width = document.body.clientWidth;
-    const height = document.body.clientHeight;
     const { program } = this.props;
     const matrix = forwardProjectionMatrixForPoints(
-      program.points.map(point => mult(point, { x: width, y: height }))
+      program.points.map(point => mult(point, { x: this.props.width, y: this.props.height }))
     ).multiply(canvasSizeMatrix);
 
     return (
@@ -115,14 +115,14 @@ class Program extends React.Component {
                 this._supporterCanvasAvailableCallback(el);
               }
             }}
-            width={width}
-            height={height}
+            width={this.props.width}
+            height={this.props.height}
             style={{
               position: 'absolute',
               left: 0,
               top: 0,
-              width: width,
-              height: height,
+              width: this.props.width,
+              height: this.props.height,
             }}
           />
         )}
@@ -132,23 +132,40 @@ class Program extends React.Component {
 }
 
 export default class ProjectorMain extends React.Component {
-  componentDidMount() {
-    this._papersBroadcastChannel = new BroadcastChannel('papers');
-  }
-
-  componentWillUnmount() {
-    this._papersBroadcastChannel.close();
-  }
-
-  componentDidUpdate() {
-    this._papersBroadcastChannel.postMessage(this.props.programsToRender);
-  }
-
   render() {
+    const width = document.body.clientWidth;
+    const height = document.body.clientHeight;
+    const multPoint = { x: width, y: height };
+
+    const papers = {};
+    this.props.programsToRender.forEach(program => {
+      const centerPoint = { x: 0, y: 0 };
+      program.points.forEach(point => {
+        centerPoint.x += point.x / 4;
+        centerPoint.y += point.y / 4;
+      });
+
+      papers[program.number] = {
+        points: {
+          topLeft: mult(program.points[0], multPoint),
+          topRight: mult(program.points[1], multPoint),
+          bottomRight: mult(program.points[2], multPoint),
+          bottomLeft: mult(program.points[3], multPoint),
+          center: mult(centerPoint, multPoint),
+        },
+      };
+    });
+
     return (
       <div>
         {this.props.programsToRender.map(program => (
-          <Program key={`${program.number}-${program.currentCodeHash}`} program={program} />
+          <Program
+            key={`${program.number}-${program.currentCodeHash}`}
+            program={program}
+            papers={papers}
+            width={width}
+            height={height}
+          />
         ))}
       </div>
     );
