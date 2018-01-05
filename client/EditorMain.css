@@ -42,6 +42,12 @@
   margin-bottom: paddingSize;
 }
 
+:local(.editorColor) {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+}
+
 :local(.logline) {
   font: 12px monospace;
 }

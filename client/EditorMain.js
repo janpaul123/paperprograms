@@ -1,5 +1,7 @@
 import MonacoEditor from 'react-monaco-editor';
 import React from 'react';
+import randomColor from 'randomcolor';
+import sortBy from 'lodash/sortBy';
 import xhr from 'xhr';
 
 import { codeToName, getApiUrl } from './utils';
@@ -55,11 +57,18 @@ export default class EditorMain extends React.Component {
 
     const program = this._selectedProgram(this.state.selectedProgramNumber);
     if (program) {
-      xhr.get(program.debugUrl, { json: true }, (error, response) => {
+      const { editorId } = this.props.editorConfig;
+      xhr.post(program.claimUrl, { json: { editorId } }, (error, response) => {
         if (error) {
           console.error(error); // eslint-disable-line no-console
+        } else if (response.statusCode === 400) {
+          this.setState({
+            selectedProgramNumber: '',
+            code: '',
+            debugInfo: {},
+          });
         } else {
-          this.setState({ debugInfo: response.body });
+          this.setState({ debugInfo: response.body.debugInfo });
         }
         done();
       });
@@ -128,6 +137,10 @@ export default class EditorMain extends React.Component {
     );
   };
 
+  _editorColor = () => {
+    return randomColor({ seed: this.props.editorConfig.editorId });
+  };
+
   render() {
     const selectedProgram = this._selectedProgram(this.state.selectedProgramNumber);
     const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
@@ -152,6 +165,11 @@ export default class EditorMain extends React.Component {
         )}
         <div className={styles.sidebar}>
           <div className={styles.sidebarSection}>
+            editor color{' '}
+            <div className={styles.editorColor} style={{ background: this._editorColor() }} />
+          </div>
+
+          <div className={styles.sidebarSection}>
             <select
               value={this.state.selectedProgramNumber}
               onChange={event => {
@@ -170,12 +188,23 @@ export default class EditorMain extends React.Component {
               }}
             >
               <option value={''}>- select program -</option>
-              {this.state.spaceData.programs.map(program => (
-                <option key={program.number} value={program.number}>
-                  #{program.number} {codeToName(program.currentCode)}
-                  {program.printed ? '' : ' (queued to print)'}
-                </option>
-              ))}
+              {sortBy(this.state.spaceData.programs, 'number').map(program => {
+                const beingEditedBySomeoneElse =
+                  program.editorInfo.claimed &&
+                  program.editorInfo.editorId !== this.props.editorConfig.editorId;
+
+                return (
+                  <option
+                    key={program.number}
+                    value={program.number}
+                    disabled={beingEditedBySomeoneElse}
+                  >
+                    #{program.number} {codeToName(program.currentCode)}
+                    {program.printed ? '' : ' (queued to print)'}
+                    {beingEditedBySomeoneElse ? ' (being edited)' : ''}
+                  </option>
+                );
+              })}
             </select>
           </div>
 
@@ -191,8 +220,8 @@ export default class EditorMain extends React.Component {
             errors.length > 0 && (
               <div className={styles.sidebarSection}>
                 errors:{' '}
-                {errors.map(error => (
-                  <div className={styles.logline}>
+                {errors.map((error, index) => (
+                  <div key={index} className={styles.logline}>
                     <strong>
                       error[{error.filename}:{error.lineNumber}:{error.columnNumber}]:
                     </strong>{' '}
@@ -206,8 +235,8 @@ export default class EditorMain extends React.Component {
             logs.length > 0 && (
               <div className={styles.sidebarSection}>
                 console:{' '}
-                {logs.map(logLine => (
-                  <div className={styles.logline}>
+                {logs.map((logLine, index) => (
+                  <div key={index} className={styles.logline}>
                     <strong>
                       {logLine.name}[program:{logLine.lineNumber}:{logLine.columnNumber}]:
                     </strong>{' '}

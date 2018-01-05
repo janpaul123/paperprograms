@@ -1,4 +1,5 @@
 import React from 'react';
+import randomColor from 'randomcolor';
 import xhr from 'xhr';
 
 import { forwardProjectionMatrixForPoints, mult } from './utils';
@@ -140,6 +141,9 @@ class Program extends React.Component {
               height: canvasHeight,
               transform: matrixToCssTransform(matrix),
               transformOrigin: '0 0 0',
+              boxShadow: program.editorInfo.claimed
+                ? `0 0 0 1px ${randomColor({ seed: program.editorInfo.editorId })} inset`
+                : '',
             }}
           />
         )}

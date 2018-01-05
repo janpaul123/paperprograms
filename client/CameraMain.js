@@ -69,6 +69,9 @@ class CameraVideo extends React.Component {
           };
         });
     };
+
+    if (cv.allReadyForCamera) init();
+    else cv.onRuntimeInitialized = init;
   }
 
   _onMouseDown = mouseDownEvent => {
@@ -275,6 +278,8 @@ export default class CameraMain extends React.Component {
                       currentCodeUrl: programWithData.currentCodeUrl,
                       currentCodeHash: programWithData.currentCodeHash,
                       debugUrl: programWithData.debugUrl,
+                      claimUrl: programWithData.claimUrl,
+                      editorInfo: programWithData.editorInfo,
                     };
                   })
                   .filter(Boolean)

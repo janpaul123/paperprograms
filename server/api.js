@@ -1,5 +1,7 @@
-const crypto = require('crypto');
 const express = require('express');
+const crypto = require('crypto');
+
+const editorHandleDuration = 1500;
 
 const router = express.Router();
 router.use(express.json());
@@ -22,19 +24,28 @@ router.get('/program.:spaceName.:number.js', (req, res) => {
 function getSpaceData(req, callback) {
   const { spaceName } = req.params;
   knex('programs')
-    .select('number', 'originalCode', 'currentCode', 'printed')
+    .select('number', 'originalCode', 'currentCode', 'printed', 'editorInfo')
     .where({ spaceName })
     .then(programData => {
       callback({
-        programs: programData.map(program => ({
-          ...program,
-          currentCodeUrl: `program.${spaceName}.${program.number}.js`,
-          currentCodeHash: crypto
-            .createHmac('sha256', '')
-            .update(program.currentCode)
-            .digest('hex'),
-          debugUrl: `/api/spaces/${spaceName}/programs/${program.number}/debugInfo`,
-        })),
+        programs: programData.map(program => {
+          const editorInfo = JSON.parse(program.editorInfo || '{}');
+
+          return {
+            ...program,
+            currentCodeUrl: `program.${spaceName}.${program.number}.js`,
+            currentCodeHash: crypto
+              .createHmac('sha256', '')
+              .update(program.currentCode)
+              .digest('hex'),
+            debugUrl: `/api/spaces/${spaceName}/programs/${program.number}/debugInfo`,
+            claimUrl: `/api/spaces/${spaceName}/programs/${program.number}/claim`,
+            editorInfo: {
+              ...editorInfo,
+              claimed: !!(editorInfo.time && editorInfo.time + editorHandleDuration > Date.now()),
+            },
+          };
+        }),
         spaceName,
       });
     });
@@ -112,16 +123,35 @@ router.put('/api/spaces/:spaceName/programs/:number/debugInfo', (req, res) => {
     });
 });
 
-router.get('/api/spaces/:spaceName/programs/:number/debugInfo', (req, res) => {
+router.post('/api/spaces/:spaceName/programs/:number/claim', (req, res) => {
   const { spaceName, number } = req.params;
 
   knex
-    .select('debugInfo')
+    .select(['debugInfo', 'editorInfo'])
     .from('programs')
     .where({ spaceName, number })
     .then(selectResult => {
       if (selectResult.length === 0) return res.status(404);
-      res.json(JSON.parse(selectResult[0].debugInfo || '{}'));
+      const editorInfo = JSON.parse(selectResult[0].editorInfo || '{}');
+      if (
+        editorInfo.time &&
+        editorInfo.time + editorHandleDuration > Date.now() &&
+        editorInfo.editorId !== req.body.editorId
+      ) {
+        res.status(400);
+        res.json({});
+        return;
+      } else {
+        knex('programs')
+          .update({ editorInfo: JSON.stringify({ ...req.body, time: Date.now() }) })
+          .where({ spaceName, number })
+          .then(() => {
+            res.json({
+              debugInfo: JSON.parse(selectResult[0].debugInfo || '{}'),
+              editorInfo,
+            });
+          });
+      }
     });
 });
 
