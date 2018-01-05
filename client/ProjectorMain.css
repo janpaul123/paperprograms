@@ -1,0 +1,15 @@
+@keyframes blink-animation {
+  from {
+    box-shadow: 0 0 0 3px transparent inset;
+  }
+  50% {
+    box-shadow: 0 0 0 3px red inset;
+  }
+  to {
+    box-shadow: 0 0 0 3px transparent inset;
+  }
+}
+
+:local(.canvasWithChangedCode) {
+  animation: blink-animation 3s infinite;
+}

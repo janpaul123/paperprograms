@@ -44,6 +44,7 @@ function getSpaceData(req, callback) {
               ...editorInfo,
               claimed: !!(editorInfo.time && editorInfo.time + editorHandleDuration > Date.now()),
             },
+            codeHasChanged: program.currentCode !== program.originalCode,
           };
         }),
         spaceName,

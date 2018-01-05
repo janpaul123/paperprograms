@@ -3,6 +3,7 @@ import randomColor from 'randomcolor';
 import xhr from 'xhr';
 
 import { forwardProjectionMatrixForPoints, mult } from './utils';
+import styles from './ProjectorMain.css';
 
 function matrixToCssTransform(matrix) {
   /* eslint-disable prettier/prettier */
@@ -121,8 +122,31 @@ class Program extends React.Component {
       program.points.map(point => mult(point, { x: this.props.width, y: this.props.height }))
     ).multiply(canvasSizeMatrix);
 
+    const canvasStyle = {
+      position: 'absolute',
+      left: 0,
+      top: 0,
+      width: canvasWidth,
+      height: canvasHeight,
+      transform: matrixToCssTransform(matrix),
+      transformOrigin: '0 0 0',
+    };
+    const divStyle = { ...canvasStyle };
+    if (program.editorInfo.claimed)
+      divStyle.boxShadow = `0 0 0 1px ${randomColor({
+        seed: program.editorInfo.editorId,
+      })} inset`;
+
     return (
       <div>
+        <div
+          className={
+            !program.editorInfo.claimed && program.codeHasChanged
+              ? styles.canvasWithChangedCode
+              : ''
+          }
+          style={divStyle}
+        />
         {this.state.showCanvas && (
           <canvas
             key="canvas"
@@ -133,18 +157,7 @@ class Program extends React.Component {
             }}
             width={canvasWidth}
             height={canvasHeight}
-            style={{
-              position: 'absolute',
-              left: 0,
-              top: 0,
-              width: canvasWidth,
-              height: canvasHeight,
-              transform: matrixToCssTransform(matrix),
-              transformOrigin: '0 0 0',
-              boxShadow: program.editorInfo.claimed
-                ? `0 0 0 1px ${randomColor({ seed: program.editorInfo.editorId })} inset`
-                : '',
-            }}
+            style={canvasStyle}
           />
         )}
         {this.state.showSupporterCanvas && (

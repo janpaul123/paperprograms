@@ -280,6 +280,7 @@ export default class CameraMain extends React.Component {
                       debugUrl: programWithData.debugUrl,
                       claimUrl: programWithData.claimUrl,
                       editorInfo: programWithData.editorInfo,
+                      codeHasChanged: programWithData.codeHasChanged,
                     };
                   })
                   .filter(Boolean)
