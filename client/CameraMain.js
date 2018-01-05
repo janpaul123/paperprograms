@@ -45,8 +45,8 @@ class CameraVideo extends React.Component {
     this.state = { keyPoints: [], videoWidth: 1, videoHeight: 1 };
   }
 
-  componentDidMount() {
-    cv.onRuntimeInitialized = () => {
+  componentWillMount() {
+    const init = () => {
       navigator.mediaDevices
         .getUserMedia({
           audio: false,
