@@ -27,12 +27,17 @@ const canvasSizeMatrix = forwardProjectionMatrixForPoints([
 class Program extends React.Component {
   constructor(props) {
     super(props);
-    this.state = { showCanvas: false, showSupportCanvas: false };
+    this.state = {
+      showCanvas: false,
+      showSupportCanvas: false,
+      debugData: { logs: [], errors: [] },
+    };
   }
 
   componentDidMount() {
     this._worker = new Worker(this.props.program.currentCodeUrl);
     this._worker.onmessage = this._receiveMessage;
+    this._worker.onerror = this._receiveError;
   }
 
   componentWillUnmount() {
@@ -84,8 +89,29 @@ class Program extends React.Component {
         });
       }
     } else if (command === 'flushLogs') {
-      xhr.put(this.props.program.debugUrl, { json: { logs: sendData } }, () => {});
+      this.setState({ debugData: { ...this.state.debugData, logs: sendData } }, () => {
+        this._flushDebugData();
+      });
     }
+  };
+
+  _receiveError = error => {
+    const errorData = {
+      message: error.message,
+      lineNumber: error.lineno,
+      columnNumber: error.colno,
+      filename: error.filename,
+    };
+    if (errorData.filename.match(/\/program\..*/)) errorData.filename = 'program';
+    const errors = this.state.debugData.errors.slice(0, 19).concat([errorData]);
+
+    this.setState({ debugData: { ...this.state.debugData, errors } }, () => {
+      this._flushDebugData();
+    });
+  };
+
+  _flushDebugData = () => {
+    xhr.put(this.props.program.debugUrl, { json: this.state.debugData }, () => {});
   };
 
   render() {

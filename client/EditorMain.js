@@ -131,6 +131,8 @@ export default class EditorMain extends React.Component {
   render() {
     const selectedProgram = this._selectedProgram(this.state.selectedProgramNumber);
     const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
+    const errors = this.state.debugInfo.errors || [];
+    const logs = this.state.debugInfo.logs || [];
 
     return (
       <div className={styles.root}>
@@ -185,19 +187,35 @@ export default class EditorMain extends React.Component {
             </div>
           )}
 
-          {selectedProgram && (
-            <div className={styles.sidebarSection}>
-              console:{' '}
-              {(this.state.debugInfo.logs || []).map(logLine => (
-                <div className={styles.logline}>
-                  <strong>
-                    {logLine.name}[line {logLine.lineNumber}]:
-                  </strong>{' '}
-                  {logLine.args.join(', ')}
-                </div>
-              ))}
-            </div>
-          )}
+          {selectedProgram &&
+            errors.length > 0 && (
+              <div className={styles.sidebarSection}>
+                errors:{' '}
+                {errors.map(error => (
+                  <div className={styles.logline}>
+                    <strong>
+                      error[{error.filename}:{error.lineNumber}:{error.columnNumber}]:
+                    </strong>{' '}
+                    {error.message}
+                  </div>
+                ))}
+              </div>
+            )}
+
+          {selectedProgram &&
+            logs.length > 0 && (
+              <div className={styles.sidebarSection}>
+                console:{' '}
+                {logs.map(logLine => (
+                  <div className={styles.logline}>
+                    <strong>
+                      {logLine.name}[program:{logLine.lineNumber}:{logLine.columnNumber}]:
+                    </strong>{' '}
+                    {logLine.args.join(', ')}
+                  </div>
+                ))}
+              </div>
+            )}
         </div>
       </div>
     );

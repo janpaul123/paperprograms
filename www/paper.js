@@ -3,9 +3,9 @@
 
   const messageCallbacks = {};
   let messageId = 0;
-  workerContext.onmessage = event => {
+  workerContext.addEventListener('message', event => {
     messageCallbacks[event.data.messageId](event.data.receiveData);
-  };
+  });
 
   workerContext.paper = {
     get(name, callback) {
