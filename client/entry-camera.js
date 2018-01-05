@@ -1,14 +1,8 @@
-/* global cv */
-
 import React from 'react';
 import ReactDOM from 'react-dom';
 import uuidv4 from 'uuid/v4';
 
 import CameraMain from './CameraMain';
-
-cv.onRuntimeInitialized = () => {
-  cv.allReadyForCamera = true;
-};
 
 const defaultConfig = {
   colorsRGB: [

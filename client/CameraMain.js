@@ -70,7 +70,7 @@ class CameraVideo extends React.Component {
         });
     };
 
-    if (cv.allReadyForCamera) init();
+    if (cv.Mat) init();
     else cv.onRuntimeInitialized = init;
   }
 
