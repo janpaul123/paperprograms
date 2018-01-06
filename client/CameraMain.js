@@ -102,19 +102,22 @@ class CameraVideo extends React.Component {
       cv.CV_8UC4
     );
 
-    const { programsToRender, keyPoints, newPointsById, framerate } = detectPrograms({
-      config: this.props.config,
-      videoCapture: this._videoCapture,
-      previousPointsById: this._pointsById,
-      displayMat,
-    });
-    this._pointsById = newPointsById;
+    try {
+      const { programsToRender, keyPoints, newPointsById, framerate } = detectPrograms({
+        config: this.props.config,
+        videoCapture: this._videoCapture,
+        previousPointsById: this._pointsById,
+        displayMat,
+      });
+      this._pointsById = newPointsById;
+      this.setState({ keyPoints });
+      this.props.onProcessVideo({ programsToRender: programsToRender, framerate });
+    } catch (error) {
+      console.log(error);
+    }
 
     cv.imshow(this._canvas, displayMat);
     displayMat.delete();
-
-    this.setState({ keyPoints });
-    this.props.onProcessVideo({ programsToRender: programsToRender, framerate });
 
     setTimeout(this._processVideo);
   };
