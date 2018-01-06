@@ -189,6 +189,7 @@ export default class CameraMain extends React.Component {
       framerate: 0,
       selectedColorIndex: -1,
       spaceData: { programs: [] },
+      autoPrintedNumbers: [],
     };
   }
 
@@ -205,7 +206,9 @@ export default class CameraMain extends React.Component {
       if (error) {
         console.error(error); // eslint-disable-line no-console
       } else {
-        this.setState({ spaceData: response.body });
+        this.setState({ spaceData: response.body }, () => {
+          if (this.props.config.autoPrintEnabled) this._autoPrint();
+        });
       }
 
       const elapsedTimeMs = Date.now() - beginTimeMs;
@@ -238,6 +241,21 @@ export default class CameraMain extends React.Component {
         }
       }
     );
+  };
+
+  _autoPrint = () => {
+    const toPrint = this.state.spaceData.programs.filter(
+      program => !program.printed && !this.state.autoPrintedNumbers.includes(program.number)
+    );
+    if (toPrint.length > 0) {
+      this.setState(
+        { autoPrintedNumbers: this.state.autoPrintedNumbers.concat([toPrint[0].number]) },
+        () => {
+          this._print(toPrint[0]);
+          this._markPrinted(toPrint[0]);
+        }
+      );
+    }
   };
 
   _createHelloWorld = () => {
@@ -346,6 +364,17 @@ export default class CameraMain extends React.Component {
             </div>
             <button onClick={this._printCalibration}>print calibration page</button>{' '}
             <button onClick={this._createHelloWorld}>create hello world program</button>
+            <input
+              type="checkbox"
+              checked={this.props.config.autoPrintEnabled}
+              onChange={() =>
+                this.props.onConfigChange({
+                  ...this.props.config,
+                  autoPrintEnabled: !this.props.config.autoPrintEnabled,
+                })
+              }
+            />{' '}
+            auto-print (start Chrome with "--kiosk-printing" flag)
           </div>
 
           <div className={styles.sidebarSection}>

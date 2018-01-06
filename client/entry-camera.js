@@ -22,6 +22,7 @@ const defaultConfig = {
   showOverlayShapeId: true,
   showOverlayProgram: true,
   spaceUrl: new URL(`api/spaces/${uuidv4().slice(0, 8)}`, window.location.origin).toString(),
+  autoPrintEnabled: false,
 };
 
 localStorage.dynazarConfig = JSON.stringify({
