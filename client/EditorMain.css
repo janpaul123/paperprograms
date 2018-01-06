@@ -48,6 +48,10 @@
   height: 16px;
 }
 
+:local(.link), :local(.link):hover, :local(.link):visited, :local(.link):active {
+  color: white;
+}
+
 :local(.logline) {
   font: 12px monospace;
 }
