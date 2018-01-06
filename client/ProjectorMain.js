@@ -130,8 +130,9 @@ class Program extends React.Component {
       height: canvasHeight,
       transform: matrixToCssTransform(matrix),
       transformOrigin: '0 0 0',
+      zIndex: 1,
     };
-    const divStyle = { ...canvasStyle };
+    const divStyle = { ...canvasStyle, zIndex: 3 };
     if (program.editorInfo.claimed)
       divStyle.boxShadow = `0 0 0 1px ${randomColor({
         seed: program.editorInfo.editorId,
@@ -176,6 +177,7 @@ class Program extends React.Component {
               top: 0,
               width: this.props.width,
               height: this.props.height,
+              zIndex: 2,
             }}
           />
         )}
