@@ -13,7 +13,7 @@
 
   <meta charset="utf-8">
   <title>Paper Programs</title>
-  <link href='//fonts.googleapis.com/css?family=Londrina+Solid:300,300italic,400,700,700italic|Source+Sans+Pro' rel='stylesheet' type='text/css'>
+  <link href='//fonts.googleapis.com/css?family=Londrina+Solid:300,300italic,400,700,700italic|Source+Sans+Pro:400,700,700italic' rel='stylesheet' type='text/css'>
   <style>
     em {
       font-weight: 700;
@@ -63,11 +63,9 @@
       <source src="media/screen.webm" type="video/webm">
     </video>
 
-    <div style="position: absolute; top: 408px; left: 280px; right: 0">
-      <div style="background: black; color: white; position: absolute; top: 0px; left: 0px; padding: 0px 64px 10px; font: 100px 'Londrina Solid'; font-weight: 700">Paper Programs</div>
-    </div>
+    <div style="background: black;color: white;position: absolute;top: 408px;left: 50%;padding: 0px 64px 10px;font: 100px 'Londrina Solid';font-weight: 700;white-space: nowrap;transform: translateX(-50%);">Paper Programs</div>
 
-    <div style="background: black;color: white;position: absolute;top: 1052px;left: 120px;width: 281px;padding: 21px;font: 24px 'Londrina Solid';">Paper Programs is a browser-based system for running Javascript programs on <em>pieces of paper</em>.</div>
+    <div style="background: black;color: white;position: absolute;top: 1052px;left: 120px;width: 270px;padding: 21px;font: 24px 'Londrina Solid';">Paper Programs is a browser-based system for running Javascript programs on <em>pieces of paper</em>.</div>
 
     <div style="background: black;color: white;position: absolute;top: 1323px;left: 692px;width: 265px;padding: 21px;font: 24px 'Londrina Solid';">You set up a projector and camera aimed at a wall, table, or floor, and print out papers that are recognised and executed by the system.</div>
 
@@ -79,7 +77,7 @@
     <img src="media/paper-bottom.png" style="position: absolute; left: 0; width: 100%; bottom: 0">
     <div style="position: absolute;top: 10px;left: 0;width: 100%;text-align: center;font: 65px 'Source Sans Pro', Helvetica, sans-serif;font-weight: 600;">FAQ</div>
 
-    <div style="position: relative;font: 20px 'Source Sans Pro', Helvetica, sans-serif;padding: 110px 135px; color: #333">
+    <div style="position: relative;font: 20px/27px 'Source Sans Pro', Helvetica, sans-serif;padding: 110px 135px; color: #333">
       <p>
         <strong>Who created Paper Programs? And why?</strong><br>
         Hi, I'm <a href="http://janpaulposma.nl">JP</a>. There are lots of reasons I could list for building Paper Programs, such as having worked on interactive tools for many years, a background in programming education, having experimented with different representations of program execution. But the truth is, I was just <em>unreasonably excited</em> after trying <a href="https://dynamicland.org">Dynamicland</a> for the first time, and wanted to explore their interaction model more.
@@ -91,11 +89,11 @@
 
       <p>
         <strong>How is Paper Programs related to  <a href="https://dynamicland.org">Dynamicland</a>?</strong><br>
-        Paper Programs is inspired by the projector and camera setup of the 2017 iteration of Dynamicland. I liked how you could physically hold a program in your hands, and then put on any surface in the building, where it would start executing, as if by magic. And I liked how people naturally started collaborating, writing programs that interact with each other.
+        Paper Programs is inspired by the projector and camera setup of the 2017 iteration of Dynamicland. I liked how you could <em>physically hold a program in your hands</em>, and then put on any surface in the building, where it would start executing, as if by magic. And I liked how people <em>naturally started collaborating</em>, writing programs that interact with each other.
       </p>
 
       <p>
-        In contrast, Dynamicland is a community space designed around Realtalk. Realtalk is a research operating system (in development for several years) designed to bring computation into the physical world. It is more general than papers, projectors, and cameras. Dynamicland is intended as a new medium of human communication, and is designed to be learned and used by a community of people interacting face-to-face, not over the internet.
+        In contrast, Dynamicland is a community space designed around Realtalk. Realtalk is a research operating system (in development for several years) designed to <em>bring computation into the physical world</em>. It is more general than papers, projectors, and cameras. Dynamicland is intended as a <em>new medium of human communication</em>, and is designed to be learned and used by a community of people interacting face-to-face, not over the internet.
       </p>
 
       <p>
@@ -104,11 +102,24 @@
 
       <p>
         <strong>How does Paper Programs work?</strong><br>
+        Programs are stored on a server (using <a href="https://nodejs.org">Node.js</a> and <a href="https://www.postgresql.org">PostgreSQL</a>), hosted on paperprograms.org. Each program has a number, and the dots on the paper encode that number. Currently each corner is uniquely identified with 5 dots of 5 possible colours, which means you can have about 600 unique papers currently (this is a significant limitation).
+      </p>
+
+      <p>
+        A camera detects the dots and retrieves the program associated with each paper. This is done in a browser, using <a href="https://opencv.org">OpenCV</a> compiled to <a href="http://webassembly.org">WebAssembly</a>, and some custom Javascript code. Calibration happens manually, using a UI built in <a href="https://reactjs.org">React</a>. Program code and configuration are stored in the browser’s <a href="https://developer.mozilla.org/en-US/docs/Web/API/Window/localStorage">local storage</a>.
+      </p>
+
+      <p>
+        Projection and execution of programs happens in a separate browser window. Each program runs asynchronously in a <a href="https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API">Web Worker</a>, and can request access to a <a href="https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API">canvas</a>, coordinates of other programs, and so on.
+      </p>
+
+      <p>
+        Then there is an editor page, which anyone in the space with a laptop or tablet can use to edit programs, using <a href="https://microsoft.github.io/monaco-editor/">Monaco</a>. When having created a new program, you can click a print button to print out a new paper that runs that program. It has the program text printed on the paper itself. Any edited program can be reverted to its original state.
       </p>
 
       <p>
         <strong>How can I help?</strong><br>
-        If you're interested in contributing to Paper Programs, feel free to submit PRs, bugs, and suggestions at the <a href="https://github.com/janpaul123/paperprograms">Github repo</a>. And please tag any posts in social media with <em>#paperprograms</em>.
+        If you're interested in contributing to Paper Programs, feel free to submit PRs, bugs, and suggestions at the <a href="https://github.com/janpaul123/paperprograms">Github repo</a>. And please tag any posts in social media with <a href="https://twitter.com/search?f=tweets&q=%23paperprograms&src=typd">#paperprograms</a>.
       </p>
     </div>
   </div>
