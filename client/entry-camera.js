@@ -25,9 +25,9 @@ const defaultConfig = {
   autoPrintEnabled: false,
 };
 
-localStorage.dynazarConfig = JSON.stringify({
+localStorage.paperProgramsConfig = JSON.stringify({
   ...defaultConfig,
-  ...JSON.parse(localStorage.dynazarConfig || '{}'),
+  ...JSON.parse(localStorage.paperProgramsConfig || '{}'),
 });
 
 const element = document.createElement('div');
@@ -36,13 +36,13 @@ document.body.appendChild(element);
 function render() {
   ReactDOM.render(
     <CameraMain
-      config={JSON.parse(localStorage.dynazarConfig)}
+      config={JSON.parse(localStorage.paperProgramsConfig)}
       onConfigChange={config => {
-        localStorage.dynazarConfig = JSON.stringify(config);
+        localStorage.paperProgramsConfig = JSON.stringify(config);
         render();
       }}
       onProgramsChange={programs => {
-        localStorage.dynazarProgramsToRender = JSON.stringify(programs);
+        localStorage.paperProgramsProgramsToRender = JSON.stringify(programs);
       }}
     />,
     element
@@ -50,5 +50,5 @@ function render() {
 }
 render();
 
-window.getDynazarConfig = () => JSON.parse(localStorage.dynazarConfig);
-window.setDynazarConfig = config => (localStorage.dynazarConfig = JSON.stringify(config));
+window.getPaperProgramsConfig = () => JSON.parse(localStorage.paperProgramsConfig);
+window.setPaperProgramsConfig = config => (localStorage.paperProgramsConfig = JSON.stringify(config));

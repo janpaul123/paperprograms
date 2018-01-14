@@ -1,15 +1,15 @@
 {
-  "name": "Dynazar",
+  "name": "paperprograms",
   "version": "0.0.1",
   "description": "",
   "author": "Jan Paul Posma <j@npaulpos.ma>",
   "license": "MIT",
   "scripts": {
     "dev": "npm run createdb && npm run migrate && npm start",
-    "createdb": "psql -c \"SELECT 1\" dynazar_development 2>/dev/null 1>/dev/null || createdb dynazar_development",
+    "createdb": "psql -c \"SELECT 1\" paper_programs_development 2>/dev/null 1>/dev/null || createdb paper_programs_development",
     "migrate": "knex migrate:latest",
     "start": "node server/entry-server.js",
-    "dropdb": "dropdb --if-exists dynazar_development",
+    "dropdb": "dropdb --if-exists paper_programs_development",
     "heroku-postbuild": "webpack"
   },
   "engines": {

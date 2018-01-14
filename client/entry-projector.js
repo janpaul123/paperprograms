@@ -8,10 +8,10 @@ document.body.appendChild(element);
 function render(callback) {
   ReactDOM.render(
     <ProjectorMain
-      programsToRender={JSON.parse(localStorage.dynazarProgramsToRender || '[]')}
-      dataByProgramNumber={JSON.parse(localStorage.dynazarDataByProgramNumber || '{}')}
+      programsToRender={JSON.parse(localStorage.paperProgramsProgramsToRender || '[]')}
+      dataByProgramNumber={JSON.parse(localStorage.paperProgramsDataByProgramNumber || '{}')}
       onDataByProgramNumberChange={(dataByProgramNumber, otherCallback) => {
-        localStorage.dynazarDataByProgramNumber = JSON.stringify(dataByProgramNumber);
+        localStorage.paperProgramsDataByProgramNumber = JSON.stringify(dataByProgramNumber);
         render(otherCallback);
       }}
     />,
