@@ -1,7 +1,7 @@
 {
   "name": "paperprograms",
   "version": "0.0.1",
-  "description": "",
+  "description": "Run Javascript on pieces of paper!",
   "author": "Jan Paul Posma <j@npaulpos.ma>",
   "license": "MIT",
   "scripts": {
