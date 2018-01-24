@@ -1,0 +1,9 @@
+:local(.keyPoint) {
+  position: absolute;
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 1000px;
+  cursor: pointer;
+}
+:local(.keyPoint):hover {
+  background: rgba(255, 255, 255, 0.6);
+}
