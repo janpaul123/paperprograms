@@ -1,6 +1,6 @@
 /* global cv */
 
-import { diff, norm } from './utils';
+import { diff, norm } from '../utils';
 
 // Port of https://github.com/opencv/opencv/blob/a50a355/modules/features2d/src/blobdetector.cpp
 // But with special `faster` option which has slightly different semantics,
