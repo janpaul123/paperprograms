@@ -14,8 +14,8 @@ import {
   norm,
   projectPoint,
   shrinkPoints,
-} from './utils';
-import { colorNames } from './constants';
+} from '../utils';
+import { colorNames } from '../constants';
 import simpleBlobDetector from './simpleBlobDetector';
 
 const cornerNames = ['TL', 'TR', 'BR', 'BL'];

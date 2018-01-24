@@ -2,7 +2,7 @@ import React from 'react';
 import randomColor from 'randomcolor';
 import xhr from 'xhr';
 
-import { forwardProjectionMatrixForPoints, mult } from './utils';
+import { forwardProjectionMatrixForPoints, mult } from '../utils';
 import styles from './ProjectorMain.css';
 
 function matrixToCssTransform(matrix) {

@@ -3,8 +3,8 @@
 import React from 'react';
 import xhr from 'xhr';
 
-import { codeToName, codeToPrint, getApiUrl } from './utils';
-import { colorNames } from './constants';
+import { codeToName, codeToPrint, getApiUrl } from '../utils';
+import { colorNames } from '../constants';
 import { printCalibrationPage, printPage } from './printPdf';
 import detectPrograms from './detectPrograms';
 import helloWorld from './helloWorld';

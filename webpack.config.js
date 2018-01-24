@@ -3,9 +3,9 @@ const webpack = require('webpack');
 
 module.exports = {
   entry: {
-    camera: ['./client/entry-camera.js'],
-    projector: ['./client/entry-projector.js'],
-    editor: ['./client/entry-editor.js'],
+    camera: ['./client/camera/entry.js'],
+    projector: ['./client/projector/entry.js'],
+    editor: ['./client/editor/entry.js'],
   },
   output: {
     path: path.join(__dirname, 'www'),
