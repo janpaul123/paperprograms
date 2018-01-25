@@ -43,7 +43,7 @@ Next we'll need to print a calibration page to calibrate the camera's color dete
 
 On the camera view you should see a bunch of circles appearing on top of the circles on the piece of paper. You'll need to calibrate each color (R, O, G, B, P) one at a time. Click the color's button in the sidebar, then click on the circle corresponding to that color in the camera view.
 
-![The camera while calibrating](camera-calibrating.png)
+![The camera while calibrating](img/camera-calibrating.png)
 
 When you're done the colors in the sidebar may be slightly different than they were before. This is because the camera now knows what each of the colors we printed looks like in the lighting conditions of your space. If the lighting conditions change you'll need to perform this calibration again.
 
@@ -55,7 +55,7 @@ Turn the projector back on. In Google Chrome, visit [https://paperprograms.org/p
 
 Click the "create hello world program" button, and print the resulting program. Once it has finished printing, click "done" next to its name. Place that program somewhere in the projector's space. If you have all the overlay checkboxes checked, you should see a blue rectangle in the camera view indicating that the program has been detected. If you don't see this, it may mean some of the dots aren't being recognized and you need to try calibrating again (you may also want to adjust the lighting in the room).
 
-![The camera recognizing a program](img/camera-detecting-program.png)
+![The camera recognizing a program](img/camera-program-detected.png)
 
 The projector.html page should have the words "Hello World" and a blue dot somewhere on it.
 
