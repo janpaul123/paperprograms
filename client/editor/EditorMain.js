@@ -4,7 +4,7 @@ import randomColor from 'randomcolor';
 import sortBy from 'lodash/sortBy';
 import xhr from 'xhr';
 
-import { codeToName, getApiUrl } from './utils';
+import { codeToName, getApiUrl } from '../utils';
 import styles from './EditorMain.css';
 
 export default class EditorMain extends React.Component {
