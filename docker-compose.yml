@@ -16,6 +16,8 @@ services:
     volumes:
      - .:/app
      - /app/node_modules/
+    environment:
+     - NODE_ENV=docker
     command: [
       "./scripts/wait-for-it.sh", "postgres:5432", "--",
       "npm", "run", "dev:docker",
