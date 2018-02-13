@@ -1,13 +1,5 @@
 {
   "presets": [
-    [
-      "env",
-      {
-        "targets": [
-          "last 1 Chrome version",
-        ]
-      }
-    ],
     "react"
   ],
   "plugins": [
