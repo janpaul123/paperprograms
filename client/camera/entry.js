@@ -51,4 +51,5 @@ function render() {
 render();
 
 window.getPaperProgramsConfig = () => JSON.parse(localStorage.paperProgramsConfig);
-window.setPaperProgramsConfig = config => (localStorage.paperProgramsConfig = JSON.stringify(config));
+window.setPaperProgramsConfig = config =>
+  (localStorage.paperProgramsConfig = JSON.stringify(config));

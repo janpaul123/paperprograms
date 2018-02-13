@@ -170,7 +170,9 @@ export default class EditorMain extends React.Component {
           </div>
 
           <div className={styles.sidebarSection}>
-            <a href="api.html" target="_blank" className={styles.link}>API reference</a>
+            <a href="api.html" target="_blank" className={styles.link}>
+              API reference
+            </a>
           </div>
 
           <div className={styles.sidebarSection}>
