@@ -90,8 +90,8 @@ function drawPage({ patterns, title, code, metadata }) {
     .fontSize(11)
     .fillColor('#888888')
     .text(code, codeMarginTotal, codeMarginTotal, {
-      width: width - codeMarginTotal,
-      height: height - codeMarginTotal,
+      width: width - codeMarginTotal * 2,
+      height: height - codeMarginTotal * 2,
     });
 
   doc.end();
