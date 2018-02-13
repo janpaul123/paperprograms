@@ -8,6 +8,8 @@ module.exports = {
     // Per https://stackoverflow.com/a/46809082
     'react/jsx-uses-react': 'error',
     'react/jsx-uses-vars': 'error',
+
+    'no-shadow': 'error',
   },
   env: {
     browser: true,

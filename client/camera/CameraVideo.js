@@ -124,9 +124,9 @@ export default class CameraVideo extends React.Component {
                 key={position}
                 x={point.x * width}
                 y={point.y * height}
-                onChange={point => {
+                onChange={newPoint => {
                   const knobPoints = this.props.config.knobPoints.slice();
-                  knobPoints[position] = { x: point.x / width, y: point.y / height };
+                  knobPoints[position] = { x: newPoint.x / width, y: newPoint.y / height };
                   this.props.onConfigChange({ ...this.props.config, knobPoints });
                 }}
               />
