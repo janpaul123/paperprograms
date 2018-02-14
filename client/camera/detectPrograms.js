@@ -56,24 +56,21 @@ function keyPointToAvgColor(keyPoint, videoMat) {
   ];
 }
 
+function colorToRGB(c) {
+  return { R: Math.round(c[0]), G: Math.round(c[1]), B: Math.round(c[2]) };
+}
+
 function colorIndexForColor(matchColor, colors) {
-  const colorToRGB = c => ({ R: Math.round(c[0]), G: Math.round(c[1]), B: Math.round(c[2]) });
   const colorsRGB = colors.map(colorToRGB);
   return colorsRGB.indexOf(colorDiff.closest(colorToRGB(matchColor), colorsRGB));
 }
 
-function shapeToId(shape, keyPoints) {
-  return (
-    code8400.indexOf(shape.map(index => keyPoints[index].colorIndex).join('')) %
-    (code8400.length / 4)
-  );
+function shapeToId(colorIndexes) {
+  return code8400.indexOf(colorIndexes.join('')) % (code8400.length / 4);
 }
 
-function shapeToCornerNum(shape, keyPoints) {
-  return Math.floor(
-    code8400.indexOf(shape.map(index => keyPoints[index].colorIndex).join('')) /
-      (code8400.length / 4)
-  );
+function shapeToCornerNum(colorIndexes) {
+  return Math.floor(code8400.indexOf(colorIndexes.join('')) / (code8400.length / 4));
 }
 
 function knobPointsToROI(knobPoints, videoMat) {
@@ -122,6 +119,23 @@ function findShape(shapeToFill, neighborIndexes, lengthLeft) {
   return false;
 }
 
+function colorIndexesForShape(shape, keyPoints, videoMat, colorsRGB) {
+  const shapeColors = shape.map(
+    keyPointIndex => keyPointToAvgColor(keyPoints[keyPointIndex], videoMat),
+    colorsRGB
+  );
+
+  const closestColors = [];
+  const remainingShapeColors = shapeColors.slice();
+  colorsRGB.forEach(mainColor => {
+    const closestColorIndex = colorIndexForColor(mainColor, remainingShapeColors);
+    closestColors.push(remainingShapeColors[closestColorIndex]);
+    remainingShapeColors.splice(closestColorIndex, 1);
+  });
+
+  return shapeColors.map(color => colorIndexForColor(color, closestColors));
+}
+
 export default function detectPrograms({ config, videoCapture, previousPointsById, displayMat }) {
   const startTime = Date.now();
 
@@ -161,32 +175,6 @@ export default function detectPrograms({ config, videoCapture, previousPointsByI
   // Sort by x position. We rely on this when scanning through the circles
   // to find connected components, and when calibrating.
   keyPoints = sortBy(keyPoints, keyPoint => keyPoint.pt.x);
-
-  keyPoints.forEach(keyPoint => {
-    // Give each `keyPoint` an `avgColor` and `colorIndex`.
-    keyPoint.avgColor = keyPointToAvgColor(keyPoint, videoMat);
-    keyPoint.colorIndex = colorIndexForColor(keyPoint.avgColor, config.colorsRGB);
-
-    if (displayMat) {
-      if (config.showOverlayKeyPointCircles) {
-        // Draw circles around `keyPoints`.
-        const color = config.colorsRGB[keyPoint.colorIndex];
-        cv.circle(displayMat, keyPoint.pt, keyPoint.size / 2 + 3, color, 2);
-      }
-
-      if (config.showOverlayKeyPointText) {
-        // Draw text inside circles.
-        cv.putText(
-          displayMat,
-          colorNames[keyPoint.colorIndex],
-          add(keyPoint.pt, { x: -6, y: 6 }),
-          cv.FONT_HERSHEY_DUPLEX,
-          0.6,
-          [255, 255, 255, 255]
-        );
-      }
-    }
-  });
 
   // Build connected components by scanning through the `keyPoints`, which
   // are sorted by x-position.
@@ -234,10 +222,16 @@ export default function detectPrograms({ config, videoCapture, previousPointsByI
           shape.reverse();
         }
 
-        const id = shapeToId(shape, keyPoints);
-        const cornerNum = shapeToCornerNum(shape, keyPoints);
+        const colorIndexes = colorIndexesForShape(shape, keyPoints, videoMat, config.colorsRGB);
+        const id = shapeToId(colorIndexes);
+        const cornerNum = shapeToCornerNum(colorIndexes);
 
         if (cornerNum > -1) {
+          // Store the colorIndexes so we can render them later for debugging.
+          colorIndexes.forEach((colorIndex, shapePointIndex) => {
+            keyPoints[shape[shapePointIndex]].colorIndex = colorIndex;
+          });
+
           seenIds.add(id);
           pointsById[id] = pointsById[id] || [];
           pointsById[id][cornerNum] = keyPoints[shape[3]].pt;
@@ -261,6 +255,33 @@ export default function detectPrograms({ config, videoCapture, previousPointsByI
   }
   const avgKeyPointSize =
     keyPointSizes.reduce((sum, value) => sum + value, 0) / keyPointSizes.length;
+
+  keyPoints.forEach(keyPoint => {
+    // Give each `keyPoint` an `avgColor` and `colorIndex`.
+    keyPoint.avgColor = keyPointToAvgColor(keyPoint, videoMat);
+    keyPoint.colorIndex =
+      keyPoint.colorIndex || colorIndexForColor(keyPoint.avgColor, config.colorsRGB);
+
+    if (displayMat) {
+      if (config.showOverlayKeyPointCircles) {
+        // Draw circles around `keyPoints`.
+        const color = config.colorsRGB[keyPoint.colorIndex];
+        cv.circle(displayMat, keyPoint.pt, keyPoint.size / 2 + 3, color, 2);
+      }
+
+      if (config.showOverlayKeyPointText) {
+        // Draw text inside circles.
+        cv.putText(
+          displayMat,
+          colorNames[keyPoint.colorIndex],
+          add(keyPoint.pt, { x: -6, y: 6 }),
+          cv.FONT_HERSHEY_DUPLEX,
+          0.6,
+          [255, 255, 255, 255]
+        );
+      }
+    }
+  });
 
   const programsToRender = [];
   Object.keys(pointsById).forEach(id => {
