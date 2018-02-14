@@ -26,12 +26,22 @@ const canvasSizeMatrix = forwardProjectionMatrixForPoints([
   { x: 0, y: canvasHeight },
 ]).adjugate();
 
+const iframeWidth = 400;
+const iframeHeight = iframeWidth * 1.5;
+const iframeSizeMatrix = forwardProjectionMatrixForPoints([
+  { x: 0, y: 0 },
+  { x: iframeWidth, y: 0 },
+  { x: iframeWidth, y: iframeHeight },
+  { x: 0, y: iframeHeight },
+]).adjugate();
+
 export default class Program extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
       showCanvas: false,
-      showSupportCanvas: false,
+      showSupporterCanvas: false,
+      iframe: null,
       debugData: { logs: [], errors: [] },
     };
   }
@@ -89,6 +99,8 @@ export default class Program extends React.Component {
         this.props.onDataChange(sendData.data, () => {
           this._worker.postMessage({ messageId });
         });
+      } else if (sendData.name === "iframe") {
+        this.setState({ iframe: sendData.data });
       }
     } else if (command === 'flushLogs') {
       this.setState({ debugData: { ...this.state.debugData, logs: sendData } }, () => {
@@ -161,6 +173,7 @@ export default class Program extends React.Component {
             style={canvasStyle}
           />
         )}
+        {this.state.iframe && this.renderIframe()}
         {this.state.showSupporterCanvas && (
           <canvas
             key="supporterCanvas"
@@ -182,6 +195,32 @@ export default class Program extends React.Component {
           />
         )}
       </div>
+    );
+  }
+
+  renderIframe() {
+    const { program } = this.props;
+    const matrix = forwardProjectionMatrixForPoints(
+      program.points.map(point => mult(point, { x: this.props.width, y: this.props.height }))
+    ).multiply(iframeSizeMatrix);
+
+    const iframeStyle = {
+      position: 'absolute',
+      left: 0,
+      top: 0,
+      width: iframeWidth,
+      height: iframeHeight,
+      transform: matrixToCssTransform(matrix),
+      transformOrigin: '0 0 0',
+      zIndex: 1,
+    };
+
+    return (
+      <iframe
+        key="iframe"
+        src={this.state.iframe.src}
+        style={{...iframeStyle }}
+      />
     );
   }
 }
