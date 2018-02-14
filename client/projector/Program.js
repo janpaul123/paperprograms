@@ -26,6 +26,15 @@ const canvasSizeMatrix = forwardProjectionMatrixForPoints([
   { x: 0, y: canvasHeight },
 ]).adjugate();
 
+const iframeWidth = 400;
+const iframeHeight = iframeWidth * 1.5;
+const iframeSizeMatrix = forwardProjectionMatrixForPoints([
+  { x: 0, y: 0 },
+  { x: iframeWidth, y: 0 },
+  { x: iframeWidth, y: iframeHeight },
+  { x: 0, y: iframeHeight },
+]).adjugate();
+
 export default class Program extends React.Component {
   constructor(props) {
     super(props);
@@ -190,21 +199,12 @@ export default class Program extends React.Component {
   }
 
   renderIframe() {
-    const iframeWidth = 400;
-    const iframeHeight = iframeWidth * 1.5;
-    const iframeSizeMatrix = forwardProjectionMatrixForPoints([
-      { x: 0, y: 0 },
-      { x: iframeWidth, y: 0 },
-      { x: iframeWidth, y: iframeHeight },
-      { x: 0, y: iframeHeight },
-    ]).adjugate();
-
     const { program } = this.props;
     const matrix = forwardProjectionMatrixForPoints(
       program.points.map(point => mult(point, { x: this.props.width, y: this.props.height }))
     ).multiply(iframeSizeMatrix);
 
-    const canvasStyle = {
+    const iframeStyle = {
       position: 'absolute',
       left: 0,
       top: 0,
@@ -219,7 +219,7 @@ export default class Program extends React.Component {
       <iframe
         key="iframe"
         src={this.state.iframe.src}
-        style={{...canvasStyle }}
+        style={{...iframeStyle }}
       />
     );
   }
