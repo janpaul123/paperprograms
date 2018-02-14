@@ -145,7 +145,7 @@ function printDoc(doc) {
   });
 }
 
-const allColors = ['#ff0000', '#ff9900', '#51ff00', '#00ccff'];
+const allColors = ['#ff0000', '#51ff00', '#00ccff', '#130030'];
 
 export function printPage(number, name, code) {
   printDoc(
