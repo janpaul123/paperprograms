@@ -190,8 +190,8 @@ export default class Program extends React.Component {
   }
 
   renderIframe() {
-    const iframeWidth = 1000;
-    const iframeHeight = 1500;
+    const iframeWidth = 400;
+    const iframeHeight = iframeWidth * 1.5;
     const iframeSizeMatrix = forwardProjectionMatrixForPoints([
       { x: 0, y: 0 },
       { x: iframeWidth, y: 0 },
