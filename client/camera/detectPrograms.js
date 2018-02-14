@@ -15,6 +15,7 @@ import {
   projectPoint,
   shrinkPoints,
 } from '../utils';
+import { code8400 } from '../dotCodes';
 import { colorNames } from '../constants';
 import simpleBlobDetector from './simpleBlobDetector';
 
@@ -63,16 +64,16 @@ function colorIndexForColor(matchColor, colors) {
 
 function shapeToId(shape, keyPoints) {
   return (
-    125 * keyPoints[shape[0]].colorIndex +
-    25 * keyPoints[shape[1]].colorIndex +
-    5 * keyPoints[shape[3]].colorIndex +
-    keyPoints[shape[4]].colorIndex
+    code8400.indexOf(shape.map(index => keyPoints[index].colorIndex).join('')) %
+    (code8400.length / 4)
   );
 }
 
 function shapeToCornerNum(shape, keyPoints) {
-  if (keyPoints[shape[2]].colorIndex < 0 || keyPoints[shape[2]].colorIndex > 3) return -1;
-  return keyPoints[shape[2]].colorIndex;
+  return Math.floor(
+    code8400.indexOf(shape.map(index => keyPoints[index].colorIndex).join('')) /
+      (code8400.length / 4)
+  );
 }
 
 function knobPointsToROI(knobPoints, videoMat) {
@@ -213,20 +214,20 @@ export default function detectPrograms({ config, videoCapture, previousPointsByI
     }
   }
 
-  // Find acyclical shapes of 5, and put ids into `pointsById`.
+  // Find acyclical shapes of 7, and put ids into `pointsById`.
   const seenIndexes = new window.Set();
   const seenIds = new window.Set();
   const keyPointSizes = [];
   for (let i = 0; i < keyPoints.length; i++) {
     if (neighborIndexes[i].length == 1 && !seenIndexes.has(i)) {
-      const shape = [i]; // Initialise with the first index, then run findShape with 5-1.
-      if (findShape(shape, neighborIndexes, 5 - 1)) {
+      const shape = [i]; // Initialise with the first index, then run findShape with 7-1.
+      if (findShape(shape, neighborIndexes, 7 - 1)) {
         shape.forEach(index => seenIndexes.add(index));
 
         // Reverse the array if it's the wrong way around.
         const mag = cross(
-          diff(keyPoints[shape[0]].pt, keyPoints[shape[2]].pt),
-          diff(keyPoints[shape[4]].pt, keyPoints[shape[2]].pt)
+          diff(keyPoints[shape[0]].pt, keyPoints[shape[3]].pt),
+          diff(keyPoints[shape[6]].pt, keyPoints[shape[3]].pt)
         );
         if (mag > 100) {
           // Use 100 to avoid straight line. We already depend on sorting by x for that.
@@ -239,7 +240,7 @@ export default function detectPrograms({ config, videoCapture, previousPointsByI
         if (cornerNum > -1) {
           seenIds.add(id);
           pointsById[id] = pointsById[id] || [];
-          pointsById[id][cornerNum] = keyPoints[shape[2]].pt;
+          pointsById[id][cornerNum] = keyPoints[shape[3]].pt;
 
           shape.forEach(index => keyPointSizes.push(keyPoints[index].size));
 
@@ -248,7 +249,7 @@ export default function detectPrograms({ config, videoCapture, previousPointsByI
             cv.putText(
               displayMat,
               `${id},${cornerNames[cornerNum]}`,
-              div(add(keyPoints[shape[0]].pt, keyPoints[shape[4]].pt), { x: 2, y: 2 }),
+              div(add(keyPoints[shape[0]].pt, keyPoints[shape[6]].pt), { x: 2, y: 2 }),
               cv.FONT_HERSHEY_DUPLEX,
               0.5,
               [0, 0, 255, 255]

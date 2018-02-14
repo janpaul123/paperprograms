@@ -49,6 +49,7 @@
     "react": "^16.2.0",
     "react-dom": "^16.2.0",
     "react-monaco-editor": "^0.13.0",
+    "shuffle-seed": "^1.1.6",
     "style-loader": "^0.19.1",
     "transform-loader": "^0.2.4",
     "uuid": "^3.1.0",
