@@ -56,11 +56,11 @@
   </p>
 
   <p>
-    <code>const canvas = await paper.get('supporterCanvas');</code> will give you a <a href="https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API"><code>Canvas</code></a> object that spans the entire projection screen.
+    <code>const supporterCanvas = await paper.get('supporterCanvas');</code> will give you a <a href="https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API"><code>Canvas</code></a> object that spans the entire projection screen.
   </p>
 
   <p>
-    <code>const canvas = await paper.get('papers');</code> will give you an object that looks something like this:<br>
+    <code>const papers = await paper.get('papers');</code> will give you an object that looks something like this:<br>
     <code>
       {<br>
       &nbsp;&nbsp;"512": {<br>
@@ -72,7 +72,7 @@
   </p>
 
   <p>
-    <code>const canvas = await paper.get('number');</code> gives you your own paper number, so you can look up your <code>"data"</code> and <code>"points"</code> in the list of papers above.
+    <code>const number = await paper.get('number');</code> gives you your own paper number, so you can look up your <code>"data"</code> and <code>"points"</code> in the list of papers above.
   </p>
 
   <p>
