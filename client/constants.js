@@ -1,1 +1,1 @@
-export const colorNames = ['R', 'O', 'G', 'B'];
+export const colorNames = ['R', 'G', 'B', 'D'];
