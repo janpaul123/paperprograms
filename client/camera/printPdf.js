@@ -1,5 +1,7 @@
 import blobStream from 'blob-stream';
 
+import { code8400 } from '../dotCodes';
+
 const PDFDocument = require('pdfkit');
 
 // Draws a pattern using colours from `pattern` like:
@@ -12,11 +14,13 @@ function drawLPattern({ doc, pattern, x, y, angle, circleRadius, circleDistance 
   doc.save();
   doc.translate(x, y);
   doc.rotate(angle, { origin: [0, 0] });
-  doc.circle(0, circleRadius * 4 + circleDistance * 2, circleRadius).fill(pattern[0]);
-  doc.circle(0, circleRadius * 2 + circleDistance, circleRadius).fill(pattern[1]);
-  doc.circle(0, 0, circleRadius).fill(pattern[2]);
-  doc.circle(circleRadius * 2 + circleDistance, 0, circleRadius).fill(pattern[3]);
-  doc.circle(circleRadius * 4 + circleDistance * 2, 0, circleRadius).fill(pattern[4]);
+  doc.circle(0, circleRadius * 6 + circleDistance * 3, circleRadius).fill(pattern[0]);
+  doc.circle(0, circleRadius * 4 + circleDistance * 2, circleRadius).fill(pattern[1]);
+  doc.circle(0, circleRadius * 2 + circleDistance, circleRadius).fill(pattern[2]);
+  doc.circle(0, 0, circleRadius).fill(pattern[3]);
+  doc.circle(circleRadius * 2 + circleDistance, 0, circleRadius).fill(pattern[4]);
+  doc.circle(circleRadius * 4 + circleDistance * 2, 0, circleRadius).fill(pattern[5]);
+  doc.circle(circleRadius * 6 + circleDistance * 3, 0, circleRadius).fill(pattern[6]);
   doc.restore();
 }
 
@@ -64,7 +68,7 @@ function drawPage({ patterns, title, code, metadata }) {
   drawPagePatterns({ doc, patterns, circleRadius, circleDistance, margin, width, height });
 
   const textMargin = 10;
-  const textLeft = margin + circleRadius * 6 + circleDistance * 2 + textMargin;
+  const textLeft = margin + circleRadius * 8 + circleDistance * 3 + textMargin;
   const textWidth = width - textLeft * 2;
 
   const titleVOffset = -3;
@@ -116,14 +120,11 @@ function drawCalibrationPage({ allColors }) {
 }
 
 function generatePatterns({ number, allColors }) {
-  const string = number.toString(5).padStart(4, '0');
-  if (string.length !== 4) throw new Error('Incorrect string length');
-
-  function posToCol(index) {
-    return allColors[parseInt(string[index], 10)];
-  }
-
-  return [0, 1, 2, 3].map(i => [posToCol(0), posToCol(1), allColors[i], posToCol(2), posToCol(3)]);
+  return [0, 1, 2, 3].map(i =>
+    code8400[number + code8400.length / 4 * i]
+      .split('')
+      .map(digit => allColors[parseInt(digit, 10)])
+  );
 }
 
 function printDoc(doc) {
@@ -144,7 +145,7 @@ function printDoc(doc) {
   });
 }
 
-const allColors = ['#ff0000', '#ff9900', '#51ff00', '#00ccff', '#dd00ff'];
+const allColors = ['#ff0000', '#ff9900', '#51ff00', '#00ccff'];
 
 export function printPage(number, name, code) {
   printDoc(

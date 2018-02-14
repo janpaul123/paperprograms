@@ -58,7 +58,7 @@ router.get('/api/spaces/:spaceName', (req, res) => {
   });
 });
 
-const maxNumber = 625;
+const maxNumber = 8400 / 4;
 router.post('/api/spaces/:spaceName/programs', (req, res) => {
   const { spaceName } = req.params;
   const { code } = req.body;

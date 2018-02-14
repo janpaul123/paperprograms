@@ -2,16 +2,11 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import uuidv4 from 'uuid/v4';
 
+import { colorNames } from '../constants';
 import CameraMain from './CameraMain';
 
 const defaultConfig = {
-  colorsRGB: [
-    [119, 43, 24, 255],
-    [155, 108, 35, 255],
-    [94, 104, 48, 255],
-    [65, 80, 84, 255],
-    [92, 36, 42, 255],
-  ],
+  colorsRGB: [[119, 43, 24, 255], [155, 108, 35, 255], [94, 104, 48, 255], [65, 80, 84, 255]],
   knobPoints: [{ x: 0, y: 0 }, { x: 1, y: 0 }, { x: 1, y: 1 }, { x: 0, y: 1 }],
   zoom: 1,
   zoomCanvasX: 0,
@@ -25,10 +20,19 @@ const defaultConfig = {
   autoPrintEnabled: false,
 };
 
-localStorage.paperProgramsConfig = JSON.stringify({
-  ...defaultConfig,
-  ...JSON.parse(localStorage.paperProgramsConfig || '{}'),
-});
+function sanitizeConfig(config) {
+  const newConfig = { ...config };
+  if (newConfig.colorsRGB !== defaultConfig.colorsRGB.length)
+    newConfig.colorsRGB = defaultConfig.colorsRGB;
+  return newConfig;
+}
+
+localStorage.paperProgramsConfig = JSON.stringify(
+  sanitizeConfig({
+    ...defaultConfig,
+    ...JSON.parse(localStorage.paperProgramsConfig || '{}'),
+  })
+);
 
 const element = document.createElement('div');
 document.body.appendChild(element);
