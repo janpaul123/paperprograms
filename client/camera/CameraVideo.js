@@ -122,6 +122,7 @@ export default class CameraVideo extends React.Component {
             return (
               <Knob
                 key={position}
+                label={["BR", "BL", "TL", "TR"][position]}
                 x={point.x * width}
                 y={point.y * height}
                 onChange={newPoint => {
