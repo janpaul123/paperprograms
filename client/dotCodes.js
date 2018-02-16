@@ -15,5 +15,3 @@ export const code8400 = shuffleSeed.shuffle(
     .map(colors => colors.join('')),
   'someseed'
 );
-
-console.log(code8400);
