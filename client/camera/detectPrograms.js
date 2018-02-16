@@ -136,10 +136,8 @@ function colorIndexesForShape(shape, keyPoints, videoMat, colorsRGB) {
   return shapeColors.map(color => colorIndexForColor(color, closestColors));
 }
 
-export default function detectPrograms({ config, videoCapture, previousPointsById, displayMat }) {
+export default function detectPrograms({ config, videoCapture, dataToRemember, displayMat }) {
   const startTime = Date.now();
-
-  const pointsById = { ...previousPointsById };
 
   const videoMat = new cv.Mat(videoCapture.video.height, videoCapture.video.width, cv.CV_8UC4);
   videoCapture.read(videoMat);
@@ -202,10 +200,11 @@ export default function detectPrograms({ config, videoCapture, previousPointsByI
     }
   }
 
-  // Find acyclical shapes of 7, and put ids into `pointsById`.
+  // Find acyclical shapes of 7, and put ids into `newDataToRemember`.
   const seenIndexes = new window.Set();
   const seenIds = new window.Set();
   const keyPointSizes = [];
+  const pointsById = { ...(dataToRemember.pointsById || {}) };
   for (let i = 0; i < keyPoints.length; i++) {
     if (neighborIndexes[i].length == 1 && !seenIndexes.has(i)) {
       const shape = [i]; // Initialise with the first index, then run findShape with 7-1.
@@ -325,7 +324,7 @@ export default function detectPrograms({ config, videoCapture, previousPointsByI
   return {
     keyPoints,
     programsToRender,
-    newPointsById: pointsById,
+    dataToRemember: { pointsById },
     framerate: Math.round(1000 / (Date.now() - startTime)),
   };
 }
