@@ -202,9 +202,9 @@ export default function detectPrograms({ config, videoCapture, dataToRemember, d
 
   // Find acyclical shapes of 7, and put ids into `newDataToRemember`.
   const seenIndexes = new window.Set();
-  const seenIds = new window.Set();
   const keyPointSizes = [];
-  const pointsById = { ...(dataToRemember.pointsById || {}) };
+  const pointsById = {};
+  const directionVectorsById = {};
   for (let i = 0; i < keyPoints.length; i++) {
     if (neighborIndexes[i].length == 1 && !seenIndexes.has(i)) {
       const shape = [i]; // Initialise with the first index, then run findShape with 7-1.
@@ -231,9 +231,13 @@ export default function detectPrograms({ config, videoCapture, dataToRemember, d
             keyPoints[shape[shapePointIndex]].colorIndex = colorIndex;
           });
 
-          seenIds.add(id);
           pointsById[id] = pointsById[id] || [];
           pointsById[id][cornerNum] = keyPoints[shape[3]].pt;
+          directionVectorsById[id] = directionVectorsById[id] || [];
+          directionVectorsById[id][cornerNum] = diff(
+            keyPoints[shape[6]].pt,
+            keyPoints[shape[3]].pt
+          );
 
           shape.forEach(index => keyPointSizes.push(keyPoints[index].size));
 
@@ -283,38 +287,78 @@ export default function detectPrograms({ config, videoCapture, dataToRemember, d
   });
 
   const programsToRender = [];
+  const vectorsBetweenCorners = { ...(dataToRemember.vectorsBetweenCorners || {}) };
   Object.keys(pointsById).forEach(id => {
-    if (!seenIds.has(parseInt(id))) {
-      // Delete the points if we haven't seen any corner with this id.
-      delete pointsById[id];
-    } else {
-      const points = pointsById[id];
-      if (points[0] && points[1] && points[2] && points[3]) {
-        const programToRender = {
-          points: shrinkPoints(avgKeyPointSize * 0.75, points).map(point =>
-            projectPointToUnitSquare(point, videoMat, config.knobPoints)
-          ),
-          number: id,
-        };
-        programsToRender.push(programToRender);
+    const points = pointsById[id];
+    const potentialPoints = [];
+    vectorsBetweenCorners[id] = vectorsBetweenCorners[id] || {};
+    const dirVecs = directionVectorsById[id];
 
-        if (displayMat && config.showOverlayProgram) {
-          const matrix = forwardProjectionMatrixForPoints(config.knobPoints);
-          const reprojectedPoints = programToRender.points.map(point =>
-            mult(projectPoint(point, matrix), { x: videoMat.cols, y: videoMat.rows })
-          );
-
-          cv.line(displayMat, reprojectedPoints[0], reprojectedPoints[1], [0, 0, 255, 255]);
-          cv.line(displayMat, reprojectedPoints[2], reprojectedPoints[1], [0, 0, 255, 255]);
-          cv.line(displayMat, reprojectedPoints[2], reprojectedPoints[3], [0, 0, 255, 255]);
-          cv.line(displayMat, reprojectedPoints[3], reprojectedPoints[0], [0, 0, 255, 255]);
-          cv.line(
-            displayMat,
-            div(add(reprojectedPoints[2], reprojectedPoints[3]), { x: 2, y: 2 }),
-            div(add(reprojectedPoints[0], reprojectedPoints[1]), { x: 2, y: 2 }),
-            [0, 0, 255, 255]
-          );
+    // Store/update the angles and magnitudes between known points.
+    for (let i = 0; i < 4; i++) {
+      for (let j = 0; j < 4; j++) {
+        if (i !== j && points[i] && points[j]) {
+          const diffVec = diff(points[j], points[i]);
+          vectorsBetweenCorners[id][`${i}->${j}`] = {
+            angle: Math.atan2(diffVec.y, diffVec.x) - Math.atan2(dirVecs[i].y, dirVecs[i].x),
+            magnitude: norm(diffVec),
+          };
         }
+      }
+    }
+
+    // Find potential point for unknown points if we know the angle+magnitude with
+    // another point.
+    for (let i = 0; i < 4; i++) {
+      for (let j = 0; j < 4; j++) {
+        if (points[i] && !points[j] && vectorsBetweenCorners[id][`${i}->${j}`]) {
+          const { angle, magnitude } = vectorsBetweenCorners[id][`${i}->${j}`];
+          const newAngle = angle + Math.atan2(dirVecs[i].y, dirVecs[i].x);
+          potentialPoints[j] = potentialPoints[j] || [];
+          potentialPoints[j].push({
+            x: points[i].x + magnitude * Math.cos(newAngle),
+            y: points[i].y + magnitude * Math.sin(newAngle),
+          });
+        }
+      }
+    }
+
+    // Take the average of all potential points for each unknown point.
+    for (let i = 0; i < 4; i++) {
+      if (potentialPoints[i]) {
+        points[i] = { x: 0, y: 0 };
+        potentialPoints[i].forEach(vec => {
+          points[i].x += vec.x / potentialPoints[i].length;
+          points[i].y += vec.y / potentialPoints[i].length;
+        });
+      }
+    }
+
+    if (points[0] && points[1] && points[2] && points[3]) {
+      const programToRender = {
+        points: shrinkPoints(avgKeyPointSize * 0.75, points).map(point =>
+          projectPointToUnitSquare(point, videoMat, config.knobPoints)
+        ),
+        number: id,
+      };
+      programsToRender.push(programToRender);
+
+      if (displayMat && config.showOverlayProgram) {
+        const matrix = forwardProjectionMatrixForPoints(config.knobPoints);
+        const reprojectedPoints = programToRender.points.map(point =>
+          mult(projectPoint(point, matrix), { x: videoMat.cols, y: videoMat.rows })
+        );
+
+        cv.line(displayMat, reprojectedPoints[0], reprojectedPoints[1], [0, 0, 255, 255]);
+        cv.line(displayMat, reprojectedPoints[2], reprojectedPoints[1], [0, 0, 255, 255]);
+        cv.line(displayMat, reprojectedPoints[2], reprojectedPoints[3], [0, 0, 255, 255]);
+        cv.line(displayMat, reprojectedPoints[3], reprojectedPoints[0], [0, 0, 255, 255]);
+        cv.line(
+          displayMat,
+          div(add(reprojectedPoints[2], reprojectedPoints[3]), { x: 2, y: 2 }),
+          div(add(reprojectedPoints[0], reprojectedPoints[1]), { x: 2, y: 2 }),
+          [0, 0, 255, 255]
+        );
       }
     }
   });
@@ -324,7 +368,7 @@ export default function detectPrograms({ config, videoCapture, dataToRemember, d
   return {
     keyPoints,
     programsToRender,
-    dataToRemember: { pointsById },
+    dataToRemember: { vectorsBetweenCorners },
     framerate: Math.round(1000 / (Date.now() - startTime)),
   };
 }
