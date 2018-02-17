@@ -302,6 +302,26 @@ export default function detectPrograms({ config, videoCapture, dataToRemember, d
           vectorsBetweenCorners[id][`${i}->${j}`] = {
             angle: Math.atan2(diffVec.y, diffVec.x) - Math.atan2(dirVecs[i].y, dirVecs[i].x),
             magnitude: norm(diffVec),
+            // Once we see two corners for real, mark them as not mirrored, so
+            // we won't override this when mirroring angles/magnitudes.
+            mirrored: false,
+          };
+        }
+      }
+    }
+
+    // Assuming the paper is rectangular, mirror angles/magnitudes.
+    for (let i = 0; i < 4; i++) {
+      for (let j = 0; j < 4; j++) {
+        const thisSide = `${i}->${j}`;
+        const otherSide = `${(i + 2) % 4}->${(j + 2) % 4}`;
+        if (
+          vectorsBetweenCorners[id][thisSide] &&
+          (!vectorsBetweenCorners[id][otherSide] || vectorsBetweenCorners[id][otherSide].mirrored)
+        ) {
+          vectorsBetweenCorners[id][otherSide] = {
+            ...vectorsBetweenCorners[id][thisSide],
+            mirrored: true,
           };
         }
       }
