@@ -25,7 +25,9 @@ export default class Knob extends React.Component {
         style={{ left: this.props.x, top: this.props.y }}
         onMouseDown={this._onMouseDown}
         ref={el => (this._el = el)}
-      />
+      >
+        {this.props.label}
+      </div>
     );
   }
 }

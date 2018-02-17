@@ -2,10 +2,10 @@
 
 import React from 'react';
 
+import { cornerNames } from '../constants';
+import Knob from './Knob';
 import detectPrograms from './detectPrograms';
 import styles from './CameraVideo.css';
-
-import Knob from './Knob';
 
 export default class CameraVideo extends React.Component {
   constructor(props) {
@@ -122,6 +122,7 @@ export default class CameraVideo extends React.Component {
             return (
               <Knob
                 key={position}
+                label={cornerNames[position]}
                 x={point.x * width}
                 y={point.y * height}
                 onChange={newPoint => {
