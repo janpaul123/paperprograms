@@ -16,10 +16,8 @@ import {
   shrinkPoints,
 } from '../utils';
 import { code8400 } from '../dotCodes';
-import { colorNames } from '../constants';
+import { colorNames, cornerNames } from '../constants';
 import simpleBlobDetector from './simpleBlobDetector';
-
-const cornerNames = ['TL', 'TR', 'BR', 'BL'];
 
 function keyPointToAvgColor(keyPoint, videoMat) {
   const circleROI = videoMat.roi({
