@@ -32,7 +32,7 @@ export default class CameraVideo extends React.Component {
             video.height = video.videoHeight;
             this.setState({ videoWidth: video.width, videoHeight: video.height });
             this._videoCapture = new cv.VideoCapture(video);
-            this._pointsById = {};
+            this._dataToRemember = {};
             this._processVideo();
           };
         });
@@ -71,13 +71,13 @@ export default class CameraVideo extends React.Component {
     );
 
     try {
-      const { programsToRender, keyPoints, newPointsById, framerate } = detectPrograms({
+      const { programsToRender, keyPoints, dataToRemember, framerate } = detectPrograms({
         config: this.props.config,
         videoCapture: this._videoCapture,
-        previousPointsById: this._pointsById,
+        dataToRemember: this._dataToRemember,
         displayMat,
       });
-      this._pointsById = newPointsById;
+      this._dataToRemember = dataToRemember;
       this.setState({ keyPoints });
       this.props.onProcessVideo({ programsToRender: programsToRender, framerate });
     } catch (error) {
