@@ -21,7 +21,7 @@ const defaultConfig = {
 
 function sanitizeConfig(config) {
   const newConfig = { ...config };
-  if (newConfig.colorsRGB !== defaultConfig.colorsRGB.length)
+  if (newConfig.colorsRGB.length !== defaultConfig.colorsRGB.length)
     newConfig.colorsRGB = defaultConfig.colorsRGB;
   return newConfig;
 }

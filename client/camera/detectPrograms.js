@@ -20,9 +20,12 @@ import { colorNames, cornerNames } from '../constants';
 import simpleBlobDetector from './simpleBlobDetector';
 
 function keyPointToAvgColor(keyPoint, videoMat) {
+  const x = Math.floor(keyPoint.pt.x - keyPoint.size / 2);
+  const y = Math.floor(keyPoint.pt.y - keyPoint.size / 2);
+
   const circleROI = videoMat.roi({
-    x: Math.floor(keyPoint.pt.x - keyPoint.size / 2),
-    y: Math.floor(keyPoint.pt.y - keyPoint.size / 2),
+    x,
+    y,
     width: keyPoint.size,
     height: keyPoint.size,
   });
@@ -36,20 +39,34 @@ function keyPointToAvgColor(keyPoint, videoMat) {
     -1
   );
 
-  const squareMean = cv.mean(circleROI);
   const circleMean = cv.mean(circleROI, circleMask);
   circleROI.delete();
   circleMask.delete();
 
-  // Color and intensity invariance, loosely per
-  // https://pdfs.semanticscholar.org/ce4c/69deb83cbbf39487987bd50a5c1d87765ec1.pdf
-  const avgColorInvariant = mult(div(circleMean, squareMean), [255, 255, 255, 255]);
-  const colorSum = avgColorInvariant[0] + avgColorInvariant[1] + avgColorInvariant[2];
+  // Find the corners of the circle ROI, but just one pixel outside of it to be
+  // more sure to capture white pixels.
+  const corners = [
+    videoMat.ptr(clamp(y - 1, 0, videoMat.rows), clamp(x - 1, 0, videoMat.cols)),
+    videoMat.ptr(clamp(y - 1, 0, videoMat.rows), clamp(x + keyPoint.size + 1, 0, videoMat.cols)),
+    videoMat.ptr(clamp(y + keyPoint.size + 1, 0, videoMat.rows), clamp(x - 1, 0, videoMat.cols)),
+    videoMat.ptr(
+      clamp(y + keyPoint.size + 1, 0, videoMat.rows),
+      clamp(x + keyPoint.size + 1, 0, videoMat.cols)
+    ),
+  ];
 
+  const whiteMax = [
+    Math.max(corners[0][0], corners[1][0], corners[2][0], corners[3][0]),
+    Math.max(corners[0][1], corners[1][1], corners[2][1], corners[3][1]),
+    Math.max(corners[0][2], corners[1][2], corners[2][2], corners[3][2]),
+    255,
+  ];
+
+  // Normalize to the white colour.
   return [
-    avgColorInvariant[0] / colorSum * 255,
-    avgColorInvariant[1] / colorSum * 255,
-    avgColorInvariant[2] / colorSum * 255,
+    clamp(circleMean[0] / whiteMax[0] * 255, 0, 255),
+    clamp(circleMean[1] / whiteMax[1] * 255, 0, 255),
+    clamp(circleMean[2] / whiteMax[2] * 255, 0, 255),
     255,
   ];
 }
