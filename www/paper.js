@@ -70,4 +70,5 @@
   workerContext.console.warn = (...args) => log('console.warn', args);
   workerContext.console.error = (...args) => log('console.error', args);
   workerContext.console.info = (...args) => log('console.info', args);
+  flushLogs();
 })(self);
