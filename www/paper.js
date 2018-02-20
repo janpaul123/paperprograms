@@ -32,29 +32,30 @@
   };
 
   let logs = [];
-  const maxLogLength = 100;
   let willFlushLogs = false;
   function flushLogs() {
     if (willFlushLogs) return;
     setTimeout(() => {
       willFlushLogs = false;
       workerContext.postMessage({ command: 'flushLogs', sendData: logs });
-    }, 500);
+    }, 50);
     willFlushLogs = true;
   }
-  function log(name, args) {
+  function log(name, args, stackLine) {
     const logData = {
       name,
       args: ['"[unknown]"'],
       lineNumber: 0,
       columnNumber: 0,
+      filename: 'program',
+      timestamp: Date.now(),
     };
 
     try {
       logData.args = args.map(arg => JSON.stringify(arg));
     } catch (_) {} // eslint-disable-line no-empty
 
-    const stackData = new Error().stack.split('\n')[3].match(/\/program\..*/);
+    const stackData = (stackLine || new Error().stack.split('\n')[3]).match(/\/program\..*/);
     if (stackData) {
       const splitStackData = stackData[0].slice(0, -1).split(':');
       logData.lineNumber = splitStackData[1];
@@ -62,7 +63,6 @@
     }
 
     logs.push(logData);
-    if (logs.length > maxLogLength) logs = logs.slice(0, maxLogLength);
     flushLogs();
   }
   workerContext.console = {};
@@ -70,4 +70,10 @@
   workerContext.console.warn = (...args) => log('console.warn', args);
   workerContext.console.error = (...args) => log('console.error', args);
   workerContext.console.info = (...args) => log('console.info', args);
+
+  workerContext.addEventListener('unhandledrejection', event => {
+    if (event.reason instanceof Error) {
+      log('Error', [event.reason.message], event.reason.stack.split('\n')[1]);
+    }
+  });
 })(self);
