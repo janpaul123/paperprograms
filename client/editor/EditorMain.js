@@ -240,11 +240,10 @@ export default class EditorMain extends React.Component {
           {selectedProgram &&
             logs.length > 0 && (
               <div className={styles.sidebarSection}>
-                console:{' '}
                 {logs.map((logLine, index) => (
                   <div key={index} className={styles.logline}>
                     <strong>
-                      {logLine.name}[program:{logLine.lineNumber}:{logLine.columnNumber}]:
+                      {logLine.name}[{logLine.filename}:{logLine.lineNumber}:{logLine.columnNumber}]:
                     </strong>{' '}
                     {logLine.args.join(', ')}
                   </div>

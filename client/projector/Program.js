@@ -1,5 +1,7 @@
 import React from 'react';
 import randomColor from 'randomcolor';
+import sortBy from 'lodash/sortBy';
+import throttle from 'lodash/throttle';
 import xhr from 'xhr';
 
 import { forwardProjectionMatrixForPoints, mult } from '../utils';
@@ -35,6 +37,8 @@ const iframeSizeMatrix = forwardProjectionMatrixForPoints([
   { x: 0, y: iframeHeight },
 ]).adjugate();
 
+const maxLogLength = 100;
+
 export default class Program extends React.Component {
   constructor(props) {
     super(props);
@@ -42,7 +46,7 @@ export default class Program extends React.Component {
       showCanvas: false,
       showSupporterCanvas: false,
       iframe: null,
-      debugData: { logs: [], errors: [] },
+      debugData: { logs: [] },
     };
   }
 
@@ -50,6 +54,7 @@ export default class Program extends React.Component {
     this._worker = new Worker(this.props.program.currentCodeUrl);
     this._worker.onmessage = this._receiveMessage;
     this._worker.onerror = this._receiveError;
+    this._updateDebugData();
   }
 
   componentWillUnmount() {
@@ -99,34 +104,39 @@ export default class Program extends React.Component {
         this.props.onDataChange(sendData.data, () => {
           this._worker.postMessage({ messageId });
         });
-      } else if (sendData.name === "iframe") {
+      } else if (sendData.name === 'iframe') {
         this.setState({ iframe: sendData.data });
       }
     } else if (command === 'flushLogs') {
-      this.setState({ debugData: { ...this.state.debugData, logs: sendData } }, () => {
-        this._flushDebugData();
-      });
+      this._addLogs(sendData);
     }
   };
 
   _receiveError = error => {
-    const errorData = {
-      message: error.message,
+    const logData = {
+      name: 'Error',
+      args: [error.message],
       lineNumber: error.lineno,
       columnNumber: error.colno,
       filename: error.filename,
+      timestamp: Date.now(),
     };
-    if (errorData.filename.match(/\/program\..*/)) errorData.filename = 'program';
-    const errors = this.state.debugData.errors.slice(0, 19).concat([errorData]);
+    if (logData.filename.match(/\/program\..*/)) logData.filename = 'program';
+    this._addLogs([logData]);
+  };
 
-    this.setState({ debugData: { ...this.state.debugData, errors } }, () => {
-      this._flushDebugData();
+  _addLogs = newLogs => {
+    const logs = sortBy(this.state.debugData.logs.concat(newLogs), 'timestamp').slice(
+      -maxLogLength
+    );
+    this.setState({ debugData: { ...this.state.debugData, logs } }, () => {
+      this._updateDebugData();
     });
   };
 
-  _flushDebugData = () => {
+  _updateDebugData = throttle(() => {
     xhr.put(this.props.program.debugUrl, { json: this.state.debugData }, () => {});
-  };
+  }, 300);
 
   render() {
     const { program } = this.props;
@@ -215,12 +225,6 @@ export default class Program extends React.Component {
       zIndex: 1,
     };
 
-    return (
-      <iframe
-        key="iframe"
-        src={this.state.iframe.src}
-        style={{...iframeStyle }}
-      />
-    );
+    return <iframe key="iframe" src={this.state.iframe.src} style={{ ...iframeStyle }} />;
   }
 }

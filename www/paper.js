@@ -32,14 +32,13 @@
   };
 
   let logs = [];
-  const maxLogLength = 100;
   let willFlushLogs = false;
   function flushLogs() {
     if (willFlushLogs) return;
     setTimeout(() => {
       willFlushLogs = false;
       workerContext.postMessage({ command: 'flushLogs', sendData: logs });
-    }, 500);
+    }, 50);
     willFlushLogs = true;
   }
   function log(name, args) {
@@ -48,6 +47,8 @@
       args: ['"[unknown]"'],
       lineNumber: 0,
       columnNumber: 0,
+      filename: 'program',
+      timestamp: Date.now(),
     };
 
     try {
@@ -62,7 +63,6 @@
     }
 
     logs.push(logData);
-    if (logs.length > maxLogLength) logs = logs.slice(-maxLogLength);
     flushLogs();
   }
   workerContext.console = {};
@@ -70,5 +70,4 @@
   workerContext.console.warn = (...args) => log('console.warn', args);
   workerContext.console.error = (...args) => log('console.error', args);
   workerContext.console.info = (...args) => log('console.info', args);
-  flushLogs();
 })(self);
