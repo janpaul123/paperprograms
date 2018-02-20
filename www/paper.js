@@ -62,7 +62,7 @@
     }
 
     logs.push(logData);
-    if (logs.length > maxLogLength) logs = logs.slice(0, maxLogLength);
+    if (logs.length > maxLogLength) logs = logs.slice(-maxLogLength);
     flushLogs();
   }
   workerContext.console = {};
