@@ -19,23 +19,24 @@ function matrixToCssTransform(matrix) {
   return `matrix3d(${values.join(',')})`;
 }
 
-const canvasWidth = 100;
-const canvasHeight = 150;
-const canvasSizeMatrix = forwardProjectionMatrixForPoints([
-  { x: 0, y: 0 },
-  { x: canvasWidth, y: 0 },
-  { x: canvasWidth, y: canvasHeight },
-  { x: 0, y: canvasHeight },
-]).adjugate();
+const canvasSizeMatrixes = [];
+function getCanvasSizeMatrix(width, height) {
+  const key = `${width},${height}`;
+  canvasSizeMatrixes[key] =
+    canvasSizeMatrixes[key] ||
+    forwardProjectionMatrixForPoints([
+      { x: 0, y: 0 },
+      { x: width, y: 0 },
+      { x: width, y: height },
+      { x: 0, y: height },
+    ]).adjugate();
+  return canvasSizeMatrixes[key];
+}
 
+const canvasWidth = 100;
+const canvasHeight = canvasWidth * 1.5;
 const iframeWidth = 400;
 const iframeHeight = iframeWidth * 1.5;
-const iframeSizeMatrix = forwardProjectionMatrixForPoints([
-  { x: 0, y: 0 },
-  { x: iframeWidth, y: 0 },
-  { x: iframeWidth, y: iframeHeight },
-  { x: 0, y: iframeHeight },
-]).adjugate();
 
 const maxLogLength = 100;
 
@@ -43,7 +44,7 @@ export default class Program extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      showCanvas: false,
+      canvasSize: null,
       showSupporterCanvas: false,
       iframe: null,
       debugData: { logs: [] },
@@ -71,7 +72,7 @@ export default class Program extends React.Component {
           receiveData: { object: this.props.program.number.toString() },
         });
       } else if (sendData.name === 'canvas') {
-        if (this.state.showCanvas) {
+        if (this.state.canvasSize) {
           this._worker.postMessage({ messageId, receiveData: { object: null } });
         } else {
           this._canvasAvailableCallback = canvas => {
@@ -81,7 +82,7 @@ export default class Program extends React.Component {
             ]);
             delete this._canvasAvailableCallback;
           };
-          this.setState({ showCanvas: true });
+          this.setState({ canvasSize: { width: 100, height: 150 } });
         }
       } else if (sendData.name === 'supporterCanvas') {
         if (this.state.showSupporterCanvas) {
@@ -138,11 +139,18 @@ export default class Program extends React.Component {
     xhr.put(this.props.program.debugUrl, { json: this.state.debugData }, () => {});
   }, 300);
 
+  _getCssTransform = (width, height) => {
+    return matrixToCssTransform(
+      forwardProjectionMatrixForPoints(
+        this.props.program.points.map(point =>
+          mult(point, { x: this.props.width, y: this.props.height })
+        )
+      ).multiply(getCanvasSizeMatrix(width, height))
+    );
+  };
+
   render() {
     const { program } = this.props;
-    const matrix = forwardProjectionMatrixForPoints(
-      program.points.map(point => mult(point, { x: this.props.width, y: this.props.height }))
-    ).multiply(canvasSizeMatrix);
 
     const canvasStyle = {
       position: 'absolute',
@@ -150,7 +158,7 @@ export default class Program extends React.Component {
       top: 0,
       width: canvasWidth,
       height: canvasHeight,
-      transform: matrixToCssTransform(matrix),
+      transform: this._getCssTransform(canvasWidth, canvasHeight),
       transformOrigin: '0 0 0',
       zIndex: 1,
     };
@@ -170,7 +178,7 @@ export default class Program extends React.Component {
           }
           style={divStyle}
         />
-        {this.state.showCanvas && (
+        {this.state.canvasSize && (
           <canvas
             key="canvas"
             ref={el => {
@@ -209,18 +217,13 @@ export default class Program extends React.Component {
   }
 
   renderIframe() {
-    const { program } = this.props;
-    const matrix = forwardProjectionMatrixForPoints(
-      program.points.map(point => mult(point, { x: this.props.width, y: this.props.height }))
-    ).multiply(iframeSizeMatrix);
-
     const iframeStyle = {
       position: 'absolute',
       left: 0,
       top: 0,
       width: iframeWidth,
       height: iframeHeight,
-      transform: matrixToCssTransform(matrix),
+      transform: this._getCssTransform(iframeWidth, iframeHeight),
       transformOrigin: '0 0 0',
       zIndex: 1,
     };
