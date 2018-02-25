@@ -33,8 +33,8 @@ function getCanvasSizeMatrix(width, height) {
   return canvasSizeMatrixes[key];
 }
 
-const canvasWidth = 100;
-const canvasHeight = canvasWidth * 1.5;
+const defaultCanvasWidth = 100;
+const defaultCanvasHeight = defaultCanvasWidth * 1.5;
 const iframeWidth = 400;
 const iframeHeight = iframeWidth * 1.5;
 
@@ -82,7 +82,7 @@ export default class Program extends React.Component {
             ]);
             delete this._canvasAvailableCallback;
           };
-          this.setState({ canvasSize: { width: 100, height: 150 } });
+          this.setState({ canvasSize: { width: defaultCanvasWidth, height: defaultCanvasHeight } });
         }
       } else if (sendData.name === 'supporterCanvas') {
         if (this.state.showSupporterCanvas) {
@@ -151,22 +151,7 @@ export default class Program extends React.Component {
 
   render() {
     const { program } = this.props;
-
-    const canvasStyle = {
-      position: 'absolute',
-      left: 0,
-      top: 0,
-      width: canvasWidth,
-      height: canvasHeight,
-      transform: this._getCssTransform(canvasWidth, canvasHeight),
-      transformOrigin: '0 0 0',
-      zIndex: 1,
-    };
-    const divStyle = { ...canvasStyle, zIndex: 3 };
-    if (program.editorInfo.claimed)
-      divStyle.boxShadow = `0 0 0 1px ${randomColor({
-        seed: program.editorInfo.editorId,
-      })} inset`;
+    const { canvasSize } = this.state;
 
     return (
       <div>
@@ -176,9 +161,23 @@ export default class Program extends React.Component {
               ? styles.canvasWithChangedCode
               : ''
           }
-          style={divStyle}
+          style={{
+            position: 'absolute',
+            left: 0,
+            top: 0,
+            width: 200,
+            height: 200,
+            transform: this._getCssTransform(200, 200),
+            transformOrigin: '0 0 0',
+            zIndex: 3,
+            boxShadow: program.editorInfo.claimed
+              ? `0 0 0 1px ${randomColor({
+                  seed: program.editorInfo.editorId,
+                })} inset`
+              : '',
+          }}
         />
-        {this.state.canvasSize && (
+        {canvasSize && (
           <canvas
             key="canvas"
             ref={el => {
@@ -186,9 +185,18 @@ export default class Program extends React.Component {
                 this._canvasAvailableCallback(el);
               }
             }}
-            width={canvasWidth}
-            height={canvasHeight}
-            style={canvasStyle}
+            width={canvasSize.width}
+            height={canvasSize.height}
+            style={{
+              position: 'absolute',
+              left: 0,
+              top: 0,
+              width: canvasSize.width,
+              height: canvasSize.height,
+              transform: this._getCssTransform(canvasSize.width, canvasSize.height),
+              transformOrigin: '0 0 0',
+              zIndex: 1,
+            }}
           />
         )}
         {this.state.iframe && this.renderIframe()}
