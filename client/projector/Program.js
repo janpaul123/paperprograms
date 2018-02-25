@@ -33,10 +33,11 @@ function getCanvasSizeMatrix(width, height) {
   return canvasSizeMatrixes[key];
 }
 
+const paperRatio = 1.3; // US Letter
 const defaultCanvasWidth = 100;
-const defaultCanvasHeight = defaultCanvasWidth * 1.5;
+const defaultCanvasHeight = defaultCanvasWidth * paperRatio;
 const iframeWidth = 400;
-const iframeHeight = iframeWidth * 1.5;
+const iframeHeight = iframeWidth * paperRatio;
 
 const maxLogLength = 100;
 
