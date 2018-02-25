@@ -37,6 +37,7 @@ export default class CameraMain extends React.Component {
       } else {
         this.setState({ spaceData: response.body }, () => {
           if (this.props.config.autoPrintEnabled) this._autoPrint();
+          this._programsChange(this.props.paperProgramsProgramsToRender);
         });
       }
 
@@ -99,6 +100,28 @@ export default class CameraMain extends React.Component {
     );
   };
 
+  _programsChange = (programsToRender) => {
+    this.props.onProgramsChange(
+      programsToRender
+        .map(program => {
+          const programWithData = this.state.spaceData.programs.find(
+            program2 => program2.number.toString() === program.number.toString()
+          );
+          if (!programWithData) return;
+          return {
+            ...program,
+            currentCodeUrl: programWithData.currentCodeUrl,
+            currentCodeHash: programWithData.currentCodeHash,
+            debugUrl: programWithData.debugUrl,
+            claimUrl: programWithData.claimUrl,
+            editorInfo: programWithData.editorInfo,
+            codeHasChanged: programWithData.codeHasChanged,
+          };
+        })
+        .filter(Boolean)
+    );
+  };
+
   render() {
     const padding = parseInt(styles.cameraMainPadding);
     const sidebarWidth = parseInt(styles.cameraMainSidebarWidth);
@@ -113,25 +136,7 @@ export default class CameraMain extends React.Component {
             onConfigChange={this.props.onConfigChange}
             onProcessVideo={({ programsToRender, framerate }) => {
               this.setState({ framerate });
-              this.props.onProgramsChange(
-                programsToRender
-                  .map(program => {
-                    const programWithData = this.state.spaceData.programs.find(
-                      program2 => program2.number.toString() === program.number.toString()
-                    );
-                    if (!programWithData) return;
-                    return {
-                      ...program,
-                      currentCodeUrl: programWithData.currentCodeUrl,
-                      currentCodeHash: programWithData.currentCodeHash,
-                      debugUrl: programWithData.debugUrl,
-                      claimUrl: programWithData.claimUrl,
-                      editorInfo: programWithData.editorInfo,
-                      codeHasChanged: programWithData.codeHasChanged,
-                    };
-                  })
-                  .filter(Boolean)
-              );
+              this._programsChange(programsToRender);
             }}
             allowSelectingDetectedPoints={this.state.selectedColorIndex !== -1}
             onSelectColor={color => {
@@ -314,6 +319,23 @@ export default class CameraMain extends React.Component {
                 }
               />{' '}
               programs
+            </div>
+          </div>
+
+          <div className={styles.sidebarSection}>
+            <div className={styles.sidebarSectionSection}>debugging</div>
+            <div className={styles.sidebarSectionSection}>
+              <input
+                type="checkbox"
+                checked={this.props.config.freezeDetection}
+                onChange={() =>
+                  this.props.onConfigChange({
+                    ...this.props.config,
+                    freezeDetection: !this.props.config.freezeDetection,
+                  })
+                }
+              />{' '}
+              freeze detection
             </div>
           </div>
         </div>
