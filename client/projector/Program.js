@@ -83,7 +83,14 @@ export default class Program extends React.Component {
             ]);
             delete this._canvasAvailableCallback;
           };
-          this.setState({ canvasSize: { width: defaultCanvasWidth, height: defaultCanvasHeight } });
+          this.setState({
+            canvasSize: {
+              width: sendData.data.width || defaultCanvasWidth,
+              height:
+                sendData.data.height ||
+                (sendData.data.width ? sendData.data.width * paperRatio : defaultCanvasHeight),
+            },
+          });
         }
       } else if (sendData.name === 'supporterCanvas') {
         if (this.state.showSupporterCanvas) {

@@ -8,13 +8,20 @@
   });
 
   workerContext.paper = {
-    get(name, callback) {
+    get(name, data, callback) {
+      if (typeof data === 'function') {
+        callback = data;
+        data = {};
+      } else if (typeof data !== 'object') {
+        data = {};
+      }
+
       messageId++;
-      workerContext.postMessage({ command: 'get', sendData: { name }, messageId });
+      workerContext.postMessage({ command: 'get', sendData: { name, data }, messageId });
       return new workerContext.Promise(resolve => {
-        messageCallbacks[messageId] = data => {
-          if (callback) callback(data.object);
-          resolve(data.object);
+        messageCallbacks[messageId] = receivedData => {
+          if (callback) callback(receivedData.object);
+          resolve(receivedData.object);
         };
       });
     },
