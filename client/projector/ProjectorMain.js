@@ -10,6 +10,7 @@ export default class ProjectorMain extends React.Component {
     const multPoint = { x: width, y: height };
 
     const papers = {};
+    const programsToRenderByNumber = {};
     this.props.programsToRender.forEach(program => {
       const centerPoint = { x: 0, y: 0 };
       program.points.forEach(point => {
@@ -27,6 +28,8 @@ export default class ProjectorMain extends React.Component {
         },
         data: this.props.dataByProgramNumber[program.number] || {},
       };
+
+      programsToRenderByNumber[program.number] = program;
     });
 
     return (
@@ -34,7 +37,8 @@ export default class ProjectorMain extends React.Component {
         {this.props.programsToRender.map(program => (
           <Program
             key={`${program.number}-${program.currentCodeHash}`}
-            program={program}
+            programsToRenderByNumber={programsToRenderByNumber}
+            programNumber={program.number}
             papers={papers}
             width={width}
             height={height}

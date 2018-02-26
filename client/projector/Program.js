@@ -45,7 +45,7 @@ export default class Program extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      canvasSize: null,
+      canvasSizeByProgramNumber: {},
       showSupporterCanvas: false,
       iframe: null,
       debugData: { logs: [] },
@@ -53,7 +53,7 @@ export default class Program extends React.Component {
   }
 
   componentDidMount() {
-    this._worker = new Worker(this.props.program.currentCodeUrl);
+    this._worker = new Worker(this._program().currentCodeUrl);
     this._worker.onmessage = this._receiveMessage;
     this._worker.onerror = this._receiveError;
     this._updateDebugData();
@@ -63,6 +63,10 @@ export default class Program extends React.Component {
     this._worker.terminate();
   }
 
+  _program = () => {
+    return this.props.programsToRenderByNumber[this.props.programNumber];
+  };
+
   _receiveMessage = event => {
     const { command, sendData, messageId } = event.data;
 
@@ -70,25 +74,30 @@ export default class Program extends React.Component {
       if (sendData.name === 'number') {
         this._worker.postMessage({
           messageId,
-          receiveData: { object: this.props.program.number.toString() },
+          receiveData: { object: this._program().number.toString() },
         });
       } else if (sendData.name === 'canvas') {
-        if (this.state.canvasSize) {
+        const programNumber = sendData.data.number || this._program().number;
+
+        if (this.state.canvasSizeByProgramNumber[programNumber]) {
           this._worker.postMessage({ messageId, receiveData: { object: null } });
         } else {
-          this._canvasAvailableCallback = canvas => {
+          this[`_canvasAvailableCallback${programNumber}`] = canvas => {
             const offscreen = canvas.transferControlToOffscreen();
             this._worker.postMessage({ messageId, receiveData: { object: offscreen } }, [
               offscreen,
             ]);
-            delete this._canvasAvailableCallback;
+            delete this[`_canvasAvailableCallback${programNumber}`];
           };
           this.setState({
-            canvasSize: {
-              width: sendData.data.width || defaultCanvasWidth,
-              height:
-                sendData.data.height ||
-                (sendData.data.width ? sendData.data.width * paperRatio : defaultCanvasHeight),
+            canvasSizeByProgramNumber: {
+              ...this.state.canvasSizeByProgramNumber,
+              [programNumber]: {
+                width: sendData.data.width || defaultCanvasWidth,
+                height:
+                  sendData.data.height ||
+                  (sendData.data.width ? sendData.data.width * paperRatio : defaultCanvasHeight),
+              },
             },
           });
         }
@@ -144,22 +153,19 @@ export default class Program extends React.Component {
   };
 
   _updateDebugData = throttle(() => {
-    xhr.put(this.props.program.debugUrl, { json: this.state.debugData }, () => {});
+    xhr.put(this._program().debugUrl, { json: this.state.debugData }, () => {});
   }, 300);
 
-  _getCssTransform = (width, height) => {
+  _getCssTransform = (program, width, height) => {
     return matrixToCssTransform(
       forwardProjectionMatrixForPoints(
-        this.props.program.points.map(point =>
-          mult(point, { x: this.props.width, y: this.props.height })
-        )
+        program.points.map(point => mult(point, { x: this.props.width, y: this.props.height }))
       ).multiply(getCanvasSizeMatrix(width, height))
     );
   };
 
   render() {
-    const { program } = this.props;
-    const { canvasSize } = this.state;
+    const program = this._program();
 
     return (
       <div>
@@ -175,7 +181,7 @@ export default class Program extends React.Component {
             top: 0,
             width: 200,
             height: 200,
-            transform: this._getCssTransform(200, 200),
+            transform: this._getCssTransform(this._program(), 200, 200),
             transformOrigin: '0 0 0',
             zIndex: 3,
             boxShadow: program.editorInfo.claimed
@@ -185,28 +191,37 @@ export default class Program extends React.Component {
               : '',
           }}
         />
-        {canvasSize && (
-          <canvas
-            key="canvas"
-            ref={el => {
-              if (el && this._canvasAvailableCallback) {
-                this._canvasAvailableCallback(el);
-              }
-            }}
-            width={canvasSize.width}
-            height={canvasSize.height}
-            style={{
-              position: 'absolute',
-              left: 0,
-              top: 0,
-              width: canvasSize.width,
-              height: canvasSize.height,
-              transform: this._getCssTransform(canvasSize.width, canvasSize.height),
-              transformOrigin: '0 0 0',
-              zIndex: 1,
-            }}
-          />
-        )}
+        {Object.keys(this.state.canvasSizeByProgramNumber).map(programNumberString => {
+          const { width, height } = this.state.canvasSizeByProgramNumber[programNumberString];
+          const programNumber = parseInt(programNumberString, 10);
+
+          return (
+            <canvas
+              key="canvas"
+              ref={el => {
+                if (el && this[`_canvasAvailableCallback${programNumber}`]) {
+                  this[`_canvasAvailableCallback${programNumber}`](el);
+                }
+              }}
+              width={width}
+              height={height}
+              style={{
+                position: 'absolute',
+                left: 0,
+                top: 0,
+                width,
+                height,
+                transform: this._getCssTransform(
+                  this.props.programsToRenderByNumber[programNumber],
+                  width,
+                  height
+                ),
+                transformOrigin: '0 0 0',
+                zIndex: programNumber == program.number ? 1 : 2,
+              }}
+            />
+          );
+        })}
         {this.state.iframe && this.renderIframe()}
         {this.state.showSupporterCanvas && (
           <canvas
@@ -239,7 +254,7 @@ export default class Program extends React.Component {
       top: 0,
       width: iframeWidth,
       height: iframeHeight,
-      transform: this._getCssTransform(iframeWidth, iframeHeight),
+      transform: this._getCssTransform(this._program(), iframeWidth, iframeHeight),
       transformOrigin: '0 0 0',
       zIndex: 1,
     };
