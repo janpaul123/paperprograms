@@ -19,23 +19,25 @@ function matrixToCssTransform(matrix) {
   return `matrix3d(${values.join(',')})`;
 }
 
-const canvasWidth = 100;
-const canvasHeight = 150;
-const canvasSizeMatrix = forwardProjectionMatrixForPoints([
-  { x: 0, y: 0 },
-  { x: canvasWidth, y: 0 },
-  { x: canvasWidth, y: canvasHeight },
-  { x: 0, y: canvasHeight },
-]).adjugate();
+const canvasSizeMatrixes = [];
+function getCanvasSizeMatrix(width, height) {
+  const key = `${width},${height}`;
+  canvasSizeMatrixes[key] =
+    canvasSizeMatrixes[key] ||
+    forwardProjectionMatrixForPoints([
+      { x: 0, y: 0 },
+      { x: width, y: 0 },
+      { x: width, y: height },
+      { x: 0, y: height },
+    ]).adjugate();
+  return canvasSizeMatrixes[key];
+}
 
+const paperRatio = 1.3; // US Letter
+const defaultCanvasWidth = 100;
+const defaultCanvasHeight = defaultCanvasWidth * paperRatio;
 const iframeWidth = 400;
-const iframeHeight = iframeWidth * 1.5;
-const iframeSizeMatrix = forwardProjectionMatrixForPoints([
-  { x: 0, y: 0 },
-  { x: iframeWidth, y: 0 },
-  { x: iframeWidth, y: iframeHeight },
-  { x: 0, y: iframeHeight },
-]).adjugate();
+const iframeHeight = iframeWidth * paperRatio;
 
 const maxLogLength = 100;
 
@@ -43,7 +45,7 @@ export default class Program extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      showCanvas: false,
+      canvasSizeByProgramNumber: {},
       showSupporterCanvas: false,
       iframe: null,
       debugData: { logs: [] },
@@ -51,7 +53,7 @@ export default class Program extends React.Component {
   }
 
   componentDidMount() {
-    this._worker = new Worker(this.props.program.currentCodeUrl);
+    this._worker = new Worker(this._program().currentCodeUrl);
     this._worker.onmessage = this._receiveMessage;
     this._worker.onerror = this._receiveError;
     this._updateDebugData();
@@ -61,6 +63,10 @@ export default class Program extends React.Component {
     this._worker.terminate();
   }
 
+  _program = () => {
+    return this.props.programsToRenderByNumber[this.props.programNumber];
+  };
+
   _receiveMessage = event => {
     const { command, sendData, messageId } = event.data;
 
@@ -68,20 +74,32 @@ export default class Program extends React.Component {
       if (sendData.name === 'number') {
         this._worker.postMessage({
           messageId,
-          receiveData: { object: this.props.program.number.toString() },
+          receiveData: { object: this._program().number.toString() },
         });
       } else if (sendData.name === 'canvas') {
-        if (this.state.showCanvas) {
+        const programNumber = sendData.data.number || this._program().number;
+
+        if (this.state.canvasSizeByProgramNumber[programNumber]) {
           this._worker.postMessage({ messageId, receiveData: { object: null } });
         } else {
-          this._canvasAvailableCallback = canvas => {
+          this[`_canvasAvailableCallback${programNumber}`] = canvas => {
             const offscreen = canvas.transferControlToOffscreen();
             this._worker.postMessage({ messageId, receiveData: { object: offscreen } }, [
               offscreen,
             ]);
-            delete this._canvasAvailableCallback;
+            delete this[`_canvasAvailableCallback${programNumber}`];
           };
-          this.setState({ showCanvas: true });
+          this.setState({
+            canvasSizeByProgramNumber: {
+              ...this.state.canvasSizeByProgramNumber,
+              [programNumber]: {
+                width: sendData.data.width || defaultCanvasWidth,
+                height:
+                  sendData.data.height ||
+                  (sendData.data.width ? sendData.data.width * paperRatio : defaultCanvasHeight),
+              },
+            },
+          });
         }
       } else if (sendData.name === 'supporterCanvas') {
         if (this.state.showSupporterCanvas) {
@@ -135,30 +153,19 @@ export default class Program extends React.Component {
   };
 
   _updateDebugData = throttle(() => {
-    xhr.put(this.props.program.debugUrl, { json: this.state.debugData }, () => {});
+    xhr.put(this._program().debugUrl, { json: this.state.debugData }, () => {});
   }, 300);
 
-  render() {
-    const { program } = this.props;
-    const matrix = forwardProjectionMatrixForPoints(
-      program.points.map(point => mult(point, { x: this.props.width, y: this.props.height }))
-    ).multiply(canvasSizeMatrix);
+  _getCssTransform = (program, width, height) => {
+    return matrixToCssTransform(
+      forwardProjectionMatrixForPoints(
+        program.points.map(point => mult(point, { x: this.props.width, y: this.props.height }))
+      ).multiply(getCanvasSizeMatrix(width, height))
+    );
+  };
 
-    const canvasStyle = {
-      position: 'absolute',
-      left: 0,
-      top: 0,
-      width: canvasWidth,
-      height: canvasHeight,
-      transform: matrixToCssTransform(matrix),
-      transformOrigin: '0 0 0',
-      zIndex: 1,
-    };
-    const divStyle = { ...canvasStyle, zIndex: 3 };
-    if (program.editorInfo.claimed)
-      divStyle.boxShadow = `0 0 0 1px ${randomColor({
-        seed: program.editorInfo.editorId,
-      })} inset`;
+  render() {
+    const program = this._program();
 
     return (
       <div>
@@ -168,21 +175,53 @@ export default class Program extends React.Component {
               ? styles.canvasWithChangedCode
               : ''
           }
-          style={divStyle}
+          style={{
+            position: 'absolute',
+            left: 0,
+            top: 0,
+            width: 200,
+            height: 200,
+            transform: this._getCssTransform(this._program(), 200, 200),
+            transformOrigin: '0 0 0',
+            zIndex: 3,
+            boxShadow: program.editorInfo.claimed
+              ? `0 0 0 1px ${randomColor({
+                  seed: program.editorInfo.editorId,
+                })} inset`
+              : '',
+          }}
         />
-        {this.state.showCanvas && (
-          <canvas
-            key="canvas"
-            ref={el => {
-              if (el && this._canvasAvailableCallback) {
-                this._canvasAvailableCallback(el);
-              }
-            }}
-            width={canvasWidth}
-            height={canvasHeight}
-            style={canvasStyle}
-          />
-        )}
+        {Object.keys(this.state.canvasSizeByProgramNumber).map(programNumberString => {
+          const { width, height } = this.state.canvasSizeByProgramNumber[programNumberString];
+          const programNumber = parseInt(programNumberString, 10);
+
+          return (
+            <canvas
+              key="canvas"
+              ref={el => {
+                if (el && this[`_canvasAvailableCallback${programNumber}`]) {
+                  this[`_canvasAvailableCallback${programNumber}`](el);
+                }
+              }}
+              width={width}
+              height={height}
+              style={{
+                position: 'absolute',
+                left: 0,
+                top: 0,
+                width,
+                height,
+                transform: this._getCssTransform(
+                  this.props.programsToRenderByNumber[programNumber],
+                  width,
+                  height
+                ),
+                transformOrigin: '0 0 0',
+                zIndex: programNumber == program.number ? 1 : 2,
+              }}
+            />
+          );
+        })}
         {this.state.iframe && this.renderIframe()}
         {this.state.showSupporterCanvas && (
           <canvas
@@ -209,18 +248,13 @@ export default class Program extends React.Component {
   }
 
   renderIframe() {
-    const { program } = this.props;
-    const matrix = forwardProjectionMatrixForPoints(
-      program.points.map(point => mult(point, { x: this.props.width, y: this.props.height }))
-    ).multiply(iframeSizeMatrix);
-
     const iframeStyle = {
       position: 'absolute',
       left: 0,
       top: 0,
       width: iframeWidth,
       height: iframeHeight,
-      transform: matrixToCssTransform(matrix),
+      transform: this._getCssTransform(this._program(), iframeWidth, iframeHeight),
       transformOrigin: '0 0 0',
       zIndex: 1,
     };

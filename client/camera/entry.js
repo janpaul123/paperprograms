@@ -17,6 +17,7 @@ const defaultConfig = {
   showOverlayProgram: true,
   spaceUrl: new URL(`api/spaces/${uuidv4().slice(0, 8)}`, window.location.origin).toString(),
   autoPrintEnabled: false,
+  freezeDetection: false,
 };
 
 function sanitizeConfig(config) {
@@ -40,12 +41,14 @@ function render() {
   ReactDOM.render(
     <CameraMain
       config={JSON.parse(localStorage.paperProgramsConfig)}
+      paperProgramsProgramsToRender={JSON.parse(localStorage.paperProgramsProgramsToRender)}
       onConfigChange={config => {
         localStorage.paperProgramsConfig = JSON.stringify(config);
         render();
       }}
       onProgramsChange={programs => {
         localStorage.paperProgramsProgramsToRender = JSON.stringify(programs);
+        render();
       }}
     />,
     element

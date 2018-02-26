@@ -64,6 +64,9 @@ export default class CameraVideo extends React.Component {
   };
 
   _processVideo = () => {
+    setTimeout(this._processVideo);
+    if (this.props.config.freezeDetection) return;
+
     const displayMat = new cv.Mat(
       this._videoCapture.video.height,
       this._videoCapture.video.width,
@@ -86,8 +89,6 @@ export default class CameraVideo extends React.Component {
 
     cv.imshow(this._canvas, displayMat);
     displayMat.delete();
-
-    setTimeout(this._processVideo);
   };
 
   render() {

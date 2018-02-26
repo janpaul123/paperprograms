@@ -160,6 +160,7 @@ export default class EditorMain extends React.Component {
               value={this.state.code}
               onChange={code => this.setState({ code })}
               editorDidMount={this._onEditorDidMount}
+              options={{ tabSize: 2 }}
             />
           </div>
         )}
