@@ -34,6 +34,10 @@ localStorage.paperProgramsConfig = JSON.stringify(
   })
 );
 
+if (!localStorage.hasOwnProperty('paperProgramsProgramsToRender')) {
+  localStorage.paperProgramsProgramsToRender = JSON.stringify([]);
+}
+
 const element = document.createElement('div');
 document.body.appendChild(element);
 
