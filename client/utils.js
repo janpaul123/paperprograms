@@ -177,13 +177,12 @@ export function filterPapers(params, originPaperId, papers) {
   let position = params.position;
   let distance = params.distance;
   let getClosest = params.getClosest || false;
-  let includeSelf = params.includeSelf || true;
+  let includeSelf = params.includeSelf;
   let dataFormat = params.data;
   let wisker;
   if (typeof position !== 'undefined') {
     distance = params.distance || 150;
     getClosest = params.getClosest || true;
-    includeSelf = params.includeSelf || false;
     wisker = getPaperWisker(originPaper, position, distance);
   }
   let filteredPapers = {};
