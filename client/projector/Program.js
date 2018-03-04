@@ -4,7 +4,11 @@ import sortBy from 'lodash/sortBy';
 import throttle from 'lodash/throttle';
 import xhr from 'xhr';
 
-import { forwardProjectionMatrixForPoints, mult } from '../utils';
+import {
+  forwardProjectionMatrixForPoints,
+  mult,
+  filterPapers
+} from '../utils';
 import styles from './Program.css';
 
 function matrixToCssTransform(matrix) {
@@ -115,7 +119,11 @@ export default class Program extends React.Component {
           this.setState({ showSupporterCanvas: true });
         }
       } else if (sendData.name === 'papers') {
-        this._worker.postMessage({ messageId, receiveData: { object: this.props.papers } });
+        const thisPaper = this.props.paper[this.props.programNumber];
+        this._worker.postMessage({
+          messageId,
+          receiveData: { object: filterPapers(sendData.data, thisPaper, this.props.papers) }
+        });
       }
     } else if (command === 'set') {
       if (sendData.name === 'data') {

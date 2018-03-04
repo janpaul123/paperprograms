@@ -1,4 +1,5 @@
 import Matrix from 'node-matrices';
+import isArray from 'lodash/isArray';
 
 export function norm(vector) {
   if (vector.x !== undefined) return norm([vector.x, vector.y]);
@@ -18,6 +19,11 @@ export function diff(v1, v2) {
 export function mult(v1, v2) {
   if (v1.x !== undefined) return { x: v1.x * v2.x, y: v1.y * v2.y };
   return v1.map((value, index) => value * v2[index]);
+}
+
+export function scale(vector, scale) {
+  if (vector.x !== undefined) return { x: vector.x * scale, y: vector.y * scale };
+  return v1.map((value, index) => value * scale);
 }
 
 export function div(v1, v2) {
@@ -79,6 +85,18 @@ export function projectPoint(point, projectionMatrix) {
   };
 }
 
+// Adapted from https://stackoverflow.com/questions/9043805/test-if-two-lines-intersect-javascript-function
+export function intersects(v1,  v2,  v3,  v4) {
+  const det = (v2.x - v1.x) * (v4.y - v3.y) - (v4.x - v3.x) * (v2.y - v1.y);
+  if (det === 0) {
+    return false;
+  } else {
+    const lambda = ((v4.y - v3.y) * (v4.x - v1.x) + (v3.x - v4.x) * (v4.y - v1.y)) / det;
+    const gamma = ((v1.y - v2.y) * (v4.x - v1.x) + (v2.x - v1.x) * (v4.y - v1.y)) / det;
+    return (0 < lambda && lambda < 1) && (0 < gamma && gamma < 1);
+  }
+};
+
 export function getApiUrl(spaceName, suffix) {
   return new URL(`api/spaces/${spaceName}${suffix}`, window.location.origin).toString();
 }
@@ -98,4 +116,104 @@ export function codeToPrint(code) {
     if (!lines[i].match(commentRegex) && lines[i].trim().length !== 0) break;
   }
   return lines.slice(i).join('\n');
+}
+
+/**
+ * Check if a paper's data matches a given format
+ * @param  {Array}   dataFormat List of rules to validate the data against
+ *     ex: [{name: "coords", items: [{name: "lat", type: "Number"}, {name: "long", type: "Number"}]}]
+ * @param  {Object}  data       A paper's data object
+ *     ex: {"coords": [{lat: 93.01, long: 23.12}, {lat: 93.40, long: 23.49}]}
+ * @return {Boolean}
+ */
+function validatePaperData(dataFormat, data) {
+  dataFormatLoop:
+  for (let i in dataFormat) {
+    const format = dataFormat[i];
+    for (let key in data) {
+      const value = data[key];
+      const validName = typeof format.name === 'undefined' || format.name == key;
+      const validType = typeof format.type === 'undefined' || format.type == typeof dataKey;
+      // only check the format of the first list item, for speed and simplicity
+      const validItems = typeof format.items === 'undefined' || (
+        isArray(value) && (value.length === 0 || validatePaperData(format.items, value[0]))
+      );
+      if (validName && validType && validItems) {
+        continue dataFormatLoop;
+      }
+    }
+    if (typeof format.required === 'undefined' || format.required) {
+      return false;
+    }
+  }
+  return true;
+}
+
+export function getPaperWisker(paper, direction, length) {
+  const pts = paper.points;
+  const segment = (dir => {
+    switch(dir) {
+      case 'right':
+        return [pts.topRight, pts.bottomRight];
+      case 'down':
+        return [pts.bottomRight, pts.bottomLeft];
+      case 'left':
+        return [pts.bottomLeft, pts.topLeft];
+      default:
+        return [pts.topRight, pts.topLeft];
+    }
+  })(direction);
+  const segmentMiddle = scale(diff(...directionSegment), 0.5);
+  const wiskerEnd = moveAlongVector(length, diff(segmentMiddle, pts.center));
+  return [segmentMiddle, wiskerEnd];
+}
+
+export function filterPapers(params, originPaper, papers) {
+  if (typeof params === 'undefined') return papers;
+  let position = params.position;
+  let distance = params.distance;
+  let getClosest = params.getClosest || false;
+  let includeSelf = params.includeSelf || true;
+  let dataFormat = params.data;
+  let wisker;
+  if (typeof position !== 'undefined') {
+    distance = params.distance || 150;
+    getClosest = params.getClosest || true;
+    includeSelf = params.includeSelf || false;
+    wisker = getPaperWisker(originPaper, position, distance);
+  }
+  let filteredPapers = {};
+  let closestDistance = null;
+  for (let paperId in papers) {
+    const paper = papers[paperId];
+    const points = paper.points;
+    if (!includeSelf && paperId === this.props.programNumber) {
+      continue;
+    }
+    if (dataFormat && !validatePaperData(dataFormat, paper.data)) {
+      continue;
+    }
+    const centerDistance = norm(diff(originPaper.points.center, points.center));
+    if (position && wisker) {
+      const paperIntersectsWisker = (
+        intersects(...wisker, points.topLeft, points.topRight) ||
+        intersects(...wisker, points.topRight, points.bottomRight) ||
+        intersects(...wisker, points.bottomRight, points.bottomLeft) ||
+        intersects(...wisker, points.bottomLeft, points.topLeft)
+      )
+      if (!paperIntersectsWisker) {
+        continue;
+      }
+    } else if (distance && centerDistance > distance) {
+      continue;
+    }
+    if (getClosest) {
+      if (closestDistance === null || centerDistance < closestDistance) {
+        closestDistance = centerDistance;
+        filteredPapers = paper;
+      }
+    } else {
+      filteredPapers[paperId] = paper;
+    }
+  }
 }
