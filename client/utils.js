@@ -179,11 +179,7 @@ export function filterPapers(params, originPaperId, papers) {
     return papers;
   }
   const originPaper = papers[originPaperId];
-  let position = params.position;
-  let distance = params.distance;
-  let closest = params.closest || false;
-  let includeMe = params.includeMe;
-  let dataFormat = params.data;
+  let {position, distance, closest, includeMe, data: dataFormat} = params;
   let wisker;
   if (typeof position !== 'undefined') {
     distance = params.distance || 150;
