@@ -181,13 +181,13 @@ export function filterPapers(params, originPaperId, papers) {
   const originPaper = papers[originPaperId];
   let position = params.position;
   let distance = params.distance;
-  let getClosest = params.getClosest || false;
-  let includeSelf = params.includeSelf;
+  let closest = params.closest || false;
+  let includeMe = params.includeMe;
   let dataFormat = params.data;
   let wisker;
   if (typeof position !== 'undefined') {
     distance = params.distance || 150;
-    getClosest = params.getClosest || true;
+    closest = params.closest || true;
     wisker = getPaperWisker(originPaper, position, distance);
   }
   let filteredPapers = {};
@@ -195,7 +195,7 @@ export function filterPapers(params, originPaperId, papers) {
   for (let paperId in papers) {
     const paper = papers[paperId];
     const points = paper.points;
-    if (!includeSelf && paperId === originPaperId) {
+    if (!includeMe && paperId === originPaperId) {
       continue;
     }
     if (dataFormat && !validatePaperData(dataFormat, paper.data)) {
@@ -215,7 +215,7 @@ export function filterPapers(params, originPaperId, papers) {
     } else if (distance && centerDistance > distance) {
       continue;
     }
-    if (getClosest) {
+    if (closest) {
       if (closestDistance === null || centerDistance < closestDistance) {
         closestDistance = centerDistance;
         filteredPapers = {[paperId]: paper};
