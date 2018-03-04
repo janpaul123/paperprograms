@@ -218,7 +218,7 @@ export function filterPapers(params, originPaperId, papers) {
     if (getClosest) {
       if (closestDistance === null || centerDistance < closestDistance) {
         closestDistance = centerDistance;
-        filteredPapers = paper;
+        filteredPapers = {[paperId]: paper};
       }
     } else {
       filteredPapers[paperId] = paper;
