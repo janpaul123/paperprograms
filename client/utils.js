@@ -163,8 +163,8 @@ export function getPaperWisker(paper, direction, length) {
         return [pts.topRight, pts.topLeft];
     }
   })(direction);
-  const segmentMiddle = scale(diff(...directionSegment), 0.5);
-  const wiskerEnd = moveAlongVector(length, diff(segmentMiddle, pts.center));
+  const segmentMiddle = add(segment[1], scale(diff(...segment), 0.5));
+  const wiskerEnd = add(segmentMiddle, moveAlongVector(length, diff(segmentMiddle, pts.center)));
   return [segmentMiddle, wiskerEnd];
 }
 
