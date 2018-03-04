@@ -121,33 +121,38 @@ export function codeToPrint(code) {
 
 /**
  * Check if a paper's data matches a given format
- * @param  {Array}   dataFormat List of rules to validate the data against
+ * @param  {Array | Object} dataFormat List of rules to validate the data against
  *     ex: [{name: "coords", items: [{name: "lat", type: "Number"}, {name: "long", type: "Number"}]}]
- * @param  {Object}  data       A paper's data object
+ * @param  {Object}         data       A paper's data object
  *     ex: {"coords": [{lat: 93.01, long: 23.12}, {lat: 93.40, long: 23.49}]}
  * @return {Boolean}
  */
-function validatePaperData(dataFormat, data) {
+function validatePaperData(_dataFormat, data) {
+  const dataFormat = ([]).concat(_dataFormat);  // accept {...} or [{...}, ...]
+  if (dataFormat.length === 0) return true;
+  let anyRequirementSatisfied = false;
   dataFormatLoop:
   for (let i in dataFormat) {
     const format = dataFormat[i];
     for (let key in data) {
       const value = data[key];
       const validName = typeof format.name === 'undefined' || format.name == key;
-      const validType = typeof format.type === 'undefined' || format.type == typeof dataKey;
+      const validType = typeof format.type === 'undefined' || format.type == typeof value;
+      const validValue = typeof format.value === 'undefined' || format.value == value;
       // only check the format of the first list item, for speed and simplicity
       const validItems = typeof format.items === 'undefined' || (
         isArray(value) && (value.length === 0 || validatePaperData(format.items, value[0]))
       );
-      if (validName && validType && validItems) {
+      if (validName && validType && validValue && validItems) {
+        anyRequirementSatisfied = true;
         continue dataFormatLoop;
       }
     }
-    if (typeof format.required === 'undefined' || format.required) {
+    if (format.required) {
       return false;
     }
   }
-  return true;
+  return anyRequirementSatisfied;
 }
 
 export function getPaperWisker(paper, direction, length) {
