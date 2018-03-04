@@ -183,7 +183,7 @@ export function filterPapers(params, originPaperId, papers) {
   let wisker;
   if (typeof position !== 'undefined') {
     distance = params.distance || 150;
-    closest = params.closest || true;
+    closest = (typeof params.closest === 'undefined') ? true : params.closest;
     wisker = getPaperWisker(originPaper, position, distance);
   }
   let filteredPapers = {};
