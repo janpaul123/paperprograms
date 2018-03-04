@@ -1,5 +1,6 @@
 import Matrix from 'node-matrices';
 import isArray from 'lodash/isArray';
+import isEmpty from 'lodash/isEmpty';
 
 export function norm(vector) {
   if (vector.x !== undefined) return norm([vector.x, vector.y]);
@@ -168,8 +169,11 @@ export function getPaperWisker(paper, direction, length) {
   return [segmentMiddle, wiskerEnd];
 }
 
-export function filterPapers(params, originPaper, papers) {
-  if (typeof params === 'undefined') return papers;
+export function filterPapers(params, originPaperId, papers) {
+  if (typeof params === 'undefined' || isEmpty(params)) {
+    return papers;
+  }
+  const originPaper = papers[originPaperId];
   let position = params.position;
   let distance = params.distance;
   let getClosest = params.getClosest || false;
@@ -187,7 +191,7 @@ export function filterPapers(params, originPaper, papers) {
   for (let paperId in papers) {
     const paper = papers[paperId];
     const points = paper.points;
-    if (!includeSelf && paperId === this.props.programNumber) {
+    if (!includeSelf && paperId === originPaperId) {
       continue;
     }
     if (dataFormat && !validatePaperData(dataFormat, paper.data)) {
@@ -216,4 +220,5 @@ export function filterPapers(params, originPaper, papers) {
       filteredPapers[paperId] = paper;
     }
   }
+  return filteredPapers;
 }

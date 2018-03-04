@@ -119,11 +119,8 @@ export default class Program extends React.Component {
           this.setState({ showSupporterCanvas: true });
         }
       } else if (sendData.name === 'papers') {
-        const thisPaper = this.props.paper[this.props.programNumber];
-        this._worker.postMessage({
-          messageId,
-          receiveData: { object: filterPapers(sendData.data, thisPaper, this.props.papers) }
-        });
+        const filteredPapers = filterPapers(sendData.data, this._program().number, this.props.papers);
+        this._worker.postMessage({ messageId, receiveData: { object: filteredPapers } });
       }
     } else if (command === 'set') {
       if (sendData.name === 'data') {
