@@ -174,6 +174,19 @@ export function getPaperWisker(paper, direction, length) {
   return [segmentMiddle, wiskerEnd];
 }
 
+/**
+ * Filter a set of papers
+ * @param  {object} params        Map of filter parameters
+ * @param  {string} originPaperId The paper that is calling the filter
+ * @param  {object} papers        Map of paper id to paper data (points, data, ...)
+ * @return {object} the filtered set of papers
+ * params supports the following optional arguments:
+ *   "position"  {string}  "up" "right" "down" "left", relative position to origin paper
+ *   "distance"  {number}  how far away a paper can be
+ *   "closet"    {boolean} return only the closest paper?
+ *   "includeMe" {boolean} include the origin paper in the returned papers
+ *   "data"      {object}  check a paper's data format (see validatePaperData())
+ */
 export function filterPapers(params, originPaperId, papers) {
   if (typeof params === 'undefined' || isEmpty(params)) {
     return papers;
