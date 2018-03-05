@@ -100,7 +100,7 @@ export default class CameraMain extends React.Component {
     );
   };
 
-  _programsChange = (programsToRender) => {
+  _programsChange = programsToRender => {
     this.props.onProgramsChange(
       programsToRender
         .map(program => {
