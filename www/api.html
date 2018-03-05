@@ -82,4 +82,20 @@
   <p>
     <code>await paper.set('iframe', { src: 'http://www.example.com' });</code> will cover your page in an iframe with source at that url.
   </p>
+
+  <h3>paper.whenPointsAt()</h3>
+
+  <p>
+    This is a helper function for creating papers that point at other papers. You must supply a callback which will be called when the paper points at a different paper (or none at all). <code>paper.whenPointsAt({ callback: function (pointAtData) => { /* do something */ } });</code>
+  </p>
+
+  <p>
+    Other options are:
+    <ul>
+      <li><code>direction</code>: "up" (default), "down", "left", "right";</li>
+      <li><code>wiskerLength</code>: as fraction of the side (default 0.7);</li>
+      <li><code>requiredData</code>: array of data fields that must be present in the other paper;</li>
+      <li><code>paperNumber</code>: paper number to do this for (default is own paper number).</li>
+    </ul>
+  </p>
 </body>
