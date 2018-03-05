@@ -4,7 +4,11 @@ import sortBy from 'lodash/sortBy';
 import throttle from 'lodash/throttle';
 import xhr from 'xhr';
 
-import { forwardProjectionMatrixForPoints, mult } from '../utils';
+import {
+  forwardProjectionMatrixForPoints,
+  mult,
+  filterPapers
+} from '../utils';
 import styles from './Program.css';
 
 function matrixToCssTransform(matrix) {
@@ -122,7 +126,8 @@ export default class Program extends React.Component {
           });
         }
       } else if (sendData.name === 'papers') {
-        this._worker.postMessage({ messageId, receiveData: { object: this.props.papers } });
+        const filteredPapers = filterPapers(sendData.data, this._program().number, this.props.papers);
+        this._worker.postMessage({ messageId, receiveData: { object: filteredPapers } });
       }
     } else if (command === 'set') {
       if (sendData.name === 'data') {
