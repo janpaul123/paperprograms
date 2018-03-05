@@ -83,4 +83,99 @@
       log('Error', [event.reason.message], event.reason.stack.split('\n')[1]);
     }
   });
+
+  workerContext.paper.whenPointsAt = async ({
+    direction,
+    wiskerLength,
+    paperNumber,
+    requiredData,
+    callback,
+  } = {}) => {
+    wiskerLength = wiskerLength || 0.7;
+    paperNumber = paperNumber || (await workerContext.paper.get('number'));
+    requiredData = requiredData || [];
+    const supporterCanvas = await workerContext.paper.get('supporterCanvas', { id: 'wisker' });
+    const supporterCtx = supporterCanvas.getContext('2d');
+    let pointAtData = null;
+
+    // Adapted from https://stackoverflow.com/questions/9043805/test-if-two-lines-intersect-javascript-function
+    function intersects(v1, v2, v3, v4) {
+      const det = (v2.x - v1.x) * (v4.y - v3.y) - (v4.x - v3.x) * (v2.y - v1.y);
+      if (det === 0) {
+        return false;
+      } else {
+        const lambda = ((v4.y - v3.y) * (v4.x - v1.x) + (v3.x - v4.x) * (v4.y - v1.y)) / det;
+        const gamma = ((v1.y - v2.y) * (v4.x - v1.x) + (v2.x - v1.x) * (v4.y - v1.y)) / det;
+        return 0 < lambda && lambda < 1 && (0 < gamma && gamma < 1);
+      }
+    }
+    function intersectsPaper(wiskerStart, wiskerEnd, paper) {
+      return (
+        (intersects(wiskerStart, wiskerEnd, paper.points.topLeft, paper.points.topRight) ||
+          intersects(wiskerStart, wiskerEnd, paper.points.topRight, paper.points.bottomRight) ||
+          intersects(wiskerStart, wiskerEnd, paper.points.bottomRight, paper.points.bottomLeft) ||
+          intersects(wiskerStart, wiskerEnd, paper.points.bottomLeft, paper.points.topLeft)) &&
+        requiredData.every(name => paper.data[name] !== undefined)
+      );
+    }
+
+    setInterval(async () => {
+      const papers = await workerContext.paper.get('papers');
+      const points = papers[paperNumber].points;
+
+      let segment = [points.topLeft, points.topRight];
+      if (direction === 'right') segment = [points.topRight, points.bottomRight];
+      if (direction === 'down') segment = [points.bottomRight, points.bottomLeft];
+      if (direction === 'left') segment = [points.bottomLeft, points.topLeft];
+
+      const wiskerStart = {
+        x: (segment[0].x + segment[1].x) / 2,
+        y: (segment[0].y + segment[1].y) / 2,
+      };
+      const wiskerEnd = {
+        x: wiskerStart.x + (segment[1].y - segment[0].y) * wiskerLength,
+        y: wiskerStart.y - (segment[1].x - segment[0].x) * wiskerLength,
+      };
+
+      if (
+        !pointAtData ||
+        !papers[pointAtData.paperNumber] ||
+        // Try keeping `pointAtData` stable if possible.
+        !intersectsPaper(wiskerStart, wiskerEnd, papers[pointAtData.paperNumber])
+      ) {
+        let newPointAtData = null;
+        Object.keys(papers).forEach(otherPaperNumber => {
+          if (otherPaperNumber === paperNumber) return;
+          if (intersectsPaper(wiskerStart, wiskerEnd, papers[otherPaperNumber])) {
+            newPointAtData = { paperNumber: otherPaperNumber, paper: papers[otherPaperNumber] };
+          }
+        });
+        if (newPointAtData !== pointAtData) {
+          pointAtData = newPointAtData;
+          if (callback) callback(pointAtData);
+        }
+      }
+
+      supporterCtx.clearRect(0, 0, supporterCanvas.width, supporterCanvas.height);
+      supporterCtx.fillStyle = supporterCtx.strokeStyle = pointAtData
+        ? 'rgb(0, 255, 0)'
+        : 'rgb(255, 0, 0)';
+      supporterCtx.beginPath();
+      supporterCtx.moveTo(wiskerStart.x, wiskerStart.y);
+      supporterCtx.lineTo(wiskerEnd.x, wiskerEnd.y);
+      supporterCtx.stroke();
+
+      const dotFraction = (Date.now() / 600) % 1;
+      supporterCtx.beginPath();
+      supporterCtx.arc(
+        wiskerEnd.x * dotFraction + wiskerStart.x * (1 - dotFraction),
+        wiskerEnd.y * dotFraction + wiskerStart.y * (1 - dotFraction),
+        2,
+        0,
+        2 * Math.PI
+      );
+      supporterCtx.fill();
+      supporterCtx.commit();
+    }, 10);
+  };
 })(self);
