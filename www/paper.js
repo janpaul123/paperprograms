@@ -86,15 +86,15 @@
 
   workerContext.paper.whenPointsAt = async ({
     direction,
-    wiskerLength,
+    whiskerLength,
     paperNumber,
     requiredData,
     callback,
   } = {}) => {
-    wiskerLength = wiskerLength || 0.7;
+    whiskerLength = whiskerLength || 0.7;
     paperNumber = paperNumber || (await workerContext.paper.get('number'));
     requiredData = requiredData || [];
-    const supporterCanvas = await workerContext.paper.get('supporterCanvas', { id: 'wisker' });
+    const supporterCanvas = await workerContext.paper.get('supporterCanvas', { id: 'whisker' });
     const supporterCtx = supporterCanvas.getContext('2d');
     let pointAtData = null;
 
@@ -109,12 +109,12 @@
         return 0 < lambda && lambda < 1 && (0 < gamma && gamma < 1);
       }
     }
-    function intersectsPaper(wiskerStart, wiskerEnd, paper) {
+    function intersectsPaper(whiskerStart, whiskerEnd, paper) {
       return (
-        (intersects(wiskerStart, wiskerEnd, paper.points.topLeft, paper.points.topRight) ||
-          intersects(wiskerStart, wiskerEnd, paper.points.topRight, paper.points.bottomRight) ||
-          intersects(wiskerStart, wiskerEnd, paper.points.bottomRight, paper.points.bottomLeft) ||
-          intersects(wiskerStart, wiskerEnd, paper.points.bottomLeft, paper.points.topLeft)) &&
+        (intersects(whiskerStart, whiskerEnd, paper.points.topLeft, paper.points.topRight) ||
+          intersects(whiskerStart, whiskerEnd, paper.points.topRight, paper.points.bottomRight) ||
+          intersects(whiskerStart, whiskerEnd, paper.points.bottomRight, paper.points.bottomLeft) ||
+          intersects(whiskerStart, whiskerEnd, paper.points.bottomLeft, paper.points.topLeft)) &&
         requiredData.every(name => paper.data[name] !== undefined)
       );
     }
@@ -128,25 +128,25 @@
       if (direction === 'down') segment = [points.bottomRight, points.bottomLeft];
       if (direction === 'left') segment = [points.bottomLeft, points.topLeft];
 
-      const wiskerStart = {
+      const whiskerStart = {
         x: (segment[0].x + segment[1].x) / 2,
         y: (segment[0].y + segment[1].y) / 2,
       };
-      const wiskerEnd = {
-        x: wiskerStart.x + (segment[1].y - segment[0].y) * wiskerLength,
-        y: wiskerStart.y - (segment[1].x - segment[0].x) * wiskerLength,
+      const whiskerEnd = {
+        x: whiskerStart.x + (segment[1].y - segment[0].y) * whiskerLength,
+        y: whiskerStart.y - (segment[1].x - segment[0].x) * whiskerLength,
       };
 
       if (
         !pointAtData ||
         !papers[pointAtData.paperNumber] ||
         // Try keeping `pointAtData` stable if possible.
-        !intersectsPaper(wiskerStart, wiskerEnd, papers[pointAtData.paperNumber])
+        !intersectsPaper(whiskerStart, whiskerEnd, papers[pointAtData.paperNumber])
       ) {
         let newPointAtData = null;
         Object.keys(papers).forEach(otherPaperNumber => {
           if (otherPaperNumber === paperNumber) return;
-          if (intersectsPaper(wiskerStart, wiskerEnd, papers[otherPaperNumber])) {
+          if (intersectsPaper(whiskerStart, whiskerEnd, papers[otherPaperNumber])) {
             newPointAtData = { paperNumber: otherPaperNumber, paper: papers[otherPaperNumber] };
           }
         });
@@ -161,15 +161,15 @@
         ? 'rgb(0, 255, 0)'
         : 'rgb(255, 0, 0)';
       supporterCtx.beginPath();
-      supporterCtx.moveTo(wiskerStart.x, wiskerStart.y);
-      supporterCtx.lineTo(wiskerEnd.x, wiskerEnd.y);
+      supporterCtx.moveTo(whiskerStart.x, whiskerStart.y);
+      supporterCtx.lineTo(whiskerEnd.x, whiskerEnd.y);
       supporterCtx.stroke();
 
       const dotFraction = (Date.now() / 600) % 1;
       supporterCtx.beginPath();
       supporterCtx.arc(
-        wiskerEnd.x * dotFraction + wiskerStart.x * (1 - dotFraction),
-        wiskerEnd.y * dotFraction + wiskerStart.y * (1 - dotFraction),
+        whiskerEnd.x * dotFraction + whiskerStart.x * (1 - dotFraction),
+        whiskerEnd.y * dotFraction + whiskerStart.y * (1 - dotFraction),
         2,
         0,
         2 * Math.PI
