@@ -56,7 +56,7 @@
   </p>
 
   <p>
-    <code>const supporterCanvas = await paper.get('supporterCanvas');</code> will give you a <a href="https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API"><code>Canvas</code></a> object that spans the entire projection screen.
+    <code>const supporterCanvas = await paper.get('supporterCanvas');</code> will give you a <a href="https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API"><code>Canvas</code></a> object that spans the entire projection screen. You can get multiple of them, using: <code>const supporterCanvas = await paper.get('supporterCanvas', { id: 'blah' });</code>
   </p>
 
   <p>

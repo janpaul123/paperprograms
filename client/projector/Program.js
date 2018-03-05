@@ -46,7 +46,7 @@ export default class Program extends React.Component {
     super(props);
     this.state = {
       canvasSizeByProgramNumber: {},
-      showSupporterCanvas: false,
+      showSupporterCanvasById: {},
       iframe: null,
       debugData: { logs: [] },
     };
@@ -82,12 +82,12 @@ export default class Program extends React.Component {
         if (this.state.canvasSizeByProgramNumber[programNumber]) {
           this._worker.postMessage({ messageId, receiveData: { object: null } });
         } else {
-          this[`_canvasAvailableCallback${programNumber}`] = canvas => {
+          this[`_canvasAvailableCallback_${programNumber}`] = canvas => {
             const offscreen = canvas.transferControlToOffscreen();
             this._worker.postMessage({ messageId, receiveData: { object: offscreen } }, [
               offscreen,
             ]);
-            delete this[`_canvasAvailableCallback${programNumber}`];
+            delete this[`_canvasAvailableCallback_${programNumber}`];
           };
           this.setState({
             canvasSizeByProgramNumber: {
@@ -102,17 +102,24 @@ export default class Program extends React.Component {
           });
         }
       } else if (sendData.name === 'supporterCanvas') {
-        if (this.state.showSupporterCanvas) {
+        const supporterCanvasId = sendData.data.id || 'default';
+
+        if (this.state.showSupporterCanvasById[supporterCanvasId]) {
           this._worker.postMessage({ messageId, receiveData: { object: null } });
         } else {
-          this._supporterCanvasAvailableCallback = canvas => {
+          this[`_supporterCanvasAvailableCallback_${supporterCanvasId}`] = canvas => {
             const offscreen = canvas.transferControlToOffscreen();
             this._worker.postMessage({ messageId, receiveData: { object: offscreen } }, [
               offscreen,
             ]);
-            delete this._supporterCanvasAvailableCallback;
+            delete this[`_supporterCanvasAvailableCallback_${supporterCanvasId}`];
           };
-          this.setState({ showSupporterCanvas: true });
+          this.setState({
+            showSupporterCanvasById: {
+              ...this.state.showSupporterCanvasById,
+              [supporterCanvasId]: true,
+            },
+          });
         }
       } else if (sendData.name === 'papers') {
         this._worker.postMessage({ messageId, receiveData: { object: this.props.papers } });
@@ -199,8 +206,8 @@ export default class Program extends React.Component {
             <canvas
               key="canvas"
               ref={el => {
-                if (el && this[`_canvasAvailableCallback${programNumber}`]) {
-                  this[`_canvasAvailableCallback${programNumber}`](el);
+                if (el && this[`_canvasAvailableCallback_${programNumber}`]) {
+                  this[`_canvasAvailableCallback_${programNumber}`](el);
                 }
               }}
               width={width}
@@ -223,12 +230,12 @@ export default class Program extends React.Component {
           );
         })}
         {this.state.iframe && this.renderIframe()}
-        {this.state.showSupporterCanvas && (
+        {Object.keys(this.state.showSupporterCanvasById).map(supporterCanvasId => (
           <canvas
             key="supporterCanvas"
             ref={el => {
-              if (el && this._supporterCanvasAvailableCallback) {
-                this._supporterCanvasAvailableCallback(el);
+              if (el && this[`_supporterCanvasAvailableCallback_${supporterCanvasId}`]) {
+                this[`_supporterCanvasAvailableCallback_${supporterCanvasId}`](el);
               }
             }}
             width={this.props.width}
@@ -242,7 +249,7 @@ export default class Program extends React.Component {
               zIndex: 2,
             }}
           />
-        )}
+        ))}
       </div>
     );
   }
