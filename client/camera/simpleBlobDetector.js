@@ -1,224 +1,229 @@
-/* global cv */
+import * as createRegl from 'regl';
 
-import { diff, norm } from '../utils';
+export default function simpleBlobDetector(sigma, video) {
+  const outCanvas = document.createElement('canvas');
+  outCanvas.width = 1920;
+  outCanvas.height = 1080;
+  outCanvas.style.width = '960px';
+  outCanvas.style.height = '540px';
+  document.body.appendChild(outCanvas);
+  const regl = createRegl({
+    canvas: outCanvas,
+    extensions: ['OES_texture_float'],
+  });
 
-// Port of https://github.com/opencv/opencv/blob/a50a355/modules/features2d/src/blobdetector.cpp
-// But with special `faster` option which has slightly different semantics,
-// but is a whole bunch faster.
+  const gaussian = (sigma, x) =>
+    1 / Math.sqrt(2 * Math.PI * sigma * sigma) * Math.exp(-(x * x) / (2 * sigma * sigma));
 
-const defaultParams = {
-  thresholdStep: 10,
-  minThreshold: 50,
-  maxThreshold: 220,
-  minRepeatability: 2,
-  minDistBetweenBlobs: 10,
+  // const sigma = 12; // Initial scale (of blobs to detect?)
 
-  filterByColor: true,
-  blobColor: 0,
+  // Having 1 Gaussian kernel is unwieldy at big sigma, so
+  // separate it into an x-kernel and y-kernel and do 2 passes.
 
-  filterByArea: true,
-  minArea: 25,
-  maxArea: 5000,
-
-  filterByCircularity: false,
-  minCircularity: 0.8,
-  maxCircularity: 1000000,
-
-  filterByInertia: true,
-  //minInertiaRatio: 0.6,
-  minInertiaRatio: 0.1,
-  maxInertiaRatio: 1000000,
-
-  filterByConvexity: true,
-  //minConvexity: 0.8,
-  minConvexity: 0.95,
-  maxConvexity: 1000000,
-
-  faster: false,
-};
-
-function findBlobs(image, binaryImage, params) {
-  const contours = new cv.MatVector();
-  const hierarchy = new cv.Mat();
-  if (params.faster) {
-    cv.findContours(binaryImage, contours, hierarchy, cv.RETR_LIST, cv.CHAIN_APPROX_SIMPLE);
-  } else {
-    cv.findContours(binaryImage, contours, hierarchy, cv.RETR_LIST, cv.CHAIN_APPROX_NONE);
+  const sigma1D = sigma / 2;
+  const kernelSize1D = 2 * Math.ceil(3 * sigma1D) + 1;
+  const kernelRadius1D = Math.floor(kernelSize1D / 2);
+  let kernel1D = [];
+  let sum = 0;
+  for (let dx = -kernelRadius1D; dx <= kernelRadius1D; dx++) {
+    const v = gaussian(sigma1D, dx);
+    kernel1D.push(v);
+    sum += v;
   }
-  hierarchy.delete();
+  kernel1D = kernel1D.map(v => v / sum);
 
-  const centers = [];
-  const objectsToDelete = [];
-  for (let i = 0; i < contours.size(); i++) {
-    const contour = contours.get(i);
-    objectsToDelete.push(contour);
-    const area = cv.contourArea(contour);
+  const common = {
+    vert: `
+precision mediump float;
+attribute vec2 position;
+varying vec2 uv;
+void main () {
+  uv = position;
+  gl_Position = vec4(1.0 - 2.0 * position, 0, 1);
+}`,
+    attributes: {
+      position: [-2, 0, 0, -2, 2, 2],
+    },
+    count: 3,
+  };
 
-    if (area == 0) continue;
+  const gaussian1DFilter = regl({
+    ...common,
+    frag: `
+precision mediump float;
 
-    let center, moms;
-    if (params.faster) {
-      const { x, y, width, height } = cv.boundingRect(contour);
-      center = {
-        confidence: 1,
-        location: { x: x + width / 2, y: y + height / 2 },
-        radius: (width + height) / 4,
-      };
-    } else {
-      moms = cv.moments(contour);
-      center = {
-        confidence: 1,
-        location: { x: moms.m10 / moms.m00, y: moms.m01 / moms.m00 },
-      };
-    }
+uniform sampler2D texture;
+uniform vec2 textureSize;
+uniform vec2 dir;
 
-    if (params.filterByArea) {
-      if (area < params.minArea || area >= params.maxArea) continue;
-    }
+varying vec2 uv;
 
-    if (params.filterByCircularity) {
-      const perimeter = cv.arcLength(contour, true);
-      const ratio = 4 * cv.CV_PI * area / (perimeter * perimeter);
-      if (ratio < params.minCircularity || ratio >= params.maxCircularity) continue;
-    }
+void main () {
+  vec4 color = texture2D(texture, uv).argb;
 
-    if (params.filterByInertia) {
-      if (params.faster) {
-        throw new Error('Cannot both set params.faster and params.filterByInertia');
-      }
+  vec2 onePixel = vec2(1.0, 1.0) / textureSize;
 
-      const denominator = Math.sqrt(
-        Math.pow(2 * moms.mu11, 2) + Math.pow(moms.mu20 - moms.mu02, 2)
+  vec4 sum = vec4(0.0);
+  ${(() => {
+    const terms = [];
+    for (let dx = -kernelRadius1D; dx <= kernelRadius1D; dx++) {
+      const i = terms.length;
+      terms.push(
+        `sum += texture2D(texture, uv + onePixel * dir * ${dx.toFixed(1)}) * ${kernel1D[i].toFixed(
+          10
+        )};`
       );
-      let ratio;
-      if (denominator > 0.01) {
-        const cosmin = (moms.mu20 - moms.mu02) / denominator;
-        const sinmin = 2 * moms.mu11 / denominator;
-        const cosmax = -cosmin;
-        const sinmax = -sinmin;
-
-        const imin =
-          0.5 * (moms.mu20 + moms.mu02) -
-          0.5 * (moms.mu20 - moms.mu02) * cosmin -
-          moms.mu11 * sinmin;
-        const imax =
-          0.5 * (moms.mu20 + moms.mu02) -
-          0.5 * (moms.mu20 - moms.mu02) * cosmax -
-          moms.mu11 * sinmax;
-        ratio = imin / imax;
-      } else {
-        ratio = 1;
-      }
-
-      if (ratio < params.minInertiaRatio || ratio >= params.maxInertiaRatio) continue;
-
-      center.confidence = ratio * ratio;
     }
+    return terms.join('\n');
+  })()}
 
-    if (params.filterByConvexity) {
-      const hull = new cv.Mat();
-      cv.convexHull(contour, hull);
-      const hullArea = cv.contourArea(hull);
-      const ratio = area / hullArea;
-      hull.delete();
-      if (ratio < params.minConvexity || ratio >= params.maxConvexity) continue;
-    }
+  gl_FragColor = sum;
+}`,
+    uniforms: {
+      texture: regl.prop('texture'),
+      dir: regl.prop('dir'),
+      textureSize: [1920, 1080],
+    },
+  });
 
-    if (params.filterByColor) {
-      if (
-        binaryImage.ucharAt(Math.round(center.location.y), Math.round(center.location.x)) !=
-        params.blobColor
-      )
-        continue;
-    }
+  const idFilter = regl({
+    ...common,
+    frag: `
+precision mediump float;
+uniform sampler2D texture;
+varying vec2 uv;
 
-    if (!params.faster) {
-      const dists = [];
-      for (let pointIdx = 0; pointIdx < contour.size().height; pointIdx++) {
-        const pt = contour.intPtr(pointIdx);
-        dists.push(norm(diff(center.location, { x: pt[0], y: pt[1] })));
-      }
-      dists.sort();
-      center.radius =
-        (dists[Math.floor((dists.length - 1) / 2)] + dists[Math.floor(dists.length / 2)]) / 2;
-    }
+void main () {
+  vec4 me = texture2D(texture, uv);
+  gl_FragColor = me;
+}`,
+    uniforms: {
+      texture: regl.prop('texture'),
+    },
+  });
 
-    centers.push(center);
-  }
-  objectsToDelete.forEach(obj => obj.delete());
-  contours.delete();
-  return centers;
+  const laplacianFilter = regl({
+    ...common,
+    frag: `
+precision mediump float;
+uniform sampler2D texture;
+uniform vec2 textureSize;
+uniform float sigma;
+varying vec2 uv;
+
+float gray (vec4 color) {
+  return 0.299 * color.r + 0.587 * color.g + 0.114 * color.b;
 }
 
-export default function simpleBlobDetector(image, params) {
-  params = { ...defaultParams, ...params };
+void main () {
+  float sum = 0.0;
 
-  const grayScaleImage = new cv.Mat(image.rows, image.cols, cv.CV_8UC1);
-  cv.cvtColor(image, grayScaleImage, cv.COLOR_RGB2GRAY);
-
-  let centers = [];
-  for (
-    let thresh = params.minThreshold;
-    thresh < params.maxThreshold;
-    thresh += params.thresholdStep
-  ) {
-    const binaryImage = new cv.Mat(image.rows, image.cols, cv.CV_8UC1);
-    cv.threshold(grayScaleImage, binaryImage, thresh, 255, cv.THRESH_BINARY);
-    let curCenters = findBlobs(image, binaryImage, params);
-    binaryImage.delete();
-    let newCenters = [];
-
-    for (let i = 0; i < curCenters.length; i++) {
-      let isNew = true;
-      for (let j = 0; j < centers.length; j++) {
-        const dist = norm(
-          diff(centers[j][Math.floor(centers[j].length / 2)].location, curCenters[i].location)
-        );
-        isNew =
-          dist >= params.minDistBetweenBlobs &&
-          dist >= centers[j][Math.floor(centers[j].length / 2)].radius &&
-          dist >= curCenters[i].radius;
-        if (!isNew) {
-          centers[j].push(curCenters[i]);
-
-          let k = centers[j].length - 1;
-          while (k > 0 && centers[j][k].radius < centers[j][k - 1].radius) {
-            centers[j][k] = centers[j][k - 1];
-            k--;
-          }
-          centers[j][k] = curCenters[i];
-          break;
-        }
+  vec2 onePixel = vec2(1.0, 1.0) / textureSize;
+  for (int dx = -1; dx <= 1; dx++) {
+    for (int dy = -1; dy <= 1; dy++) {
+      float pixel = gray(texture2D(texture, uv + onePixel * vec2(dx, dy)));
+      if (dx == 0 && dy == 0) {
+        sum += 8.0 * pixel;
+      } else {
+        sum += -1.0 * pixel;
       }
-      if (isNew) newCenters.push([curCenters[i]]);
-    }
-    centers = centers.concat(newCenters);
+    }  
+  }
+  sum *= sigma * sigma;
+
+  gl_FragColor = vec4(sum, sum, sum, 1.0);
+}`,
+    uniforms: {
+      texture: regl.prop('texture'),
+      sigma,
+      textureSize: [1920, 1080],
+    },
+  });
+
+  const maximumFilter = regl({
+    ...common,
+    frag: `
+precision mediump float;
+uniform sampler2D texture;
+uniform vec2 textureSize;
+uniform float sigma;
+varying vec2 uv;
+
+void main () {
+  float me = texture2D(texture, uv).r;
+  if (me > -0.9) {
+    gl_FragColor = vec4(0.0, 0.0, 1.0, 1.0);
+    return;
   }
 
-  grayScaleImage.delete();
+  vec2 onePixel = vec2(1.0, 1.0) / textureSize;
 
-  const keyPoints = [];
-  for (let i = 0; i < centers.length; i++) {
-    if (centers[i].length < params.minRepeatability) continue;
-    const sumPoint = { x: 0, y: 0 };
-    let normalizer = 0;
-    for (let j = 0; j < centers[i].length; j++) {
-      sumPoint.x += centers[i][j].confidence * centers[i][j].location.x;
-      sumPoint.y += centers[i][j].confidence * centers[i][j].location.y;
-      normalizer += centers[i][j].confidence;
-    }
-    sumPoint.x *= 1 / normalizer;
-    sumPoint.y *= 1 / normalizer;
-    let size = Math.round(centers[i][Math.floor(centers[i].length / 2)].radius * 2);
-    size = Math.min(
-      size,
-      sumPoint.x * 2,
-      sumPoint.y * 2,
-      (image.cols - sumPoint.x) * 2,
-      (image.rows - sumPoint.y) * 2
-    );
-    keyPoints.push({ pt: sumPoint, size });
+  int darkerThan = 0;
+  for (int dx = -1; dx <= 1; dx++) {
+    for (int dy = -1; dy <= 1; dy++) {
+      if (dx != 0 || dy != 0) {
+        float pixel = texture2D(texture, uv + onePixel * vec2(dx, dy)).r;
+        if (pixel < me) darkerThan += 1;
+      }
+    }  
   }
 
-  return keyPoints;
+  if (darkerThan == 8) {
+    gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);
+  } else {
+    gl_FragColor = vec4(me, me, me, 1.0);
+  }
+}`,
+    uniforms: {
+      texture: regl.prop('texture'),
+      sigma,
+      textureSize: [1920, 1080],
+    },
+  });
+
+  const createFramebuffer = () =>
+    regl.framebuffer({
+      width: 1920,
+      height: 1080,
+      colorFormat: 'rgba', // TODO: Can we get rid of the extra channels?
+      colorType: 'float',
+    });
+
+  const gaussianXFramebuffer = createFramebuffer();
+  const gaussianYFramebuffer = createFramebuffer();
+  const laplacianFramebuffer = createFramebuffer();
+
+  const texture = regl.texture(video);
+
+  return {
+    sigma,
+    detectBlobs() {
+      gaussianXFramebuffer.use(() => {
+        regl.clear({
+          color: [0, 0, 0, 255],
+          depth: 1,
+        });
+        gaussian1DFilter({ texture: texture.subimage(video), dir: [1.0, 0.0] });
+      });
+      gaussianYFramebuffer.use(() => {
+        regl.clear({
+          color: [0, 0, 0, 255],
+          depth: 1,
+        });
+        gaussian1DFilter({ texture: gaussianXFramebuffer, dir: [0.0, 1.0] });
+      });
+      laplacianFramebuffer.use(() => {
+        regl.clear({
+          color: [0, 0, 0, 255],
+          depth: 1,
+        });
+        laplacianFilter({ texture: gaussianYFramebuffer });
+      });
+
+      maximumFilter({ texture: laplacianFramebuffer });
+
+      // ({ pt: sumPoint, size });
+      return [];
+    },
+  };
 }

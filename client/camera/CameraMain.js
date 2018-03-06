@@ -128,14 +128,15 @@ export default class CameraMain extends React.Component {
 
     return (
       <div>
-        <div className={styles.dynamicland}>
+        {/*<div className={styles.dynamicland}>
           Do not use Paper Programs as a substitute for going to or collaborating with Dynamicland.
           This is just some silly project off the internet. It does not even come close.
-        </div>
+        </div>*/}
         <div className={styles.video}>
           <CameraVideo
             width={this.state.pageWidth - padding * 3 - sidebarWidth}
             zoom={this.props.config.zoom}
+            sigma={this.props.config.sigma}
             config={this.props.config}
             onConfigChange={this.props.onConfigChange}
             onProcessVideo={({ programsToRender, framerate }) => {
@@ -225,6 +226,20 @@ export default class CameraMain extends React.Component {
               value={this.props.config.zoom}
               onChange={event =>
                 this.props.onConfigChange({ ...this.props.config, zoom: event.target.value })
+              }
+            />
+          </div>
+
+          <div className={styles.sidebarSection}>
+            sigma = {this.props.config.sigma}{' '}
+            <input
+              type="range"
+              min="1"
+              max="20"
+              step="0.1"
+              value={this.props.config.sigma}
+              onChange={event =>
+                this.props.onConfigChange({ ...this.props.config, sigma: parseFloat(event.target.value) })
               }
             />
           </div>

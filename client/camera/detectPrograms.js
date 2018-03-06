@@ -170,9 +170,14 @@ export default function detectPrograms({ config, videoCapture, dataToRemember, d
     }
   }
 
+  let blobDetector = dataToRemember.blobDetector;
+  if (!blobDetector || blobDetector.sigma !== config.sigma) {
+    blobDetector = simpleBlobDetector(config.sigma, videoCapture.video);
+  }
+
   const videoROI = knobPointsToROI(config.knobPoints, videoMat);
   const clippedVideoMat = videoMat.roi(videoROI);
-  let keyPoints = simpleBlobDetector(clippedVideoMat, {
+  let keyPoints = blobDetector.detectBlobs(clippedVideoMat, {
     filterByCircularity: true,
     minCircularity: 0.9,
     minArea: 25,
@@ -403,7 +408,7 @@ export default function detectPrograms({ config, videoCapture, dataToRemember, d
   return {
     keyPoints,
     programsToRender,
-    dataToRemember: { vectorsBetweenCorners },
+    dataToRemember: { vectorsBetweenCorners, blobDetector },
     framerate: Math.round(1000 / (Date.now() - startTime)),
   };
 }
