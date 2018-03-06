@@ -1,10 +1,18 @@
 @value cameraMainPadding: 20px;
 @value cameraMainSidebarWidth: 300px;
 
+:local(.dynamicland) {
+  position: absolute;
+  left: cameraMainPadding;
+  right: calc(cameraMainSidebarWidth + cameraMainPadding * 2);
+  top: 10px;
+  font: bold 30px/1 Helvetica;
+}
+
 :local(.video) {
   position: absolute;
   left: cameraMainPadding;
-  top: cameraMainPadding;
+  top: calc(cameraMainPadding + 80px);
 }
 
 :local(.sidebar) {

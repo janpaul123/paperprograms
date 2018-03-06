@@ -128,6 +128,10 @@ export default class CameraMain extends React.Component {
 
     return (
       <div>
+        <div className={styles.dynamicland}>
+          Do not use Paper Programs as a substitute for going to or collaborating with Dynamicland.
+          This is just some silly project off the internet. It does not even come close.
+        </div>
         <div className={styles.video}>
           <CameraVideo
             width={this.state.pageWidth - padding * 3 - sidebarWidth}
