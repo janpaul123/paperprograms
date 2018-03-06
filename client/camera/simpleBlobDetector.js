@@ -9,6 +9,7 @@ export default function simpleBlobDetector(sigma, video) {
   document.body.appendChild(outCanvas);
   const regl = createRegl({
     canvas: outCanvas,
+    attributes: { preserveDrawingBuffer: true },
     extensions: ['OES_texture_float'],
   });
 
@@ -194,7 +195,7 @@ void main () {
   const laplacianFramebuffer = createFramebuffer();
 
   const texture = regl.texture(video);
-
+  const readBuffer = new Uint8Array(1920 * 1080 * 4);
   return {
     sigma,
     detectBlobs() {
@@ -220,10 +221,33 @@ void main () {
         laplacianFilter({ texture: gaussianYFramebuffer });
       });
 
+      regl.clear({
+        color: [0, 0, 0, 255],
+        depth: 1,
+      });
       maximumFilter({ texture: laplacianFramebuffer });
 
-      // ({ pt: sumPoint, size });
-      return [];
+      const keyPoints = [];
+
+      const snapshot = regl.read(readBuffer);
+      for (var y = 0; y < 1080; y++) {
+        for (var x = 0; x < 1920; x++) {
+          const color = readBuffer[y * 1920 * 4 + x * 4];
+          if (color < 0.999) {
+            // Throw out anything that isn't a white (max) point.
+            continue;
+          }
+
+          let size = sigma;
+          if (x + size >= 1920 || x - size <= 0 || y + size >= 1080 || y - size <= 0) {
+            // TODO: Try to salvage these edge points.
+            continue;
+          }
+          keyPoints.push({ pt: { x, y }, size });
+        }
+      }
+
+      return keyPoints;
     },
   };
 }
