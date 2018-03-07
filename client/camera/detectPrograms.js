@@ -108,11 +108,15 @@ export default function detectPrograms({ config, videoInput, dataToRemember, dis
   }
 
   let blobDetector = dataToRemember.blobDetector;
-  if (!blobDetector || blobDetector.sigma !== config.sigma) {
+  if (
+    !blobDetector ||
+    blobDetector.sigma !== config.sigma ||
+    blobDetector.dotThreshold !== config.dotThreshold
+  ) {
     if (blobDetector) {
       blobDetector.dispose();
     }
-    blobDetector = simpleBlobDetector(config.sigma, videoInput);
+    blobDetector = simpleBlobDetector(config.sigma, config.dotThreshold, videoInput);
   }
 
   let keyPoints = blobDetector.detectBlobs();

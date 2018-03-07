@@ -1,6 +1,6 @@
 import * as createRegl from 'regl';
 
-export default function simpleBlobDetector(sigma, video) {
+export default function simpleBlobDetector(sigma, dotThreshold, video) {
   const outCanvas = document.createElement('canvas');
   outCanvas.width = 1920;
   outCanvas.height = 1080;
@@ -156,7 +156,7 @@ varying vec2 uv;
 
 void main () {
   float me = texture2D(texture, uv).r;
-  if (me > -0.9) {
+  if (me > ${dotThreshold.toFixed(5)}) {
     gl_FragColor = vec4(0.0, 0.0, 1.0, 0.5);
     return;
   }
@@ -204,6 +204,7 @@ void main () {
   const readBuffer = new Uint8Array(1920 * 1080 * 4);
   return {
     sigma,
+    dotThreshold,
     detectBlobs() {
       // This is the slowest GPU operation -- 10-20 FPS cost.
       const videoTexture = texture.subimage(video);

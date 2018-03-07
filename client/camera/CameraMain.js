@@ -136,7 +136,6 @@ export default class CameraMain extends React.Component {
           <CameraVideo
             width={this.state.pageWidth - padding * 3 - sidebarWidth}
             zoom={this.props.config.zoom}
-            sigma={this.props.config.sigma}
             config={this.props.config}
             onConfigChange={this.props.onConfigChange}
             onProcessVideo={({ programsToRender, framerate }) => {
@@ -240,6 +239,20 @@ export default class CameraMain extends React.Component {
               value={this.props.config.sigma}
               onChange={event =>
                 this.props.onConfigChange({ ...this.props.config, sigma: parseFloat(event.target.value) })
+              }
+            />
+          </div>
+
+          <div className={styles.sidebarSection}>
+            dotThreshold = {this.props.config.dotThreshold}{' '}
+            <input
+              type="range"
+              min="-0.95"
+              max="-0.10"
+              step="0.01"
+              value={this.props.config.dotThreshold}
+              onChange={event =>
+                this.props.onConfigChange({ ...this.props.config, dotThreshold: parseFloat(event.target.value) })
               }
             />
           </div>
