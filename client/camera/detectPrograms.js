@@ -19,58 +19,6 @@ import { code8400 } from '../dotCodes';
 import { colorNames, cornerNames } from '../constants';
 import simpleBlobDetector from './simpleBlobDetector';
 
-function keyPointToAvgColor(keyPoint, videoMat) {
-  const x = Math.floor(keyPoint.pt.x - keyPoint.size / 2);
-  const y = Math.floor(keyPoint.pt.y - keyPoint.size / 2);
-
-  const circleROI = videoMat.roi({
-    x,
-    y,
-    width: keyPoint.size,
-    height: keyPoint.size,
-  });
-
-  const circleMask = cv.Mat.zeros(keyPoint.size, keyPoint.size, cv.CV_8UC1);
-  cv.circle(
-    circleMask,
-    { x: Math.floor(keyPoint.size / 2), y: Math.floor(keyPoint.size / 2) },
-    keyPoint.size / 2 - 1,
-    [255, 255, 255, 0],
-    -1
-  );
-
-  const circleMean = cv.mean(circleROI, circleMask);
-  circleROI.delete();
-  circleMask.delete();
-
-  // Find the corners of the circle ROI, but just one pixel outside of it to be
-  // more sure to capture white pixels.
-  const corners = [
-    videoMat.ptr(clamp(y - 1, 0, videoMat.rows), clamp(x - 1, 0, videoMat.cols)),
-    videoMat.ptr(clamp(y - 1, 0, videoMat.rows), clamp(x + keyPoint.size + 1, 0, videoMat.cols)),
-    videoMat.ptr(clamp(y + keyPoint.size + 1, 0, videoMat.rows), clamp(x - 1, 0, videoMat.cols)),
-    videoMat.ptr(
-      clamp(y + keyPoint.size + 1, 0, videoMat.rows),
-      clamp(x + keyPoint.size + 1, 0, videoMat.cols)
-    ),
-  ];
-
-  const whiteMax = [
-    Math.max(corners[0][0], corners[1][0], corners[2][0], corners[3][0]),
-    Math.max(corners[0][1], corners[1][1], corners[2][1], corners[3][1]),
-    Math.max(corners[0][2], corners[1][2], corners[2][2], corners[3][2]),
-    255,
-  ];
-
-  // Normalize to the white colour.
-  return [
-    clamp(circleMean[0] / whiteMax[0] * 255, 0, 255),
-    clamp(circleMean[1] / whiteMax[1] * 255, 0, 255),
-    clamp(circleMean[2] / whiteMax[2] * 255, 0, 255),
-    255,
-  ];
-}
-
 function colorToRGB(c) {
   return { R: Math.round(c[0]), G: Math.round(c[1]), B: Math.round(c[2]) };
 }
@@ -154,7 +102,10 @@ function colorIndexesForShape(shape, keyPoints, videoMat, colorsRGB) {
 export default function detectPrograms({ config, videoCapture, dataToRemember, displayMat }) {
   const startTime = Date.now();
 
-  const videoMat = new cv.Mat(videoCapture.video.height, videoCapture.video.width, cv.CV_8UC4);
+  let videoMat = dataToRemember.videoMat;
+  if (!videoMat) {
+    videoMat = new cv.Mat(videoCapture.video.height, videoCapture.video.width, cv.CV_8UC4);
+  }
   videoCapture.read(videoMat);
 
   if (displayMat) {
@@ -175,20 +126,7 @@ export default function detectPrograms({ config, videoCapture, dataToRemember, d
     blobDetector = simpleBlobDetector(config.sigma, videoCapture.video);
   }
 
-  const videoROI = knobPointsToROI(config.knobPoints, videoMat);
-  const clippedVideoMat = videoMat.roi(videoROI);
-  let keyPoints = blobDetector.detectBlobs(clippedVideoMat, {
-    filterByCircularity: true,
-    minCircularity: 0.9,
-    minArea: 25,
-    filterByInertia: false,
-    faster: true,
-  });
-  clippedVideoMat.delete();
-  keyPoints.forEach(keyPoint => {
-    keyPoint.pt.x += videoROI.x;
-    keyPoint.pt.y += videoROI.y;
-  });
+  let keyPoints = blobDetector.detectBlobs();
 
   // Sort by x position. We rely on this when scanning through the circles
   // to find connected components, and when calibrating.
@@ -280,10 +218,9 @@ export default function detectPrograms({ config, videoCapture, dataToRemember, d
     keyPointSizes.reduce((sum, value) => sum + value, 0) / keyPointSizes.length;
 
   keyPoints.forEach(keyPoint => {
-    // Give each `keyPoint` an `avgColor` and `colorIndex`.
-    keyPoint.avgColor = keyPointToAvgColor(keyPoint, videoMat);
+    // Give each `keyPoint` a `colorIndex`.
     keyPoint.colorIndex =
-      keyPoint.colorIndex || colorIndexForColor(keyPoint.avgColor, config.colorsRGB);
+      keyPoint.colorIndex || colorIndexForColor(keyPoint.color, config.colorsRGB);
 
     if (displayMat) {
       if (config.showOverlayKeyPointCircles) {
@@ -403,12 +340,10 @@ export default function detectPrograms({ config, videoCapture, dataToRemember, d
     }
   });
 
-  videoMat.delete();
-
   return {
     keyPoints,
     programsToRender,
-    dataToRemember: { vectorsBetweenCorners, blobDetector },
+    dataToRemember: { vectorsBetweenCorners, videoMat, blobDetector },
     framerate: Math.round(1000 / (Date.now() - startTime)),
   };
 }

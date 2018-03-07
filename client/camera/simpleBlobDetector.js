@@ -7,6 +7,7 @@ export default function simpleBlobDetector(sigma, video) {
   outCanvas.style.width = '960px';
   outCanvas.style.height = '540px';
   document.body.appendChild(outCanvas);
+
   const regl = createRegl({
     canvas: outCanvas,
     attributes: { preserveDrawingBuffer: true },
@@ -145,15 +146,18 @@ void main () {
     ...common,
     frag: `
 precision mediump float;
+
 uniform sampler2D texture;
+uniform sampler2D videoTexture;
 uniform vec2 textureSize;
+
 uniform float sigma;
 varying vec2 uv;
 
 void main () {
   float me = texture2D(texture, uv).r;
   if (me > -0.9) {
-    gl_FragColor = vec4(0.0, 0.0, 1.0, 1.0);
+    gl_FragColor = vec4(0.0, 0.0, 1.0, 0.5);
     return;
   }
 
@@ -163,19 +167,21 @@ void main () {
   for (int dx = -1; dx <= 1; dx++) {
     for (int dy = -1; dy <= 1; dy++) {
       if (dx != 0 || dy != 0) {
-        float pixel = texture2D(texture, uv + onePixel * vec2(dx, dy)).r;
-        if (pixel < me) darkerThan += 1;
+        float neighbor = texture2D(texture, uv + onePixel * vec2(dx, dy)).r;
+        if (neighbor < me) darkerThan += 1;
       }
     }  
   }
 
   if (darkerThan == 8) {
-    gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);
+    vec3 color = texture2D(videoTexture, uv).rgb;
+    gl_FragColor = vec4(color, 1.0);
   } else {
-    gl_FragColor = vec4(me, me, me, 1.0);
+    gl_FragColor = vec4(me, me, me, 0.5);
   }
 }`,
     uniforms: {
+      videoTexture: regl.prop('videoTexture'),
       texture: regl.prop('texture'),
       sigma,
       textureSize: [1920, 1080],
@@ -199,12 +205,13 @@ void main () {
   return {
     sigma,
     detectBlobs() {
+      const videoTexture = texture.subimage(video);
       gaussianXFramebuffer.use(() => {
         regl.clear({
           color: [0, 0, 0, 255],
           depth: 1,
         });
-        gaussian1DFilter({ texture: texture.subimage(video), dir: [1.0, 0.0] });
+        gaussian1DFilter({ texture: videoTexture, dir: [1.0, 0.0] });
       });
       gaussianYFramebuffer.use(() => {
         regl.clear({
@@ -225,16 +232,18 @@ void main () {
         color: [0, 0, 0, 255],
         depth: 1,
       });
-      maximumFilter({ texture: laplacianFramebuffer });
+      maximumFilter({ texture: laplacianFramebuffer, videoTexture });
 
       const keyPoints = [];
 
       const snapshot = regl.read(readBuffer);
+
       for (var y = 0; y < 1080; y++) {
         for (var x = 0; x < 1920; x++) {
-          const color = readBuffer[y * 1920 * 4 + x * 4];
-          if (color < 0.999) {
-            // Throw out anything that isn't a white (max) point.
+          const idx = y * 1920 * 4 + x * 4;
+          const opacity = readBuffer[idx + 3];
+          if (opacity < 255) {
+            // Throw out anything that isn't a 1-opacity (max) point.
             continue;
           }
 
@@ -243,11 +252,18 @@ void main () {
             // TODO: Try to salvage these edge points.
             continue;
           }
-          keyPoints.push({ pt: { x, y }, size });
+
+          const [r, g, b] = [readBuffer[idx], readBuffer[idx + 1], readBuffer[idx + 2]];
+          keyPoints.push({ pt: { x, y }, size, color: [r, g, b, 255] });
         }
       }
 
+      console.log(keyPoints);
       return keyPoints;
+    },
+    dispose() {
+      regl.destroy();
+      outCanvas.removeNode();
     },
   };
 }

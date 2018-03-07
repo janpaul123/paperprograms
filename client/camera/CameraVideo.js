@@ -145,7 +145,7 @@ export default class CameraVideo extends React.Component {
                   width: point.size / this.state.videoWidth * width,
                   height: point.size / this.state.videoHeight * height,
                 }}
-                onClick={() => this.props.onSelectColor(point.avgColor)}
+                onClick={() => this.props.onSelectColor(point.color)}
               />
             ))}
         </div>
