@@ -129,9 +129,10 @@ export default class CameraMain extends React.Component {
     return (
       <div>
         <div className={styles.dynamicland}>
-          Paper Programs would not exist without the incredible research community at <a href="https://dynamicland.org">Dynamicland</a>.
-          They continue to push the bounds of physical, communal computing.
-          If you can, support Dynamicland by visiting, collaborating and donating. Thanks!! :)
+          Paper Programs would not exist without the incredible research community at{' '}
+          <a href="https://dynamicland.org">Dynamicland</a>. They continue to push the bounds of
+          physical, communal computing, and continue to inspire. If you can, support Dynamicland by
+          visiting, collaborating and donating. Thanks!! :)
         </div>
         <div className={styles.video}>
           <CameraVideo

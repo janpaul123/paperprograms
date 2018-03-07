@@ -6,7 +6,7 @@
   left: cameraMainPadding;
   right: calc(cameraMainSidebarWidth + cameraMainPadding * 2);
   top: 10px;
-  font: bold 23px/1 Helvetica;
+  font: 20px/1.2 Helvetica;
 }
 
 :local(.dynamicland) a,
@@ -18,7 +18,7 @@
 :local(.video) {
   position: absolute;
   left: cameraMainPadding;
-  top: calc(cameraMainPadding + 80px);
+  top: calc(cameraMainPadding + 60px);
 }
 
 :local(.sidebar) {
