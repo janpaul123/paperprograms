@@ -239,7 +239,6 @@ void main () {
       const keyPoints = [];
 
       const snapshot = regl.read(readBuffer);
-
       for (var y = 0; y < 1080; y++) {
         for (var x = 0; x < 1920; x++) {
           const idx = y * 1920 * 4 + x * 4;

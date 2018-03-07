@@ -1,5 +1,3 @@
-/* global cv */
-
 import React from 'react';
 
 import { cornerNames } from '../constants';
@@ -31,15 +29,12 @@ export default class CameraVideo extends React.Component {
             video.width = video.videoWidth;
             video.height = video.videoHeight;
             this.setState({ videoWidth: video.width, videoHeight: video.height });
-            this._videoCapture = new cv.VideoCapture(video);
             this._dataToRemember = {};
             this._processVideo();
           };
         });
     };
-
-    if (cv.Mat) init();
-    else cv.onRuntimeInitialized = init;
+    init();
   }
 
   _onMouseDown = mouseDownEvent => {
@@ -67,18 +62,12 @@ export default class CameraVideo extends React.Component {
     setTimeout(this._processVideo);
     if (this.props.config.freezeDetection) return;
 
-    const displayMat = new cv.Mat(
-      this._videoCapture.video.height,
-      this._videoCapture.video.width,
-      cv.CV_8UC4
-    );
-
     try {
       const { programsToRender, keyPoints, dataToRemember, framerate } = detectPrograms({
         config: this.props.config,
-        videoCapture: this._videoCapture,
+        videoInput: this._videoInput,
         dataToRemember: this._dataToRemember,
-        displayMat,
+        displayCtx: this._canvas.getContext("2d")
       });
       this._dataToRemember = dataToRemember;
       this.setState({ keyPoints });
@@ -86,9 +75,6 @@ export default class CameraVideo extends React.Component {
     } catch (error) {
       console.log(error); // eslint-disable-line no-console
     }
-
-    cv.imshow(this._canvas, displayMat);
-    displayMat.delete();
   };
 
   render() {
@@ -114,6 +100,7 @@ export default class CameraVideo extends React.Component {
         >
           <canvas
             id="canvasOutput"
+            width={1920} height={1080}
             style={{ width, height }}
             ref={el => (this._canvas = el)}
             onMouseDown={this._onMouseDown}

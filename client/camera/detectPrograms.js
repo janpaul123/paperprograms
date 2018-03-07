@@ -1,5 +1,3 @@
-/* global cv */
-
 import colorDiff from 'color-diff';
 import sortBy from 'lodash/sortBy';
 
@@ -36,21 +34,18 @@ function shapeToCornerNum(colorIndexes) {
   return Math.floor(code8400.indexOf(colorIndexes.join('')) / (code8400.length / 4));
 }
 
-function knobPointsToROI(knobPoints, videoMat) {
-  const clampedKnobPoints = knobPoints.map(point => ({
-    x: clamp(point.x, 0, 1),
-    y: clamp(point.y, 0, 1),
-  }));
-  const minX = Math.min(...clampedKnobPoints.map(point => point.x * videoMat.cols));
-  const minY = Math.min(...clampedKnobPoints.map(point => point.y * videoMat.rows));
-  const maxX = Math.max(...clampedKnobPoints.map(point => point.x * videoMat.cols));
-  const maxY = Math.max(...clampedKnobPoints.map(point => point.y * videoMat.rows));
-  return { x: minX, y: minY, width: maxX - minX, height: maxY - minY };
+function line(ctx, src, dst, color) {
+  // Meant to emulate cv.line to make porting code easier.
+  ctx.beginPath();
+  ctx.moveTo(src[0], src[1]);
+  ctx.lineTo(dst[0], dst[1]);
+  ctx.strokeStyle = color;
+  ctx.stroke();
 }
 
 let projectPointToUnitSquarePreviousKnobPoints;
 let projectPointToUnitSquarePreviousMatrix;
-function projectPointToUnitSquare(point, videoMat, knobPoints) {
+function projectPointToUnitSquare(point, cols, rows, knobPoints) {
   if (
     !projectPointToUnitSquarePreviousMatrix ||
     projectPointToUnitSquarePreviousKnobPoints !== knobPoints
@@ -60,10 +55,7 @@ function projectPointToUnitSquare(point, videoMat, knobPoints) {
       knobPoints
     ).adjugate();
   }
-  return projectPoint(
-    div(point, { x: videoMat.cols, y: videoMat.rows }),
-    projectPointToUnitSquarePreviousMatrix
-  );
+  return projectPoint(div(point, { x: cols, y: rows }), projectPointToUnitSquarePreviousMatrix);
 }
 
 // Depth-first search until a streak of `lengthLeft` has been found.
@@ -82,7 +74,7 @@ function findShape(shapeToFill, neighborIndexes, lengthLeft) {
   return false;
 }
 
-function colorIndexesForShape(shape, keyPoints, videoMat, colorsRGB) {
+function colorIndexesForShape(shape, keyPoints, colorsRGB) {
   const shapeColors = shape.map(keyPointIndex => keyPoints[keyPointIndex].color, colorsRGB);
 
   const closestColors = [];
@@ -96,25 +88,23 @@ function colorIndexesForShape(shape, keyPoints, videoMat, colorsRGB) {
   return shapeColors.map(color => colorIndexForColor(color, closestColors));
 }
 
-export default function detectPrograms({ config, videoCapture, dataToRemember, displayMat }) {
+export default function detectPrograms({ config, videoInput, dataToRemember, displayCtx }) {
   const startTime = Date.now();
+  const cols = videoInput.height;
+  const rows = videoInput.width;
 
-  let videoMat = dataToRemember.videoMat;
-  if (!videoMat) {
-    videoMat = new cv.Mat(videoCapture.video.height, videoCapture.video.width, cv.CV_8UC4);
-  }
-  videoCapture.read(videoMat);
+  if (displayCtx) {
+    displayCtx.fillStyle = 'white';
+    displayCtx.fillRect(0, 0, displayCtx.width, displayCtx.height);
 
-  if (displayMat) {
-    videoMat.copyTo(displayMat);
     const matrix = forwardProjectionMatrixForPoints(config.knobPoints);
 
     const knobPoints = [{ x: 0, y: 0 }, { x: 1, y: 0 }, { x: 1, y: 1 }, { x: 0, y: 1 }].map(point =>
-      mult(projectPoint(point, matrix), { x: videoMat.cols, y: videoMat.rows })
+      mult(projectPoint(point, matrix), { x: cols, y: rows })
     );
 
     for (let i = 0; i < 4; i++) {
-      cv.line(displayMat, knobPoints[i], knobPoints[(i + 1) % 4], [255, 0, 0, 255]);
+      line(displayCtx, knobPoints[i], knobPoints[(i + 1) % 4], 'red');
     }
   }
 
@@ -123,7 +113,7 @@ export default function detectPrograms({ config, videoCapture, dataToRemember, d
     if (blobDetector) {
       blobDetector.dispose();
     }
-    blobDetector = simpleBlobDetector(config.sigma, videoCapture.video);
+    blobDetector = simpleBlobDetector(config.sigma, videoInput);
   }
 
   let keyPoints = blobDetector.detectBlobs();
@@ -150,9 +140,9 @@ export default function detectPrograms({ config, videoCapture, dataToRemember, d
         neighborIndexes[i].push(j);
         neighborIndexes[j].push(i);
 
-        if (displayMat && config.showOverlayComponentLines) {
+        if (displayCtx && config.showOverlayComponentLines) {
           // Draw lines between components.
-          cv.line(displayMat, keyPoints[i].pt, keyPoints[j].pt, [255, 255, 255, 255]);
+          line(displayCtx, keyPoints[i], keyPoints[j], 'white');
         }
       }
     }
@@ -179,7 +169,7 @@ export default function detectPrograms({ config, videoCapture, dataToRemember, d
           shape.reverse();
         }
 
-        const colorIndexes = colorIndexesForShape(shape, keyPoints, videoMat, config.colorsRGB);
+        const colorIndexes = colorIndexesForShape(shape, keyPoints, config.colorsRGB);
         const id = shapeToId(colorIndexes);
         const cornerNum = shapeToCornerNum(colorIndexes);
 
@@ -199,16 +189,11 @@ export default function detectPrograms({ config, videoCapture, dataToRemember, d
 
           shape.forEach(index => keyPointSizes.push(keyPoints[index].size));
 
-          if (displayMat && config.showOverlayShapeId) {
+          if (displayCtx && config.showOverlayShapeId) {
             // Draw id and corner name.
-            cv.putText(
-              displayMat,
-              `${id},${cornerNames[cornerNum]}`,
-              div(add(keyPoints[shape[0]].pt, keyPoints[shape[6]].pt), { x: 2, y: 2 }),
-              cv.FONT_HERSHEY_DUPLEX,
-              0.5,
-              [0, 0, 255, 255]
-            );
+            const pt = div(add(keyPoints[shape[0]].pt, keyPoints[shape[6]].pt), { x: 2, y: 2 });
+            displayCtx.fillStyle = 'blue';
+            displayCtx.fillText(`${id},${cornerNames[cornerNum]}`, pt[0], pt[1]);
           }
         }
       }
@@ -222,23 +207,22 @@ export default function detectPrograms({ config, videoCapture, dataToRemember, d
     keyPoint.colorIndex =
       keyPoint.colorIndex || colorIndexForColor(keyPoint.color, config.colorsRGB);
 
-    if (displayMat) {
+    if (displayCtx) {
       if (config.showOverlayKeyPointCircles) {
         // Draw circles around `keyPoints`.
         const color = config.colorsRGB[keyPoint.colorIndex];
-        cv.circle(displayMat, keyPoint.pt, keyPoint.size / 2 + 3, color, 2);
+        displayCtx.beginPath();
+        displayCtx.arc(keyPoint.pt[0], keyPoint.pt[1], keyPoint.size / 2 + 3, 0, 2 * Math.PI);
+        displayCtx.strokeStyle = 'white'; // TODO: use color
+        displayCtx.fill();
+        displayCtx.stroke();
       }
 
       if (config.showOverlayKeyPointText) {
         // Draw text inside circles.
-        cv.putText(
-          displayMat,
-          colorNames[keyPoint.colorIndex],
-          add(keyPoint.pt, { x: -6, y: 6 }),
-          cv.FONT_HERSHEY_DUPLEX,
-          0.6,
-          [255, 255, 255, 255]
-        );
+        const pt = add(keyPoint.pt, { x: -6, y: 6 });
+        displayCtx.fillStyle = 'white';
+        displayCtx.fillText(colorNames[keyPoint.colorIndex], pt[0], pt[1]);
       }
     }
   });
@@ -314,27 +298,27 @@ export default function detectPrograms({ config, videoCapture, dataToRemember, d
     if (points[0] && points[1] && points[2] && points[3]) {
       const programToRender = {
         points: shrinkPoints(avgKeyPointSize * 0.75, points).map(point =>
-          projectPointToUnitSquare(point, videoMat, config.knobPoints)
+          projectPointToUnitSquare(point, cols, rows, config.knobPoints)
         ),
         number: id,
       };
       programsToRender.push(programToRender);
 
-      if (displayMat && config.showOverlayProgram) {
+      if (displayCtx && config.showOverlayProgram) {
         const matrix = forwardProjectionMatrixForPoints(config.knobPoints);
         const reprojectedPoints = programToRender.points.map(point =>
-          mult(projectPoint(point, matrix), { x: videoMat.cols, y: videoMat.rows })
+          mult(projectPoint(point, matrix), { x: cols, y: rows })
         );
 
-        cv.line(displayMat, reprojectedPoints[0], reprojectedPoints[1], [0, 0, 255, 255]);
-        cv.line(displayMat, reprojectedPoints[2], reprojectedPoints[1], [0, 0, 255, 255]);
-        cv.line(displayMat, reprojectedPoints[2], reprojectedPoints[3], [0, 0, 255, 255]);
-        cv.line(displayMat, reprojectedPoints[3], reprojectedPoints[0], [0, 0, 255, 255]);
-        cv.line(
-          displayMat,
+        line(displayCtx, reprojectedPoints[0], reprojectedPoints[1], 'blue');
+        line(displayCtx, reprojectedPoints[2], reprojectedPoints[1], 'blue');
+        line(displayCtx, reprojectedPoints[2], reprojectedPoints[3], 'blue');
+        line(displayCtx, reprojectedPoints[3], reprojectedPoints[0], 'blue');
+        line(
+          displayCtx,
           div(add(reprojectedPoints[2], reprojectedPoints[3]), { x: 2, y: 2 }),
           div(add(reprojectedPoints[0], reprojectedPoints[1]), { x: 2, y: 2 }),
-          [0, 0, 255, 255]
+          'blue'
         );
       }
     }
@@ -343,7 +327,7 @@ export default function detectPrograms({ config, videoCapture, dataToRemember, d
   return {
     keyPoints,
     programsToRender,
-    dataToRemember: { vectorsBetweenCorners, videoMat, blobDetector },
+    dataToRemember: { vectorsBetweenCorners, blobDetector },
     framerate: Math.round(1000 / (Date.now() - startTime)),
   };
 }
