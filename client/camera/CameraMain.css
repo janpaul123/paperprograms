@@ -6,7 +6,13 @@
   left: cameraMainPadding;
   right: calc(cameraMainSidebarWidth + cameraMainPadding * 2);
   top: 10px;
-  font: bold 30px/1 Helvetica;
+  font: bold 23px/1 Helvetica;
+}
+
+:local(.dynamicland) a,
+:local(.dynamicland) a:hover,
+:local(.dynamicland) a:visited {
+  color: yellow;
 }
 
 :local(.video) {
