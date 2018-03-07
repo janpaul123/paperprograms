@@ -88,7 +88,6 @@ export default class CameraVideo extends React.Component {
         ref={el => (this._el = el)}
         style={{ width: outerWidth, height: outerHeight, overflow: 'hidden' }}
       >
-        <video id="videoInput" style={{ display: 'none' }} ref={el => (this._videoInput = el)} />
         <div
           style={{
             position: 'relative',
@@ -98,10 +97,15 @@ export default class CameraVideo extends React.Component {
             top: this.props.config.zoomCanvasY,
           }}
         >
+          <video
+            id="videoInput"
+            style={{ position: 'absolute', top: 0, left: 0, width, height }}
+            ref={el => (this._videoInput = el)}
+          />
           <canvas
             id="canvasOutput"
             width={1920} height={1080}
-            style={{ width, height }}
+            style={{ position: 'absolute', top: 0, left: 0, width, height }}
             ref={el => (this._canvas = el)}
             onMouseDown={this._onMouseDown}
           />

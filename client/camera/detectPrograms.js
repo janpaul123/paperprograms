@@ -37,8 +37,8 @@ function shapeToCornerNum(colorIndexes) {
 function line(ctx, src, dst, color) {
   // Meant to emulate cv.line to make porting code easier.
   ctx.beginPath();
-  ctx.moveTo(src[0], src[1]);
-  ctx.lineTo(dst[0], dst[1]);
+  ctx.moveTo(src.x, src.y);
+  ctx.lineTo(dst.x, dst.y);
   ctx.strokeStyle = color;
   ctx.stroke();
 }
@@ -94,8 +94,7 @@ export default function detectPrograms({ config, videoInput, dataToRemember, dis
   const rows = videoInput.width;
 
   if (displayCtx) {
-    displayCtx.fillStyle = 'white';
-    displayCtx.fillRect(0, 0, displayCtx.width, displayCtx.height);
+    displayCtx.clearRect(0, 0, displayCtx.canvas.width, displayCtx.canvas.height);
 
     const matrix = forwardProjectionMatrixForPoints(config.knobPoints);
 
@@ -193,7 +192,7 @@ export default function detectPrograms({ config, videoInput, dataToRemember, dis
             // Draw id and corner name.
             const pt = div(add(keyPoints[shape[0]].pt, keyPoints[shape[6]].pt), { x: 2, y: 2 });
             displayCtx.fillStyle = 'blue';
-            displayCtx.fillText(`${id},${cornerNames[cornerNum]}`, pt[0], pt[1]);
+            displayCtx.fillText(`${id},${cornerNames[cornerNum]}`, pt.x, pt.y);
           }
         }
       }
@@ -212,7 +211,7 @@ export default function detectPrograms({ config, videoInput, dataToRemember, dis
         // Draw circles around `keyPoints`.
         const color = config.colorsRGB[keyPoint.colorIndex];
         displayCtx.beginPath();
-        displayCtx.arc(keyPoint.pt[0], keyPoint.pt[1], keyPoint.size / 2 + 3, 0, 2 * Math.PI);
+        displayCtx.arc(keyPoint.pt.x, keyPoint.pt.y, keyPoint.size / 2 + 3, 0, 2 * Math.PI);
         displayCtx.strokeStyle = 'white'; // TODO: use color
         displayCtx.fill();
         displayCtx.stroke();
@@ -222,7 +221,7 @@ export default function detectPrograms({ config, videoInput, dataToRemember, dis
         // Draw text inside circles.
         const pt = add(keyPoint.pt, { x: -6, y: 6 });
         displayCtx.fillStyle = 'white';
-        displayCtx.fillText(colorNames[keyPoint.colorIndex], pt[0], pt[1]);
+        displayCtx.fillText(colorNames[keyPoint.colorIndex], pt.x, pt.y);
       }
     }
   });
