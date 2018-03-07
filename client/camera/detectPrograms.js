@@ -90,8 +90,8 @@ function colorIndexesForShape(shape, keyPoints, colorsRGB) {
 
 export default function detectPrograms({ config, videoInput, dataToRemember, displayCtx }) {
   const startTime = Date.now();
-  const cols = videoInput.height;
-  const rows = videoInput.width;
+  const cols = videoInput.width;
+  const rows = videoInput.height;
 
   if (displayCtx) {
     displayCtx.clearRect(0, 0, displayCtx.canvas.width, displayCtx.canvas.height);
@@ -192,6 +192,7 @@ export default function detectPrograms({ config, videoInput, dataToRemember, dis
             // Draw id and corner name.
             const pt = div(add(keyPoints[shape[0]].pt, keyPoints[shape[6]].pt), { x: 2, y: 2 });
             displayCtx.fillStyle = 'blue';
+            displayCtx.font = '14px sans-serif';
             displayCtx.fillText(`${id},${cornerNames[cornerNum]}`, pt.x, pt.y);
           }
         }
@@ -213,7 +214,6 @@ export default function detectPrograms({ config, videoInput, dataToRemember, dis
         displayCtx.beginPath();
         displayCtx.arc(keyPoint.pt.x, keyPoint.pt.y, keyPoint.size / 2 + 3, 0, 2 * Math.PI);
         displayCtx.strokeStyle = 'white'; // TODO: use color
-        displayCtx.fill();
         displayCtx.stroke();
       }
 
@@ -221,6 +221,7 @@ export default function detectPrograms({ config, videoInput, dataToRemember, dis
         // Draw text inside circles.
         const pt = add(keyPoint.pt, { x: -6, y: 6 });
         displayCtx.fillStyle = 'white';
+        displayCtx.font = '16px sans-serif';
         displayCtx.fillText(colorNames[keyPoint.colorIndex], pt.x, pt.y);
       }
     }
