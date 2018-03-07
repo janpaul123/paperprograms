@@ -174,7 +174,7 @@ void main () {
   }
 
   if (darkerThan == 8) {
-    vec3 color = texture2D(videoTexture, uv).rgb;
+    vec3 color = texture2D(videoTexture, vec2(1.0 - uv.x, 1.0 - uv.y)).rgb;
     gl_FragColor = vec4(color, 1.0);
   } else {
     gl_FragColor = vec4(me, me, me, 0.5);
