@@ -129,10 +129,9 @@ export default class CameraMain extends React.Component {
     return (
       <div>
         <div className={styles.dynamicland}>
-          Paper Programs is only a tiny slice of what they have at <a href="https://dynamicland.org">Dynamicland</a>.
-          If you have the opportunity to go there or collaborate directly with them, do that!
-          They are actively looking for collaborators and funding, without which the research that inspired Paper Programs cannot continue.
-          Thanks!! :)
+          Paper Programs would not exist without the incredible research community at <a href="https://dynamicland.org">Dynamicland</a>.
+          They continue to push the bounds of physical, communal computing.
+          If you can, support Dynamicland by visiting, collaborating and donating. Thanks!! :)
         </div>
         <div className={styles.video}>
           <CameraVideo
