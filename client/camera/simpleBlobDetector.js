@@ -17,8 +17,6 @@ export default function simpleBlobDetector(sigma, dotThreshold, video) {
   const gaussian = (sigma, x) =>
     1 / Math.sqrt(2 * Math.PI * sigma * sigma) * Math.exp(-(x * x) / (2 * sigma * sigma));
 
-  // const sigma = 12; // Initial scale (of blobs to detect?)
-
   // Having 1 Gaussian kernel is unwieldy at big sigma, so
   // separate it into an x-kernel and y-kernel and do 2 passes.
 
@@ -249,7 +247,7 @@ void main () {
             continue;
           }
 
-          let size = sigma;
+          let size = sigma * 2;
           if (x + size >= 1920 || x - size <= 0 || y + size >= 1080 || y - size <= 0) {
             // TODO: Try to salvage these edge points.
             continue;

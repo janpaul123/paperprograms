@@ -145,7 +145,7 @@ export default function detectPrograms({ config, videoInput, dataToRemember, dis
 
         if (displayCtx && config.showOverlayComponentLines) {
           // Draw lines between components.
-          line(displayCtx, keyPoints[i], keyPoints[j], 'white');
+          line(displayCtx, keyPoints[i].pt, keyPoints[j].pt, 'white');
         }
       }
     }
