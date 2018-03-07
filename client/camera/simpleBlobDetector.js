@@ -205,7 +205,9 @@ void main () {
   return {
     sigma,
     detectBlobs() {
+      // This is the slowest GPU operation -- 10-20 FPS cost.
       const videoTexture = texture.subimage(video);
+      // All subsequent operations are more like 3 FPS each.
       gaussianXFramebuffer.use(() => {
         regl.clear({
           color: [0, 0, 0, 255],
@@ -258,12 +260,11 @@ void main () {
         }
       }
 
-      console.log(keyPoints);
       return keyPoints;
     },
     dispose() {
       regl.destroy();
-      outCanvas.removeNode();
+      outCanvas.remove();
     },
   };
 }

@@ -83,10 +83,7 @@ function findShape(shapeToFill, neighborIndexes, lengthLeft) {
 }
 
 function colorIndexesForShape(shape, keyPoints, videoMat, colorsRGB) {
-  const shapeColors = shape.map(
-    keyPointIndex => keyPointToAvgColor(keyPoints[keyPointIndex], videoMat),
-    colorsRGB
-  );
+  const shapeColors = shape.map(keyPointIndex => keyPoints[keyPointIndex].color, colorsRGB);
 
   const closestColors = [];
   const remainingShapeColors = shapeColors.slice();
@@ -123,6 +120,9 @@ export default function detectPrograms({ config, videoCapture, dataToRemember, d
 
   let blobDetector = dataToRemember.blobDetector;
   if (!blobDetector || blobDetector.sigma !== config.sigma) {
+    if (blobDetector) {
+      blobDetector.dispose();
+    }
     blobDetector = simpleBlobDetector(config.sigma, videoCapture.video);
   }
 
