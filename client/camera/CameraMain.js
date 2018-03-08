@@ -231,6 +231,7 @@ export default class CameraMain extends React.Component {
 
           <div className={styles.sidebarSection}>
             sigma = {this.props.config.sigma}{' '}
+            <br />
             <input
               type="range"
               min="1"

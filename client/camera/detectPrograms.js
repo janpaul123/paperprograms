@@ -138,7 +138,7 @@ export default function detectPrograms({ config, videoInput, dataToRemember, dis
 
       if (
         norm(diff(keyPoints[i].pt, keyPoints[j].pt)) <
-        (keyPoints[i].size + keyPoints[j].size) * 0.9
+        (keyPoints[i].size + keyPoints[j].size) * 1.6
       ) {
         neighborIndexes[i].push(j);
         neighborIndexes[j].push(i);
@@ -225,7 +225,7 @@ export default function detectPrograms({ config, videoInput, dataToRemember, dis
         // Draw text inside circles.
         const pt = add(keyPoint.pt, { x: -6, y: 6 });
         displayCtx.fillStyle = 'white';
-        displayCtx.font = '16px sans-serif';
+        displayCtx.font = '12px sans-serif';
         displayCtx.fillText(colorNames[keyPoint.colorIndex], pt.x, pt.y);
       }
     }
