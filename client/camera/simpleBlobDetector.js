@@ -1,9 +1,13 @@
 import * as createRegl from 'regl';
 
 export default function simpleBlobDetector(sigma, dotThreshold, video) {
+  const cols = video.width;
+  const rows = video.height;
+
+  // TODO: Factor this out somewhere.
   const outCanvas = document.createElement('canvas');
-  outCanvas.width = 1920;
-  outCanvas.height = 1080;
+  outCanvas.width = cols;
+  outCanvas.height = rows;
   outCanvas.style.width = '960px';
   outCanvas.style.height = '540px';
   document.body.appendChild(outCanvas);
@@ -82,7 +86,7 @@ void main () {
     uniforms: {
       texture: regl.prop('texture'),
       dir: regl.prop('dir'),
-      textureSize: [1920, 1080],
+      textureSize: [cols, rows],
     },
   });
 
@@ -136,7 +140,7 @@ void main () {
     uniforms: {
       texture: regl.prop('texture'),
       sigma,
-      textureSize: [1920, 1080],
+      textureSize: [cols, rows],
     },
   });
 
@@ -182,14 +186,14 @@ void main () {
       videoTexture: regl.prop('videoTexture'),
       texture: regl.prop('texture'),
       sigma,
-      textureSize: [1920, 1080],
+      textureSize: [cols, rows],
     },
   });
 
   const createFramebuffer = () =>
     regl.framebuffer({
-      width: 1920,
-      height: 1080,
+      width: cols,
+      height: rows,
       colorFormat: 'rgba', // TODO: Can we get rid of the extra channels?
       colorType: 'float',
     });
@@ -199,7 +203,7 @@ void main () {
   const laplacianFramebuffer = createFramebuffer();
 
   const texture = regl.texture(video);
-  const readBuffer = new Uint8Array(1920 * 1080 * 4);
+  const readBuffer = new Uint8Array(cols * rows * 4);
   return {
     sigma,
     dotThreshold,
@@ -238,9 +242,9 @@ void main () {
       const keyPoints = [];
 
       const snapshot = regl.read(readBuffer);
-      for (var y = 0; y < 1080; y++) {
-        for (var x = 0; x < 1920; x++) {
-          const idx = y * 1920 * 4 + x * 4;
+      for (var y = 0; y < rows; y++) {
+        for (var x = 0; x < cols; x++) {
+          const idx = y * cols * 4 + x * 4;
           const opacity = readBuffer[idx + 3];
           if (opacity < 255) {
             // Throw out anything that isn't a 1-opacity (max) point.
@@ -248,7 +252,7 @@ void main () {
           }
 
           let size = sigma * 2;
-          if (x + size >= 1920 || x - size <= 0 || y + size >= 1080 || y - size <= 0) {
+          if (x + size >= cols || x - size <= 0 || y + size >= rows || y - size <= 0) {
             // TODO: Try to salvage these edge points.
             continue;
           }

@@ -104,7 +104,7 @@ export default class CameraVideo extends React.Component {
           />
           <canvas
             id="canvasOutput"
-            width={1920} height={1080}
+            width={this.state.videoWidth} height={this.state.videoHeight}
             style={{ position: 'absolute', top: 0, left: 0, width, height }}
             ref={el => (this._canvas = el)}
             onMouseDown={this._onMouseDown}
