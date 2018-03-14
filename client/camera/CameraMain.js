@@ -183,38 +183,61 @@ export default class CameraMain extends React.Component {
           <div className={styles.sidebarSection}>
             <div className={styles.sidebarSectionSection}>print queue</div>
             <div>
-              {this.state.spaceData.programs.filter(program => !program.printed).map(program => (
-                <div
-                  key={program.number}
-                  className={styles.printQueueItem}
-                  onClick={() => this._print(program)}
-                >
-                  <strong>#{program.number}</strong> {codeToName(program.originalCode)}{' '}
-                  <span
-                    className={styles.printQueueItemPrinted}
-                    onClick={event => {
-                      event.stopPropagation();
-                      this._markPrinted(program);
-                    }}
+              {this.state.spaceData.programs
+                .filter(program => !program.printed || this.props.config.showPrintedInQueue)
+                .map(program => (
+                  <div
+                    key={program.number}
+                    className={
+                      program.printed
+                        ? styles.printQueueItemPrinted
+                        : styles.printQueueItemNotPrinted
+                    }
+                    onClick={() => this._print(program)}
                   >
-                    [done]
-                  </span>
-                </div>
-              ))}
+                    <strong>#{program.number}</strong> {codeToName(program.originalCode)}{' '}
+                    {!program.printed && (
+                      <span
+                        className={styles.printQueueItemDone}
+                        onClick={event => {
+                          event.stopPropagation();
+                          this._markPrinted(program);
+                        }}
+                      >
+                        [done]
+                      </span>
+                    )}
+                  </div>
+                ))}
             </div>
             <button onClick={this._printCalibration}>print calibration page</button>{' '}
             <button onClick={this._createHelloWorld}>create hello world program</button>
-            <input
-              type="checkbox"
-              checked={this.props.config.autoPrintEnabled}
-              onChange={() =>
-                this.props.onConfigChange({
-                  ...this.props.config,
-                  autoPrintEnabled: !this.props.config.autoPrintEnabled,
-                })
-              }
-            />{' '}
-            auto-print (start Chrome with "--kiosk-printing" flag)
+            <div>
+              <input
+                type="checkbox"
+                checked={this.props.config.autoPrintEnabled}
+                onChange={() =>
+                  this.props.onConfigChange({
+                    ...this.props.config,
+                    autoPrintEnabled: !this.props.config.autoPrintEnabled,
+                  })
+                }
+              />{' '}
+              auto-print (start Chrome with "--kiosk-printing" flag)
+            </div>
+            <div>
+              <input
+                type="checkbox"
+                checked={this.props.config.showPrintedInQueue}
+                onChange={() =>
+                  this.props.onConfigChange({
+                    ...this.props.config,
+                    showPrintedInQueue: !this.props.config.showPrintedInQueue,
+                  })
+                }
+              />{' '}
+              show printed in queue
+            </div>
           </div>
 
           <div className={styles.sidebarSection}>

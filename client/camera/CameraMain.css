@@ -40,22 +40,28 @@
   margin-bottom: calc(cameraMainPadding / 4);
 }
 
-:local(.printQueueItem) {
+:local(.printQueueItemPrinted),
+:local(.printQueueItemNotPrinted) {
   margin-bottom: calc(cameraMainPadding / 4);
   cursor: pointer;
 }
-:local(.printQueueItem):hover {
+:local(.printQueueItemPrinted):hover,
+:local(.printQueueItemNotPrinted):hover {
   background: #666;
 }
 
 :local(.printQueueItemPrinted) {
+  text-decoration: line-through;
+}
+
+:local(.printQueueItemDone) {
   visibility: hidden;
   cursor: pointer;
 }
-:local(.printQueueItem):hover > :local(.printQueueItemPrinted) {
+:local(.printQueueItem):hover > :local(.printQueueItemDone) {
   visibility: visible;
 }
-:local(.printQueueItemPrinted):hover {
+:local(.printQueueItemDone):hover {
   background: #999;
 }
 
