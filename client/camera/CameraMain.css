@@ -1,31 +1,35 @@
 @value cameraMainPadding: 20px;
 @value cameraMainSidebarWidth: 300px;
 
+:local(.root) {
+  display: flex;
+  flex-direction: column;
+}
+
 :local(.dynamicland) {
-  position: absolute;
-  left: cameraMainPadding;
-  right: calc(cameraMainSidebarWidth + cameraMainPadding * 2);
-  top: 10px;
   font: 20px/1.2 Helvetica;
+  background: yellow;
+  color: black;
+  padding: 10px;
 }
 
 :local(.dynamicland) a,
 :local(.dynamicland) a:hover,
 :local(.dynamicland) a:visited {
-  color: yellow;
+  color: blue;
+}
+
+:local(.appRoot) {
+  display: flex;
+  padding: 10px;
 }
 
 :local(.video) {
-  position: absolute;
-  left: cameraMainPadding;
-  top: calc(cameraMainPadding + 60px);
+  flex: 1 0 auto;
 }
 
 :local(.sidebar) {
-  position: absolute;
-  top: cameraMainPadding;
-  right: cameraMainPadding;
-  width: cameraMainSidebarWidth;
+  flex: 1 1 cameraMainSidebarWidth;
   color: white;
   font: 20px sans-serif;
   font-weight: 300;
