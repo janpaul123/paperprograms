@@ -1,29 +1,27 @@
 import React from 'react';
 import styles from './Knob.css';
+import * as d3 from 'd3';
 
 export default class Knob extends React.Component {
-  _onMouseDown = mouseDownEvent => {
-    const mouseMoveHandler = event => {
-      const parentOffset = this._el.offsetParent.getBoundingClientRect();
-      this.props.onChange({
-        x: event.clientX - parentOffset.left,
-        y: event.clientY - parentOffset.top,
-      });
-    };
-    const mouseUpHandler = () => {
-      document.body.removeEventListener('mousemove', mouseMoveHandler, true);
-      document.body.removeEventListener('mouseup', mouseUpHandler, true);
-    };
-    document.body.addEventListener('mousemove', mouseMoveHandler, true);
-    document.body.addEventListener('mouseup', mouseUpHandler, true);
-    mouseDownEvent.preventDefault();
-  };
-
+  componentDidMount() {
+    this._attachDragger();
+  }
+  _attachDragger = () => {
+    const dragger = d3.drag().on("drag", () => {
+      const {x,y} = d3.event;
+      this.props.onChange({x,y});
+    });
+    d3.select(this._el).call(dragger);
+  }
   render() {
+    const {x,y} = this.props;
     return (
       <div
         className={styles.knob}
-        style={{ left: this.props.x, top: this.props.y }}
+        style={{
+          position: 'absolute',
+          transform: `translate(${x}px,${y}px)`
+        }}
         onMouseDown={this._onMouseDown}
         ref={el => (this._el = el)}
       >

@@ -138,7 +138,6 @@ export default class CameraMain extends React.Component {
           <div className={styles.video}>
             <CameraVideo
               width={this.state.pageWidth - padding * 3 - sidebarWidth}
-              zoom={this.props.config.zoom}
               config={this.props.config}
               onConfigChange={this.props.onConfigChange}
               onProcessVideo={({ programsToRender, framerate }) => {
@@ -239,20 +238,6 @@ export default class CameraMain extends React.Component {
                 />{' '}
                 show printed in queue
               </div>
-            </div>
-
-            <div className={styles.sidebarSection}>
-              zoom{' '}
-              <input
-                type="range"
-                min="1"
-                max="4"
-                step="0.25"
-                value={this.props.config.zoom}
-                onChange={event =>
-                  this.props.onConfigChange({ ...this.props.config, zoom: event.target.value })
-                }
-              />
             </div>
 
             <div className={styles.sidebarSection}>

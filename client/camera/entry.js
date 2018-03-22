@@ -1,15 +1,14 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import uuidv4 from 'uuid/v4';
+import * as d3 from 'd3';
 
 import CameraMain from './CameraMain';
 
 const defaultConfig = {
   colorsRGB: [[119, 43, 24, 255], [94, 104, 48, 255], [65, 80, 84, 255], [0, 0, 0, 255]],
   knobPoints: [{ x: 0, y: 0 }, { x: 1, y: 0 }, { x: 1, y: 1 }, { x: 0, y: 1 }],
-  zoom: 1,
-  zoomCanvasX: 0,
-  zoomCanvasY: 0,
+  zoomTransform: d3.zoomIdentity,
   showOverlayKeyPointCircles: true,
   showOverlayKeyPointText: true,
   showOverlayComponentLines: true,
