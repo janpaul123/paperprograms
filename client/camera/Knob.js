@@ -2,7 +2,7 @@ import React from 'react';
 import styles from './Knob.css';
 
 export default class Knob extends React.Component {
-  _onMouseDown = () => {
+  _onMouseDown = mouseDownEvent => {
     const mouseMoveHandler = event => {
       const parentOffset = this._el.offsetParent.getBoundingClientRect();
       this.props.onChange({
@@ -16,6 +16,7 @@ export default class Knob extends React.Component {
     };
     document.body.addEventListener('mousemove', mouseMoveHandler, true);
     document.body.addEventListener('mouseup', mouseUpHandler, true);
+    mouseDownEvent.preventDefault();
   };
 
   render() {

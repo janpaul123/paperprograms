@@ -61,6 +61,7 @@ export default class CameraVideo extends React.Component {
     };
     document.body.addEventListener('mousemove', mouseMoveHandler, true);
     document.body.addEventListener('mouseup', mouseUpHandler, true);
+    mouseDownEvent.preventDefault();
   };
 
   _processVideo = () => {
