@@ -117,8 +117,8 @@ export default class CameraVideo extends React.Component {
               position: 'absolute',
               transform: `translate(${x}px, ${y}px) scale(${k})`,
               transformOrigin: '0 0',
-              width: `${width}px`,
-              height: `${height}px`,
+              width,
+              height,
             }}
             ref={el => (this._canvas = el)}
           />
@@ -145,16 +145,16 @@ export default class CameraVideo extends React.Component {
             this.state.keyPoints.map((point, index) => {
               const px = (point.pt.x - point.size / 2) / this.state.videoWidth * width * k + x;
               const py = (point.pt.y - point.size / 2) / this.state.videoHeight * height * k + y;
-              const pw = point.size / this.state.videoWidth * width * k;
-              const ph = point.size / this.state.videoHeight * height * k;
               return (
                 <div
                   key={index}
                   className={styles.keyPoint}
                   style={{
-                    transform: `translate(${px}px, ${py}px)`,
-                    width: `${pw}px`,
-                    height: `${ph}px`,
+                    position: 'absolute',
+                    transform: `translate(${px}px, ${py}px) scale(${k})`,
+                    transformOrigin: '0 0',
+                    width: point.size / this.state.videoWidth * width,
+                    height: point.size / this.state.videoHeight * height,
                   }}
                   onClick={() => this.props.onSelectColor(point.avgColor)}
                 />
