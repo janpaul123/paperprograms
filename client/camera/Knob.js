@@ -25,7 +25,6 @@ export default class Knob extends React.Component {
       <div
         className={styles.knob}
         style={{
-          position: 'absolute',
           transform: `translate(${x}px,${y}px)`,
         }}
         ref={el => (this._el = el)}

@@ -150,7 +150,6 @@ export default class CameraVideo extends React.Component {
                   key={index}
                   className={styles.keyPoint}
                   style={{
-                    position: 'absolute',
                     transform: `translate(${px}px, ${py}px) scale(${k})`,
                     transformOrigin: '0 0',
                     width: point.size / this.state.videoWidth * width,
