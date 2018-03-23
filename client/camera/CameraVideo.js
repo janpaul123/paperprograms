@@ -51,18 +51,18 @@ export default class CameraVideo extends React.Component {
     const surface = d3.select(this._zoomSurface);
 
     // create zoom object and update event
-    const zoom = d3.zoom().on("zoom", () => {
-      const {x,y,k} = d3.event.transform;
-      this.props.onConfigChange({...this.props.config, zoomTransform: {x,y,k}});
+    const zoom = d3.zoom().on('zoom', () => {
+      const { x, y, k } = d3.event.transform;
+      this.props.onConfigChange({ ...this.props.config, zoomTransform: { x, y, k } });
     });
 
     // initialize zoom
-    const {x,y,k} = this.props.config.zoomTransform;
-    surface.call(zoom.transform, d3.zoomIdentity.translate(x,y).scale(k));
+    const { x, y, k } = this.props.config.zoomTransform;
+    surface.call(zoom.transform, d3.zoomIdentity.translate(x, y).scale(k));
 
     // attach zoom handler
     surface.call(zoom);
-  }
+  };
 
   _processVideo = () => {
     setTimeout(this._processVideo);
@@ -95,14 +95,10 @@ export default class CameraVideo extends React.Component {
   render() {
     const width = this.props.width;
     const height = width / this.state.videoWidth * this.state.videoHeight;
-
-    const {x,y,k} = this.props.config.zoomTransform;
+    const { x, y, k } = this.props.config.zoomTransform;
 
     return (
-      <div
-        ref={el => (this._el = el)}
-        style={{ width, height, overflow: 'hidden' }}
-      >
+      <div ref={el => (this._el = el)} style={{ width, height, overflow: 'hidden' }}>
         <video id="videoInput" style={{ display: 'none' }} ref={el => (this._videoInput = el)} />
         <div
           style={{
@@ -117,7 +113,7 @@ export default class CameraVideo extends React.Component {
             style={{
               position: 'absolute',
               transform: `translate(${x}px, ${y}px) scale(${k})`,
-              transformOrigin: "0 0",
+              transformOrigin: '0 0',
               width: `${width}px`,
               height: `${height}px`,
             }}
@@ -135,7 +131,7 @@ export default class CameraVideo extends React.Component {
                   const knobPoints = this.props.config.knobPoints.slice();
                   knobPoints[position] = {
                     x: (newPoint.x - x) / k / width,
-                    y: (newPoint.y - y) / k / height
+                    y: (newPoint.y - y) / k / height,
                   };
                   this.props.onConfigChange({ ...this.props.config, knobPoints });
                 }}
@@ -143,19 +139,24 @@ export default class CameraVideo extends React.Component {
             );
           })}
           {this.props.allowSelectingDetectedPoints &&
-            this.state.keyPoints.map((point, index) => (
-              <div
-                key={index}
-                className={styles.keyPoint}
-                style={{
-                  left: (point.pt.x - point.size / 2) / this.state.videoWidth * width,
-                  top: (point.pt.y - point.size / 2) / this.state.videoHeight * height,
-                  width: point.size / this.state.videoWidth * width,
-                  height: point.size / this.state.videoHeight * height,
-                }}
-                onClick={() => this.props.onSelectColor(point.avgColor)}
-              />
-            ))}
+            this.state.keyPoints.map((point, index) => {
+              const px = (point.pt.x - point.size / 2) / this.state.videoWidth * width * k + x;
+              const py = (point.pt.y - point.size / 2) / this.state.videoHeight * height * k + y;
+              const pw = point.size / this.state.videoWidth * width * k;
+              const ph = point.size / this.state.videoHeight * height * k;
+              return (
+                <div
+                  key={index}
+                  className={styles.keyPoint}
+                  style={{
+                    transform: `translate(${px}px, ${py}px)`,
+                    width: `${pw}px`,
+                    height: `${ph}px`,
+                  }}
+                  onClick={() => this.props.onSelectColor(point.avgColor)}
+                />
+              );
+            })}
         </div>
       </div>
     );
