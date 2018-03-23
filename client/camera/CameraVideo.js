@@ -51,10 +51,13 @@ export default class CameraVideo extends React.Component {
     const surface = d3.select(this._zoomSurface);
 
     // create zoom object and update event
-    const zoom = d3.zoom().on('zoom', () => {
-      const { x, y, k } = d3.event.transform;
-      this.props.onConfigChange({ ...this.props.config, zoomTransform: { x, y, k } });
-    });
+    const zoom = d3
+      .zoom()
+      .scaleExtent([1, 4])
+      .on('zoom', () => {
+        const { x, y, k } = d3.event.transform;
+        this.props.onConfigChange({ ...this.props.config, zoomTransform: { x, y, k } });
+      });
 
     // initialize zoom
     const { x, y, k } = this.props.config.zoomTransform;
