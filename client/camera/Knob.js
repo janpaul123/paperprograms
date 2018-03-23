@@ -10,6 +10,7 @@ export default class Knob extends React.Component {
     const dragger = d3
       .drag()
       .subject(() => {
+        // drag origin
         const { x, y } = this.props;
         return { x, y };
       })
