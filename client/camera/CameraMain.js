@@ -125,6 +125,8 @@ export default class CameraMain extends React.Component {
   render() {
     const padding = parseInt(styles.cameraMainPadding);
     const sidebarWidth = parseInt(styles.cameraMainSidebarWidth);
+    const editorUrl = new URL(`editor.html?${this.state.spaceData.spaceName}`,
+      window.location.origin).toString();
 
     return (
       <div className={styles.root}>
@@ -168,13 +170,10 @@ export default class CameraMain extends React.Component {
             </div>
 
             <div className={styles.sidebarSection}>
-              editor url{' '}
-              <strong>
-                {new URL(
-                  `editor.html?${this.state.spaceData.spaceName}`,
-                  window.location.origin
-                ).toString()}
-              </strong>
+              editor:
+              <a href={editorUrl} target="_blank">
+                {editorUrl}
+              </a>
             </div>
 
             <div className={styles.sidebarSection}>
