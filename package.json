@@ -34,6 +34,7 @@
     "color-diff": "^1.1.0",
     "copy-webpack-plugin": "^4.5.0",
     "css-loader": "^0.28.10",
+    "d3": "^5.0.0",
     "dotenv": "^4.0.0",
     "express": "^4.16.2",
     "heroku-ssl-redirect": "0.0.4",

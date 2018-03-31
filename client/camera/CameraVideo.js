@@ -1,6 +1,7 @@
 /* global cv */
 
 import React from 'react';
+import * as d3 from 'd3';
 
 import { cornerNames } from '../constants';
 import Knob from './Knob';
@@ -42,25 +43,28 @@ export default class CameraVideo extends React.Component {
     else cv.onRuntimeInitialized = init;
   }
 
-  _onMouseDown = mouseDownEvent => {
-    const startCanvasX = this.props.config.zoomCanvasX;
-    const startCanvasY = this.props.config.zoomCanvasY;
-    const startClientX = mouseDownEvent.clientX;
-    const startClientY = mouseDownEvent.clientY;
+  componentDidMount() {
+    this._attachZoomer();
+  }
 
-    const mouseMoveHandler = event => {
-      this.props.onConfigChange({
-        ...this.props.config,
-        zoomCanvasX: startCanvasX + event.clientX - startClientX,
-        zoomCanvasY: startCanvasY + event.clientY - startClientY,
+  _attachZoomer = () => {
+    const surface = d3.select(this._zoomSurface);
+
+    // create zoom object and update event
+    const zoom = d3
+      .zoom()
+      .scaleExtent([1, 4])
+      .on('zoom', () => {
+        const { x, y, k } = d3.event.transform;
+        this.props.onConfigChange({ ...this.props.config, zoomTransform: { x, y, k } });
       });
-    };
-    const mouseUpHandler = () => {
-      document.body.removeEventListener('mousemove', mouseMoveHandler, true);
-      document.body.removeEventListener('mouseup', mouseUpHandler, true);
-    };
-    document.body.addEventListener('mousemove', mouseMoveHandler, true);
-    document.body.addEventListener('mouseup', mouseUpHandler, true);
+
+    // initialize zoom
+    const { x, y, k } = this.props.config.zoomTransform;
+    surface.call(zoom.transform, d3.zoomIdentity.translate(x, y).scale(k));
+
+    // attach zoom handler
+    surface.call(zoom);
   };
 
   _processVideo = () => {
@@ -92,31 +96,31 @@ export default class CameraVideo extends React.Component {
   };
 
   render() {
-    const width = this.props.width * this.props.zoom;
+    const width = this.props.width;
     const height = width / this.state.videoWidth * this.state.videoHeight;
-    const outerWidth = this.props.width;
-    const outerHeight = this.props.width / this.state.videoWidth * this.state.videoHeight;
+    const { x, y, k } = this.props.config.zoomTransform;
 
     return (
-      <div
-        ref={el => (this._el = el)}
-        style={{ width: outerWidth, height: outerHeight, overflow: 'hidden' }}
-      >
+      <div ref={el => (this._el = el)} style={{ width, height, overflow: 'hidden' }}>
         <video id="videoInput" style={{ display: 'none' }} ref={el => (this._videoInput = el)} />
         <div
           style={{
             position: 'relative',
             width,
             height,
-            left: this.props.config.zoomCanvasX,
-            top: this.props.config.zoomCanvasY,
           }}
+          ref={el => (this._zoomSurface = el)}
         >
           <canvas
             id="canvasOutput"
-            style={{ width, height }}
+            style={{
+              position: 'absolute',
+              transform: `translate(${x}px, ${y}px) scale(${k})`,
+              transformOrigin: '0 0',
+              width,
+              height,
+            }}
             ref={el => (this._canvas = el)}
-            onMouseDown={this._onMouseDown}
           />
           {[0, 1, 2, 3].map(position => {
             const point = this.props.config.knobPoints[position];
@@ -124,30 +128,37 @@ export default class CameraVideo extends React.Component {
               <Knob
                 key={position}
                 label={cornerNames[position]}
-                x={point.x * width}
-                y={point.y * height}
+                x={point.x * width * k + x}
+                y={point.y * height * k + y}
                 onChange={newPoint => {
                   const knobPoints = this.props.config.knobPoints.slice();
-                  knobPoints[position] = { x: newPoint.x / width, y: newPoint.y / height };
+                  knobPoints[position] = {
+                    x: (newPoint.x - x) / k / width,
+                    y: (newPoint.y - y) / k / height,
+                  };
                   this.props.onConfigChange({ ...this.props.config, knobPoints });
                 }}
               />
             );
           })}
           {this.props.allowSelectingDetectedPoints &&
-            this.state.keyPoints.map((point, index) => (
-              <div
-                key={index}
-                className={styles.keyPoint}
-                style={{
-                  left: (point.pt.x - point.size / 2) / this.state.videoWidth * width,
-                  top: (point.pt.y - point.size / 2) / this.state.videoHeight * height,
-                  width: point.size / this.state.videoWidth * width,
-                  height: point.size / this.state.videoHeight * height,
-                }}
-                onClick={() => this.props.onSelectColor(point.avgColor)}
-              />
-            ))}
+            this.state.keyPoints.map((point, index) => {
+              const px = (point.pt.x - point.size / 2) / this.state.videoWidth * width * k + x;
+              const py = (point.pt.y - point.size / 2) / this.state.videoHeight * height * k + y;
+              return (
+                <div
+                  key={index}
+                  className={styles.keyPoint}
+                  style={{
+                    transform: `translate(${px}px, ${py}px) scale(${k})`,
+                    transformOrigin: '0 0',
+                    width: point.size / this.state.videoWidth * width,
+                    height: point.size / this.state.videoHeight * height,
+                  }}
+                  onClick={() => this.props.onSelectColor(point.avgColor)}
+                />
+              );
+            })}
         </div>
       </div>
     );
