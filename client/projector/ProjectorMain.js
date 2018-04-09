@@ -26,6 +26,7 @@ export default class ProjectorMain extends React.Component {
           bottomLeft: mult(program.points[3], multPoint),
           center: mult(centerPoint, multPoint),
         },
+        picture: decodeImageData(program.picture),
         data: this.props.dataByProgramNumber[program.number] || {},
       };
 
@@ -60,3 +61,9 @@ export default class ProjectorMain extends React.Component {
     );
   }
 }
+
+function decodeImageData(picture) {
+  return new ImageData(new Uint8ClampedArray(picture.data),
+                       picture.width,
+                       picture.height);
+};
