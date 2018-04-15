@@ -27,6 +27,11 @@ export default class ProjectorMain extends React.Component {
           center: mult(centerPoint, multPoint),
         },
         data: this.props.dataByProgramNumber[program.number] || {},
+        markers: program.markers.map(data => {
+          const { position, size, avgColor, colorIndex } = data;
+          const scaledPosition = mult(position, multPoint);
+          return { position: scaledPosition, size, avgColor, colorIndex };
+        }),
       };
 
       programsToRenderByNumber[program.number] = program;
