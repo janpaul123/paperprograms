@@ -80,7 +80,7 @@
 
   workerContext.addEventListener('unhandledrejection', event => {
     if (event.reason instanceof Error) {
-      log('Error', [event.reason.message], event.reason.stack.split('\n')[1]);
+      log('Error', [event.reason.message], (event.reason.stack || '').split('\n')[1]);
     }
   });
 
