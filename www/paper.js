@@ -90,6 +90,7 @@
     paperNumber,
     requiredData,
     callback,
+    whiskerPointCallback,
   } = {}) => {
     whiskerLength = whiskerLength || 0.7;
     paperNumber = paperNumber || (await workerContext.paper.get('number'));
@@ -97,6 +98,7 @@
     const supporterCanvas = await workerContext.paper.get('supporterCanvas', { id: 'whisker' });
     const supporterCtx = supporterCanvas.getContext('2d');
     let pointAtData = null;
+    let lastWhiskerEnd = null;
 
     // Adapted from https://stackoverflow.com/questions/9043805/test-if-two-lines-intersect-javascript-function
     function intersects(v1, v2, v3, v4) {
@@ -176,6 +178,11 @@
       );
       supporterCtx.fill();
       supporterCtx.commit();
+
+      if (!lastWhiskerEnd || lastWhiskerEnd.x !== whiskerEnd.x || lastWhiskerEnd.y !== whiskerEnd.y) {
+        lastWhiskerEnd = whiskerEnd;
+        if (whiskerPointCallback) whiskerPointCallback(whiskerEnd.x, whiskerEnd.y);
+      }
     }, 10);
   };
 })(self);
