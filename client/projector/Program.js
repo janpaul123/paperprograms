@@ -124,6 +124,11 @@ export default class Program extends React.Component {
         this._worker.postMessage({ messageId, receiveData: { object: this.props.papers } });
       } else if (sendData.name === 'markers') {
         this._worker.postMessage({ messageId, receiveData: { object: this.props.markers } });
+      } else if (sendData.name === 'camera') {
+        this._worker.postMessage({
+          messageId,
+          receiveData: { object: this.props.grabCameraImageAndProjectionData() },
+        });
       }
     } else if (command === 'set') {
       if (sendData.name === 'data') {
