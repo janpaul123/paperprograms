@@ -18,6 +18,7 @@ import {
 import { code8400 } from '../dotCodes';
 import { colorNames, cornerNames } from '../constants';
 import simpleBlobDetector from './simpleBlobDetector';
+import programPicture from './programPicture';
 
 function keyPointToAvgColor(keyPoint, videoMat) {
   const x = Math.floor(keyPoint.pt.x - keyPoint.size / 2);
@@ -398,6 +399,8 @@ export default function detectPrograms({ config, videoCapture, dataToRemember, d
     }
   });
 
+  addPicturesToPrograms(programsToRender, config, videoCapture);
+
   videoMat.delete();
 
   return {
@@ -407,3 +410,13 @@ export default function detectPrograms({ config, videoCapture, dataToRemember, d
     framerate: Math.round(1000 / (Date.now() - startTime)),
   };
 }
+
+function addPicturesToPrograms(programsToRender, config, videoCapture) {
+  programsToRender.forEach((programToRender) => {
+    programToRender.picture = programPicture({
+      config,
+      videoCapture,
+      programToRender
+    });
+  });
+};

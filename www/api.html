@@ -65,7 +65,8 @@
       {<br>
       &nbsp;&nbsp;"512": {<br>
       &nbsp;&nbsp;&nbsp;&nbsp;"data": {},<br>
-      &nbsp;&nbsp;&nbsp;&nbsp;"points": { "center": { x: 100, y: 200 }, "topLeft": ..., ... }<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;"points": { "center": { x: 100, y: 200 }, "topLeft": ..., ... },<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;"picture": { ... }<br>
       &nbsp;&nbsp;}<br>
       }
     </code>
@@ -98,4 +99,18 @@
       <li><code>paperNumber</code>: paper number to do this for (default is own paper number).</li>
     </ul>
   </p>
+
+  <h3>Camera's picture of a paper</h3>
+
+  <p>
+    You can access the camera's picture of each paper.  To display a paper picture, you could write:
+  </p>
+
+  <code>
+    const papers = await paper.get('papers');<br>
+    const number = await paper.get('number');<br>
+    <br>
+    ctx.putImageData(papers[number].picture, 0, 0);<br>
+    ctx.commit();
+  </code>
 </body>
