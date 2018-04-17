@@ -27,14 +27,15 @@ export default class ProjectorMain extends React.Component {
           center: mult(centerPoint, multPoint),
         },
         data: this.props.dataByProgramNumber[program.number] || {},
-        markers: program.markers.map(data => {
-          const { position, size, avgColor, colorIndex } = data;
-          const scaledPosition = mult(position, multPoint);
-          return { position: scaledPosition, size, avgColor, colorIndex };
-        }),
       };
 
       programsToRenderByNumber[program.number] = program;
+    });
+
+    const markers = this.props.markers.map(data => {
+      const { position, size, color, colorName } = data;
+      const scaledPosition = mult(position, multPoint);
+      return { position: scaledPosition, size, color, colorName };
     });
 
     return (
@@ -43,6 +44,7 @@ export default class ProjectorMain extends React.Component {
           <Program
             key={`${program.number}-${program.currentCodeHash}`}
             programsToRenderByNumber={programsToRenderByNumber}
+            markers={markers}
             programNumber={program.number}
             papers={papers}
             width={width}

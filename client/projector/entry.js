@@ -9,6 +9,7 @@ function render(callback) {
   ReactDOM.render(
     <ProjectorMain
       programsToRender={JSON.parse(localStorage.paperProgramsProgramsToRender || '[]')}
+      markers={JSON.parse(localStorage.paperProgramsMarkers || '[]')}
       dataByProgramNumber={JSON.parse(localStorage.paperProgramsDataByProgramNumber || '{}')}
       onDataByProgramNumberChange={(dataByProgramNumber, otherCallback) => {
         localStorage.paperProgramsDataByProgramNumber = JSON.stringify(dataByProgramNumber);

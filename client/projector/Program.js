@@ -123,6 +123,8 @@ export default class Program extends React.Component {
         }
       } else if (sendData.name === 'papers') {
         this._worker.postMessage({ messageId, receiveData: { object: this.props.papers } });
+      } else if (sendData.name === 'markers') {
+        this._worker.postMessage({ messageId, receiveData: { object: this.props.markers } });
       }
     } else if (command === 'set') {
       if (sendData.name === 'data') {

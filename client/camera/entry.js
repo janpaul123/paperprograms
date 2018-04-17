@@ -38,6 +38,10 @@ if (!localStorage.hasOwnProperty('paperProgramsProgramsToRender')) {
   localStorage.paperProgramsProgramsToRender = JSON.stringify([]);
 }
 
+if (!localStorage.hasOwnProperty('paperProgramsMarkers')) {
+  localStorage.paperProgramsMarkers = JSON.stringify([]);
+}
+
 const element = document.createElement('div');
 document.body.appendChild(element);
 
@@ -48,6 +52,10 @@ function render() {
       paperProgramsProgramsToRender={JSON.parse(localStorage.paperProgramsProgramsToRender)}
       onConfigChange={config => {
         localStorage.paperProgramsConfig = JSON.stringify(config);
+        render();
+      }}
+      onMarkersChange={markers => {
+        localStorage.paperProgramsMarkers = JSON.stringify(markers);
         render();
       }}
       onProgramsChange={programs => {

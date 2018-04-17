@@ -403,24 +403,33 @@ export default function detectPrograms({ config, videoCapture, dataToRemember, d
     }
   });
 
-  // all points which haven't been matched to a shape are added as markers to the paper data
+  // all points which haven't been matched to a shape are added as markers
   const markers = keyPoints
     .filter(({ matchedShape }) => !matchedShape)
     .map(({ colorIndex, avgColor, pt, size }) => {
       const { x, y } = projectPointToUnitSquare(pt, videoMat, config.knobPoints);
-      return { size, position: { x, y }, avgColor, colorIndex };
-    });
 
-  // add markers to programs
-  programsToRender.forEach(programToRender => {
-    programToRender.markers = markers;
-  });
+      const colorName = {
+        0: 'red',
+        1: 'green',
+        2: 'blue',
+        3: 'black',
+      }[colorIndex];
+
+      return {
+        size,
+        position: { x, y },
+        color: avgColor,
+        colorName,
+      };
+    });
 
   videoMat.delete();
 
   return {
     keyPoints,
     programsToRender,
+    markers,
     dataToRemember: { vectorsBetweenCorners },
     framerate: Math.round(1000 / (Date.now() - startTime)),
   };
