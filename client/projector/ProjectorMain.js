@@ -32,12 +32,19 @@ export default class ProjectorMain extends React.Component {
       programsToRenderByNumber[program.number] = program;
     });
 
+    const markers = this.props.markers.map(data => {
+      const { position, size, color, colorName } = data;
+      const scaledPosition = mult(position, multPoint);
+      return { position: scaledPosition, size, color, colorName };
+    });
+
     return (
       <div>
         {this.props.programsToRender.map(program => (
           <Program
             key={`${program.number}-${program.currentCodeHash}`}
             programsToRenderByNumber={programsToRenderByNumber}
+            markers={markers}
             programNumber={program.number}
             papers={papers}
             width={width}

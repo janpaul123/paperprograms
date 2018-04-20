@@ -142,9 +142,10 @@ export default class CameraMain extends React.Component {
               width={this.state.pageWidth - padding * 3 - sidebarWidth}
               config={this.props.config}
               onConfigChange={this.props.onConfigChange}
-              onProcessVideo={({ programsToRender, framerate }) => {
+              onProcessVideo={({ programsToRender, markers, framerate }) => {
                 this.setState({ framerate });
                 this._programsChange(programsToRender);
+                this.props.onMarkersChange(markers);
               }}
               allowSelectingDetectedPoints={this.state.selectedColorIndex !== -1}
               onSelectColor={color => {

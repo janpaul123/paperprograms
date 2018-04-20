@@ -179,8 +179,10 @@ export default function detectPrograms({ config, videoCapture, dataToRemember, d
     filterByInertia: false,
     faster: true,
   });
+
   clippedVideoMat.delete();
   keyPoints.forEach(keyPoint => {
+    keyPoint.matchedShape = false; // is true if point has been recognised as part of a shape
     keyPoint.pt.x += videoROI.x;
     keyPoint.pt.y += videoROI.y;
   });
@@ -224,7 +226,10 @@ export default function detectPrograms({ config, videoCapture, dataToRemember, d
     if (neighborIndexes[i].length == 1 && !seenIndexes.has(i)) {
       const shape = [i]; // Initialise with the first index, then run findShape with 7-1.
       if (findShape(shape, neighborIndexes, 7 - 1)) {
-        shape.forEach(index => seenIndexes.add(index));
+        shape.forEach(index => {
+          seenIndexes.add(index);
+          keyPoints[index].matchedShape = true; // mark all points of the shape
+        });
 
         // Reverse the array if it's the wrong way around.
         const mag = cross(
@@ -398,11 +403,33 @@ export default function detectPrograms({ config, videoCapture, dataToRemember, d
     }
   });
 
+  // all points which haven't been matched to a shape are added as markers
+  const markers = keyPoints
+    .filter(({ matchedShape }) => !matchedShape)
+    .map(({ colorIndex, avgColor, pt, size }) => {
+      const { x, y } = projectPointToUnitSquare(pt, videoMat, config.knobPoints);
+
+      const colorName = {
+        0: 'red',
+        1: 'green',
+        2: 'blue',
+        3: 'black',
+      }[colorIndex];
+
+      return {
+        size,
+        position: { x, y },
+        color: avgColor,
+        colorName,
+      };
+    });
+
   videoMat.delete();
 
   return {
     keyPoints,
     programsToRender,
+    markers,
     dataToRemember: { vectorsBetweenCorners },
     framerate: Math.round(1000 / (Date.now() - startTime)),
   };
