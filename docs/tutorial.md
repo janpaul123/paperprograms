@@ -29,7 +29,7 @@ If you run into issues, make sure your postgres user is configured correctly, an
 
 ## Setting up the camera
 
-The projector page uses the experimental OffscreenCanvas API, so you'll need to go to [chrome://flags](chrome://flags) and enable "Experimental Canvas Features" (this will require you to restart chrome).
+The projector page uses the experimental OffscreenCanvas API, so you'll need to enable `chrome://flags/#enable-experimental-web-platform-features` (this will require you to restart chrome).
 
 Once you have all the hardware in place, go to [https://paperprograms.org/camera.html](https://paperprograms.org/camera.html) to start calibrating the camera. Make sure to hit "Allow" when the browser asks for camera access.
 
