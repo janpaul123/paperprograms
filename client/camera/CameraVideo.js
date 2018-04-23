@@ -25,13 +25,13 @@ export default class CameraVideo extends React.Component {
           // based on: https://stackoverflow.com/questions/27420581/get-maximum-video-resolution-with-getusermedia#answer-27444179
           video: {
             optional: [
-              {minWidth: 320},
-              {minWidth: 640},
-              {minWidth: 1024},
-              {minWidth: 1280},
-              {minWidth: 1920},
-              {minWidth: 2560},
-            ]
+              { minWidth: 320 },
+              { minWidth: 640 },
+              { minWidth: 1024 },
+              { minWidth: 1280 },
+              { minWidth: 1920 },
+              { minWidth: 2560 },
+            ],
           },
         })
         .then(stream => {
