@@ -8,14 +8,13 @@ import { forwardProjectionMatrixForPoints, mult } from '../utils';
 import styles from './Program.css';
 
 function matrixToCssTransform(matrix) {
-  /* eslint-disable prettier/prettier */
+  // prettier-ignore
   const values = [
     matrix.get(0, 0), matrix.get(1, 0), 0, matrix.get(2, 0),
     matrix.get(0, 1), matrix.get(1, 1), 0, matrix.get(2, 1),
     0, 0, 1, 0,
     matrix.get(0, 2), matrix.get(1, 2), 0, matrix.get(2, 2),
   ];
-  /* eslint-enable prettier/prettier */
   return `matrix3d(${values.join(',')})`;
 }
 

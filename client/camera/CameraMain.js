@@ -125,8 +125,10 @@ export default class CameraMain extends React.Component {
   render() {
     const padding = parseInt(styles.cameraMainPadding);
     const sidebarWidth = parseInt(styles.cameraMainSidebarWidth);
-    const editorUrl = new URL(`editor.html?${this.state.spaceData.spaceName}`,
-      window.location.origin).toString();
+    const editorUrl = new URL(
+      `editor.html?${this.state.spaceData.spaceName}`,
+      window.location.origin
+    ).toString();
 
     return (
       <div className={styles.root}>
