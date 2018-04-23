@@ -15,8 +15,8 @@ Getting a Canvas:
 - [`await paper.get('supporterCanvas')`](#canvas-for-paper)
 
 Data:
-- [`await paper.get('papers')`](#get-paper-data)
 - [`await paper.get('number')`](#get-paper-data)
+- [`await paper.get('papers')`](#get-paper-data)
 - [`await paper.set('data', { someKey: 'someValue' })`](#setting-paper-data)
 
 Extras:
@@ -108,7 +108,7 @@ This number can be used to lookup information about the paper:
 ```js
 const papers = await paper.get('papers');
 
-papers[number].points   // corners of the paper {topLeft,topRight,bottomRight,bottomLeft}
+papers[number].points   // corners of the paper {center,topLeft,topRight,bottomRight,bottomLeft}
 papers[number].markers  // any dots detected inside the paper (array of {position,color})
 papers[number].data     // arbitrary data set by paper.set('data')
 ```
@@ -186,8 +186,8 @@ Each marker has the following properties:
 Also, each paper knows all the markers found inside its borders:
 
 ```js
-const papers = await paper.get('papers');
 const number = await paper.get('number');
+const papers = await paper.get('papers');
 
 const markers = papers[number].markers;
 ```
