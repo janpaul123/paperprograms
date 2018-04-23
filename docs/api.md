@@ -1,38 +1,30 @@
 # Paper Programs API
 
-Welcome to Paper Programs!  Here's a quick reference followed by longer descriptions:
+Welcome to Paper Programs! Here's what you can do:
 
 ## Quickref
 
-```js
-// IMPORTS
-importScripts('paper.js');
-importScripts('http://<lib-url>.js');
+Importing:
+- [`importScripts('paper.js')`](#imports)
+- [`importScripts('http://<lib-url>.js')`](#imports)
 
-// CANVAS
-await paper.get('canvas');
-await paper.get('canvas', {width: 500});
-await paper.get('canvas', {number: 1234});
-await paper.get('supporterCanvas');
+Getting a Canvas:
+- [`await paper.get('canvas')`](#canvas-for-paper)
+- [`await paper.get('canvas', { width: 500 })`](#canvas-for-paper)
+- [`await paper.get('canvas', { number: 1234 })`](#canvas-for-paper)
+- [`await paper.get('supporterCanvas')`](#canvas-for-paper)
 
-// DATA
-await paper.get('papers');
-await paper.get('number');
-await paper.set('data', { someKey: 'someValue' });
+Data:
+- [`await paper.get('papers')`](#get-paper-data)
+- [`await paper.get('number')`](#get-paper-data)
+- [`await paper.set('data', { someKey: 'someValue' })`](#setting-paper-data)
 
-// IFRAME
-await paper.set('iframe', { src: 'http://www.example.com' });
-
-// WHISKER
-paper.whenPointAt({callback, direction, whiskerLength, requiredData, paperNumber});
-
-// CAMERA
-await paper.get('camera');
-paper.drawFromCamera(ctx, camera, srcPoints, dstPoints);
-
-// MARKERS
-await paper.get('markers');
-```
+Extras:
+- [`await paper.set('iframe', { src: 'http://www.example.com' })`](#cover-paper-in-an-iframe)
+- [`paper.whenPointAt({callback, direction, whiskerLength, requiredData, paperNumber})`](#paper-whisker-to-detect-nearby-papers)
+- [`await paper.get('camera')`](#camera-access)
+- [`paper.drawFromCamera(ctx, camera, srcPoints, dstPoints)`](#camera-access)
+- [`await paper.get('markers')`](#marker-points)
 
 ## Imports
 
@@ -105,38 +97,25 @@ const supporterCanvas = await paper.get('supporterCanvas');
 
 ## Get Paper Data
 
-Get information about all the papers on the screen:
-
-```js
-const papers = await paper.get('papers');
-```
-
-This returns an object that maps the paper's number to its data:
-
-```js
-{
-  "512": {
-    "data": {},
-    "points": {
-       "center": { x: 100, y: 200 },
-       "topLeft": { ... },
-       ...
-    },
-    ...
-  },
-  ...
-}
-```
-
-To get your paper's number:
+All papers are assigned a unique number.  To get your paper's number:
 
 ```js
 const number = await paper.get('number');
 ```
 
+This number can be used to lookup information about the paper:
+
+```js
+const papers = await paper.get('papers');
+
+papers[number].points   // corners of the paper {topLeft,topRight,bottomRight,bottomLeft}
+papers[number].markers  // any dots detected inside the paper (array of {position,color})
+papers[number].data     // arbitrary data set by paper.set('data')
+```
+
 ## Setting Paper Data
 
-You can set attributes on your paper that other paper's can listen for:
+You can set attributes on your paper that other papers can use:
 
 ```js
 await paper.set('data', { someKey: 'someValue' });
@@ -168,7 +147,7 @@ paper.whenPointsAt({
 });
 ```
 
-## Camera Access (WIP)
+## Camera Access
 
 You can draw a region of the camera picture to another destination region (using arbitrary quadrilaterals).
 
@@ -180,7 +159,7 @@ const camera = paper.get('camera');
 paper.drawFromCamera(ctx, camera, papers[someNum].points, papers[myNum].points);
 ```
 
-## Marker Points (WIP)
+## Marker Points
 
 Any dot that is not detected as part of a paper's corner is exposed as a _marker_.
 
