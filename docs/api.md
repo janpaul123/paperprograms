@@ -174,20 +174,21 @@ Each marker has the following properties:
 ```js
 {
   position: {x, y},  // global position
-  color: [r, g, b]
-  colorName // "red", "green", "blue" or "black"
+  color: [r, g, b],
+  colorName,         // "red", "green", "blue" or "black"
 
-  // these properties will be null if the marker is not on a paper
-  paperId,
+  // WIP (planned)
+  paperNumber,
   positionOnPaper: {x, y} // position converted to coordinate system of the paper
 }
 ```
 
-Also, each paper knows all the markers found inside its borders:
+Also, each paper will know all the markers found inside its borders (WIP):
 
 ```js
 const number = await paper.get('number');
 const papers = await paper.get('papers');
 
+// WIP (planned)
 const markers = papers[number].markers;
 ```
