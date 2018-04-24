@@ -23,10 +23,10 @@ import { fillQuadTex, fillTriTex } from '../canvasUtils';
       messageId++;
       workerContext.postMessage({ command: 'get', sendData: { name, data }, messageId });
       return new workerContext.Promise(resolve => {
-        messageCallbacks[messageId] = async receivedData => {
+        messageCallbacks[messageId] = receivedData => {
           let result = receivedData.object;
           if (name === 'camera') {
-            result = await deserializeCameraData(result);
+            result = deserializeCameraData(result);
           }
           if (callback) callback(result);
           resolve(result);
@@ -92,9 +92,9 @@ import { fillQuadTex, fillTriTex } from '../canvasUtils';
     }
   });
 
-  async function deserializeCameraData({ cameraImageData, forwardProjectionData }) {
+  function deserializeCameraData({ cameraImage, forwardProjectionData }) {
     return {
-      cameraImage: await createImageBitmap(cameraImageData),
+      cameraImage,
       forwardProjection: new Matrix(forwardProjectionData),
     };
   }
@@ -216,7 +216,11 @@ import { fillQuadTex, fillTriTex } from '../canvasUtils';
       supporterCtx.fill();
       supporterCtx.commit();
 
-      if (!lastWhiskerEnd || lastWhiskerEnd.x !== whiskerEnd.x || lastWhiskerEnd.y !== whiskerEnd.y) {
+      if (
+        !lastWhiskerEnd ||
+        lastWhiskerEnd.x !== whiskerEnd.x ||
+        lastWhiskerEnd.y !== whiskerEnd.y
+      ) {
         lastWhiskerEnd = whiskerEnd;
         if (whiskerPointCallback) whiskerPointCallback(whiskerEnd.x, whiskerEnd.y);
       }
