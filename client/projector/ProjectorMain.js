@@ -18,27 +18,15 @@ export default class ProjectorMain extends React.Component {
         video: cameraVideoConstraints,
       })
       .then(stream => {
-        const video = this._videoInput;
-        video.srcObject = stream;
-        video.onloadedmetadata = () => {
-          video.play();
-          video.width = video.videoWidth;
-          video.height = video.videoHeight;
-          this._videoCanvas = document.createElement('canvas');
-          this._videoCanvas.width = video.width;
-          this._videoCanvas.height = video.height;
-        };
+        this._videoCapture = new ImageCapture(stream.getVideoTracks()[0]);
       });
   }
   grabCameraImageAndProjectionData = () => {
-    const video = this._videoInput;
-    const ctx = this._videoCanvas.getContext('2d');
-    ctx.drawImage(video, 0, 0);
-    const cameraImageData = ctx.getImageData(0, 0, video.width, video.height);
+    const cameraImage = this._videoCapture.grabFrame();
 
     const outputCorners = this.props.knobPoints.map(({ x, y }) => ({
-      x: x * video.width,
-      y: y * video.height,
+      x: x * cameraImage.width,
+      y: y * cameraImage.height,
     }));
 
     const inputSize = projectorSize();
@@ -53,7 +41,7 @@ export default class ProjectorMain extends React.Component {
     const b = forwardProjectionMatrixForPoints(inputCorners).adjugate();
     const forwardProjectionData = a.multiply(b).data;
 
-    return { cameraImageData, forwardProjectionData };
+    return { cameraImage, forwardProjectionData };
   };
   render() {
     const { width, height } = projectorSize();
@@ -90,7 +78,6 @@ export default class ProjectorMain extends React.Component {
 
     return (
       <div>
-        <video id="videoInput" style={{ display: 'none' }} ref={el => (this._videoInput = el)} />
         {this.props.programsToRender.map(program => (
           <Program
             key={`${program.number}-${program.currentCodeHash}`}
