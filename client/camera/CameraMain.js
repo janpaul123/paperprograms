@@ -150,12 +150,16 @@ export default class CameraMain extends React.Component {
                 this.props.onMarkersChange(markers);
               }}
               allowSelectingDetectedPoints={this.state.selectedColorIndex !== -1}
-              onSelectColor={color => {
+              onSelectPoint={({ color, size }) => {
                 if (this.state.selectedColorIndex === -1) return;
 
                 const colorsRGB = this.props.config.colorsRGB.slice();
                 colorsRGB[this.state.selectedColorIndex] = color.map(value => Math.round(value));
-                this.props.onConfigChange({ ...this.props.config, colorsRGB });
+
+                const paperDotSizes = this.props.config.paperDotSizes.slice();
+                paperDotSizes[this.state.selectedColorIndex] = size;
+
+                this.props.onConfigChange({ ...this.props.config, colorsRGB, paperDotSizes });
                 this.setState({ selectedColorIndex: -1 });
               }}
             />

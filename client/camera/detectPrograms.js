@@ -2,6 +2,7 @@
 
 import colorDiff from 'color-diff';
 import sortBy from 'lodash/sortBy';
+import partition from 'lodash/partition';
 
 import {
   add,
@@ -154,6 +155,10 @@ function colorIndexesForShape(shape, keyPoints, videoMat, colorsRGB) {
 
 export default function detectPrograms({ config, videoCapture, dataToRemember, displayMat }) {
   const startTime = Date.now();
+  const paperDotSizes = config.paperDotSizes;
+  const paperDotSizeVariance = // difference min/max size * 2
+    Math.max(1, Math.max.apply(null, paperDotSizes) - Math.min.apply(null, paperDotSizes)) * 2;
+  const avgPaperDotSize = paperDotSizes.reduce((sum, value) => sum + value) / paperDotSizes.length;
 
   const videoMat = new cv.Mat(videoCapture.video.height, videoCapture.video.width, cv.CV_8UC4);
   videoCapture.read(videoMat);
@@ -173,7 +178,7 @@ export default function detectPrograms({ config, videoCapture, dataToRemember, d
 
   const videoROI = knobPointsToROI(config.knobPoints, videoMat);
   const clippedVideoMat = videoMat.roi(videoROI);
-  let keyPoints = simpleBlobDetector(clippedVideoMat, {
+  let allPoints = simpleBlobDetector(clippedVideoMat, {
     filterByCircularity: true,
     minCircularity: 0.9,
     minArea: 25,
@@ -182,12 +187,22 @@ export default function detectPrograms({ config, videoCapture, dataToRemember, d
   });
 
   clippedVideoMat.delete();
-  keyPoints.forEach(keyPoint => {
+  allPoints.forEach(keyPoint => {
     keyPoint.matchedShape = false; // is true if point has been recognised as part of a shape
     keyPoint.pt.x += videoROI.x;
     keyPoint.pt.y += videoROI.y;
+
+    // Give each `keyPoint` an `avgColor` and `colorIndex`.
+    keyPoint.avgColor = keyPointToAvgColor(keyPoint, videoMat);
+    keyPoint.colorIndex =
+      keyPoint.colorIndex || colorIndexForColor(keyPoint.avgColor, config.colorsRGB);
   });
 
+  let [markers, keyPoints] = partition(
+    allPoints,
+    ({ size }) => size > avgPaperDotSize + paperDotSizeVariance
+  );
+  
   // Sort by x position. We rely on this when scanning through the circles
   // to find connected components, and when calibrating.
   keyPoints = sortBy(keyPoints, keyPoint => keyPoint.pt.x);
@@ -227,10 +242,7 @@ export default function detectPrograms({ config, videoCapture, dataToRemember, d
     if (neighborIndexes[i].length == 1 && !seenIndexes.has(i)) {
       const shape = [i]; // Initialise with the first index, then run findShape with 7-1.
       if (findShape(shape, neighborIndexes, 7 - 1)) {
-        shape.forEach(index => {
-          seenIndexes.add(index);
-          keyPoints[index].matchedShape = true; // mark all points of the shape
-        });
+        shape.forEach(index => seenIndexes.add(index));
 
         // Reverse the array if it's the wrong way around.
         const mag = cross(
@@ -280,12 +292,7 @@ export default function detectPrograms({ config, videoCapture, dataToRemember, d
   const avgKeyPointSize =
     keyPointSizes.reduce((sum, value) => sum + value, 0) / keyPointSizes.length;
 
-  keyPoints.forEach(keyPoint => {
-    // Give each `keyPoint` an `avgColor` and `colorIndex`.
-    keyPoint.avgColor = keyPointToAvgColor(keyPoint, videoMat);
-    keyPoint.colorIndex =
-      keyPoint.colorIndex || colorIndexForColor(keyPoint.avgColor, config.colorsRGB);
-
+  allPoints.forEach(keyPoint => {
     if (displayMat) {
       if (config.showOverlayKeyPointCircles) {
         // Draw circles around `keyPoints`.
@@ -405,50 +412,48 @@ export default function detectPrograms({ config, videoCapture, dataToRemember, d
   });
 
   // all points which haven't been matched to a shape are added as markers
-  const markers = keyPoints
-    .filter(({ matchedShape, size }) => !matchedShape && size >= 15)
-    .map(({ colorIndex, avgColor, pt, size }) => {
-      const markerPosition = projectPointToUnitSquare(pt, videoMat, config.knobPoints);
+  markers = markers.map(({ colorIndex, avgColor, pt, size }) => {
+    const markerPosition = projectPointToUnitSquare(pt, videoMat, config.knobPoints);
 
-      const colorName = {
-        0: 'red',
-        1: 'green',
-        2: 'blue',
-        3: 'black',
-      }[colorIndex];
+    const colorName = {
+      0: 'red',
+      1: 'green',
+      2: 'blue',
+      3: 'black',
+    }[colorIndex];
 
-      // find out on which paper the marker is
-      // based on: http://demonstrations.wolfram.com/AnEfficientTestForAPointToBeInAConvexPolygon/
-      const matchingProgram = programsToRender.find(({ points }) => {
-        for (let i = 0; i < 4; i++) {
-          const a = i;
-          const b = (i + 1) % 4;
+    // find out on which paper the marker is
+    // based on: http://demonstrations.wolfram.com/AnEfficientTestForAPointToBeInAConvexPolygon/
+    const matchingProgram = programsToRender.find(({ points }) => {
+      for (let i = 0; i < 4; i++) {
+        const a = i;
+        const b = (i + 1) % 4;
 
-          const sideA = diff(points[a], markerPosition);
-          const sideB = diff(points[b], markerPosition);
+        const sideA = diff(points[a], markerPosition);
+        const sideB = diff(points[b], markerPosition);
 
-          let angle = Math.atan2(sideB.y, sideB.x) - Math.atan2(sideA.y, sideA.x);
+        let angle = Math.atan2(sideB.y, sideB.x) - Math.atan2(sideA.y, sideA.x);
 
-          if (sign(sideB.y) === -1 && sign(sideA.y) === 1) {
-            angle += 2 * Math.PI;
-          }
-
-          if (angle > Math.PI || angle < 0) {
-            return false;
-          }
+        if (sign(sideB.y) === -1 && sign(sideA.y) === 1) {
+          angle += 2 * Math.PI;
         }
 
-        return true;
-      });
+        if (angle > Math.PI || angle < 0) {
+          return false;
+        }
+      }
 
-      return {
-        paperNumber: matchingProgram && matchingProgram.number,
-        size,
-        position: markerPosition,
-        color: avgColor,
-        colorName,
-      };
+      return true;
     });
+
+    return {
+      paperNumber: matchingProgram && matchingProgram.number,
+      size,
+      position: markerPosition,
+      color: avgColor,
+      colorName,
+    };
+  });
 
   videoMat.delete();
 
