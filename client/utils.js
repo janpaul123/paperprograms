@@ -34,6 +34,10 @@ export function clamp(value, min, max) {
   return Math.max(min, Math.min(max, value));
 }
 
+export function sign(value) {
+  return value < 0 ? -1 : value > 0 ? 1 : 0;
+}
+
 export function moveAlongVector(amount, vector) {
   const size = norm(vector);
   return { x: amount * vector.x / size, y: amount * vector.y / size };

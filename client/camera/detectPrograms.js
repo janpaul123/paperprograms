@@ -14,6 +14,7 @@ import {
   norm,
   projectPoint,
   shrinkPoints,
+  sign,
 } from '../utils';
 import { code8400 } from '../dotCodes';
 import { colorNames, cornerNames } from '../constants';
@@ -405,9 +406,9 @@ export default function detectPrograms({ config, videoCapture, dataToRemember, d
 
   // all points which haven't been matched to a shape are added as markers
   const markers = keyPoints
-    .filter(({ matchedShape }) => !matchedShape)
+    .filter(({ matchedShape, size }) => !matchedShape && size >= 15)
     .map(({ colorIndex, avgColor, pt, size }) => {
-      const { x, y } = projectPointToUnitSquare(pt, videoMat, config.knobPoints);
+      const markerPosition = projectPointToUnitSquare(pt, videoMat, config.knobPoints);
 
       const colorName = {
         0: 'red',
@@ -416,9 +417,34 @@ export default function detectPrograms({ config, videoCapture, dataToRemember, d
         3: 'black',
       }[colorIndex];
 
+      // find out on which paper the marker is
+      // based on: http://demonstrations.wolfram.com/AnEfficientTestForAPointToBeInAConvexPolygon/
+      const matchingProgram = programsToRender.find(({ points }) => {
+        for (let i = 0; i < 4; i++) {
+          const a = i;
+          const b = (i + 1) % 4;
+
+          const sideA = diff(points[a], markerPosition);
+          const sideB = diff(points[b], markerPosition);
+
+          let angle = Math.atan2(sideB.y, sideB.x) - Math.atan2(sideA.y, sideA.x);
+
+          if (sign(sideB.y) === -1 && sign(sideA.y) === 1) {
+            angle += 2 * Math.PI;
+          }
+
+          if (angle > Math.PI || angle < 0) {
+            return false;
+          }
+        }
+
+        return true;
+      });
+
       return {
+        paperNumber: matchingProgram && matchingProgram.number,
         size,
-        position: { x, y },
+        position: markerPosition,
         color: avgColor,
         colorName,
       };
