@@ -1,6 +1,6 @@
 import Matrix from 'node-matrices';
 import { projectPoint } from '../utils';
-import { fillQuadTex, fillTriTex } from '../canvasUtils';
+import { fillQuadTex, fillTriTex } from './canvasUtils';
 
 (function(workerContext) {
   if (workerContext.paper) return;
@@ -24,12 +24,8 @@ import { fillQuadTex, fillTriTex } from '../canvasUtils';
       workerContext.postMessage({ command: 'get', sendData: { name, data }, messageId });
       return new workerContext.Promise(resolve => {
         messageCallbacks[messageId] = receivedData => {
-          let result = receivedData.object;
-          if (name === 'camera') {
-            result = deserializeCameraData(result);
-          }
-          if (callback) callback(result);
-          resolve(result);
+          if (callback) callback(receivedData.object);
+          resolve(receivedData.object);
         };
       });
     },
@@ -92,13 +88,6 @@ import { fillQuadTex, fillTriTex } from '../canvasUtils';
     }
   });
 
-  function deserializeCameraData({ cameraImage, forwardProjectionData }) {
-    return {
-      cameraImage,
-      forwardProjection: new Matrix(forwardProjectionData),
-    };
-  }
-
   function normalizePoints(points) {
     if (points.topLeft) {
       const { topLeft, topRight, bottomRight, bottomLeft } = points;
@@ -111,7 +100,8 @@ import { fillQuadTex, fillTriTex } from '../canvasUtils';
     srcPoints = normalizePoints(srcPoints);
     dstPoints = normalizePoints(dstPoints);
 
-    srcPoints = srcPoints.map(p => projectPoint(p, camera.forwardProjection));
+    const forwardProjection = new Matrix(camera.forwardProjectionData);
+    srcPoints = srcPoints.map(p => projectPoint(p, forwardProjection));
 
     ctx.fillStyle = ctx.createPattern(camera.cameraImage, 'no-repeat');
     if (srcPoints.length === 3) {
