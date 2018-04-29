@@ -1,3 +1,7 @@
+import Matrix from 'node-matrices';
+import { projectPoint } from '../utils';
+import { fillQuadTex, fillTriTex } from './canvasUtils';
+
 (function(workerContext) {
   if (workerContext.paper) return;
 
@@ -83,6 +87,29 @@
       log('Error', [event.reason.message], (event.reason.stack || '').split('\n')[1]);
     }
   });
+
+  function normalizePoints(points) {
+    if (points.topLeft) {
+      const { topLeft, topRight, bottomRight, bottomLeft } = points;
+      return [topLeft, topRight, bottomRight, bottomLeft];
+    }
+    return points;
+  }
+
+  workerContext.paper.drawFromCamera = (ctx, camera, srcPoints, dstPoints) => {
+    srcPoints = normalizePoints(srcPoints);
+    dstPoints = normalizePoints(dstPoints);
+
+    const forwardProjection = new Matrix(camera.forwardProjectionData);
+    srcPoints = srcPoints.map(p => projectPoint(p, forwardProjection));
+
+    ctx.fillStyle = ctx.createPattern(camera.cameraImage, 'no-repeat');
+    if (srcPoints.length === 3) {
+      fillTriTex(ctx, srcPoints, dstPoints);
+    } else if (srcPoints.length === 4) {
+      fillQuadTex(ctx, srcPoints, dstPoints);
+    }
+  };
 
   workerContext.paper.whenPointsAt = async ({
     direction,
@@ -179,7 +206,11 @@
       supporterCtx.fill();
       supporterCtx.commit();
 
-      if (!lastWhiskerEnd || lastWhiskerEnd.x !== whiskerEnd.x || lastWhiskerEnd.y !== whiskerEnd.y) {
+      if (
+        !lastWhiskerEnd ||
+        lastWhiskerEnd.x !== whiskerEnd.x ||
+        lastWhiskerEnd.y !== whiskerEnd.y
+      ) {
         lastWhiskerEnd = whiskerEnd;
         if (whiskerPointCallback) whiskerPointCallback(whiskerEnd.x, whiskerEnd.y);
       }
