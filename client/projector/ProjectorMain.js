@@ -40,6 +40,8 @@ export default class ProjectorMain extends React.Component {
     const a = forwardProjectionMatrixForPoints(outputCorners);
     const b = forwardProjectionMatrixForPoints(inputCorners).adjugate();
     const forwardProjectionData = a.multiply(b).data;
+    // TODO(JP): the above might be somewhat expensive to calculate.
+    // Probably worth profiling and caching if necessary.
 
     return { cameraImage, forwardProjectionData };
   };
