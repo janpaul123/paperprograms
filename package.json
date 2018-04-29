@@ -13,8 +13,7 @@
     "dropdb": "dropdb --if-exists paper_programs_development",
     "heroku-postbuild": "webpack",
     "test": "npm run lint",
-    "lint": "eslint .",
-    "rollup": "rollup --config worker.rollup.js"
+    "lint": "eslint ."
   },
   "engines": {
     "node": "9.3.x",
@@ -66,11 +65,7 @@
     "eslint-plugin-react": "^7.7.0",
     "nodemon": "^1.17.1",
     "prettier": "^1.11.1",
-    "rollup": "^0.58.0",
-    "rollup-plugin-commonjs": "^9.1.0",
-    "rollup-plugin-node-resolve": "^3.3.0",
     "webpack-dev-middleware": "^2.0.6",
-    "webpack-dev-server": "^2.11.2",
-    "webpack-hot-middleware": "^2.21.2"
+    "webpack-dev-server": "^2.11.2"
   }
 }

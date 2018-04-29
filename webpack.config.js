@@ -1,11 +1,11 @@
 const path = require('path');
-const webpack = require('webpack');
 
 module.exports = {
   entry: {
     camera: ['./client/camera/entry.js'],
     projector: ['./client/projector/entry.js'],
     editor: ['./client/editor/entry.js'],
+    paper: ['./client/paper/entry.js'],
   },
   output: {
     path: path.join(__dirname, 'www'),
@@ -55,10 +55,3 @@ module.exports = {
     ]),
   ],
 };
-
-if (process.env.NODE_ENV !== 'production') {
-  module.exports.plugins.push(new webpack.HotModuleReplacementPlugin());
-  Object.values(module.exports.entry).forEach(entry => {
-    entry.unshift('webpack-hot-middleware/client?reload=true');
-  });
-}

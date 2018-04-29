@@ -15,7 +15,6 @@ app.use(api);
 if (process.env.NODE_ENV !== 'production') {
   const compiler = require('webpack')(require('../webpack.config.js'));
   app.use(require('webpack-dev-middleware')(compiler));
-  app.use(require('webpack-hot-middleware')(compiler));
 }
 
 /* eslint-disable no-console */

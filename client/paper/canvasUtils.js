@@ -1,4 +1,4 @@
-import { forwardProjectionMatrixForPoints, projectPoint } from './utils';
+import { forwardProjectionMatrixForPoints, projectPoint } from '../utils';
 
 // https://beta.observablehq.com/@shaunlebron/texture-drawing-for-html-canvas
 
