@@ -15,7 +15,6 @@ import {
   norm,
   projectPoint,
   shrinkPoints,
-  sign,
 } from '../utils';
 import { code8400 } from '../dotCodes';
 import { colorNames, cornerNames } from '../constants';
@@ -434,7 +433,7 @@ export default function detectPrograms({ config, videoCapture, dataToRemember, d
 
         let angle = Math.atan2(sideB.y, sideB.x) - Math.atan2(sideA.y, sideA.x);
 
-        if (sign(sideB.y) === -1 && sign(sideA.y) === 1) {
+        if (sideB.y < 0 && sideA.y > 0) {
           angle += 2 * Math.PI;
         }
 
