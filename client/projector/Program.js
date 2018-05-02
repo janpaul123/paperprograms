@@ -125,14 +125,15 @@ export default class Program extends React.Component {
       } else if (sendData.name === 'markers') {
         this._worker.postMessage({ messageId, receiveData: { object: this.props.markers } });
       } else if (sendData.name === 'camera') {
-        const object = this.props.grabCameraImageAndProjectionData();
-        this._worker.postMessage(
-          {
-            messageId,
-            receiveData: { object },
-          },
-          [object.cameraImage]
-        );
+        this.props.grabCameraImageAndProjectionData().then(object => {
+          this._worker.postMessage(
+            {
+              messageId,
+              receiveData: { object },
+            },
+            [object.cameraImage]
+          );
+        });
       }
     } else if (command === 'set') {
       if (sendData.name === 'data') {
