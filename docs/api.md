@@ -154,8 +154,8 @@ You can draw a region of the camera picture to another destination region (using
 For example, to draw another paper's picture to your paper:
 
 ```js
-const papers = paper.get('papers');
-const camera = paper.get('camera');
+const papers = await paper.get('papers');
+const camera = await paper.get('camera');
 paper.drawFromCamera(ctx, camera, papers[someNum].points, papers[myNum].points);
 ```
 
