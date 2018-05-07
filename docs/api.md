@@ -161,12 +161,14 @@ paper.drawFromCamera(ctx, camera, papers[someNum].points, papers[myNum].points);
 
 ## Marker Points
 
-Any dot that is not detected as part of a paper's corner is exposed as a _marker_.
+When calibrating the camera the average size of the dots is stored. Dots which are significantly bigger than the paper
+dots are recognized as markers.
 
-All detected markers are exposed here:
+
+You can request a list of all detected markers like this:
 
 ```js
-const markers = paper.get('markers');
+const markers = await paper.get('markers');
 ```
 
 Each marker has the following properties:
@@ -177,18 +179,28 @@ Each marker has the following properties:
   color: [r, g, b],
   colorName,         // "red", "green", "blue" or "black"
 
-  // WIP (planned)
-  paperNumber,
-  positionOnPaper: {x, y} // position converted to coordinate system of the paper
+  // properties which are only defined if marker is placed on a paper
+
+  paperNumber, // number of the paper the marker is placed on
+  positionOnPaper: {x, y} // normalized position of marker relative to paper origin
 }
 ```
 
-Also, each paper will know all the markers found inside its borders (WIP):
+### Working with local position
 
-```js
-const number = await paper.get('number');
-const papers = await paper.get('papers');
+The property `positionOnPaper` has a value range from 0 to 1. The top left corner has the coordinate (x = 0, y = 0) and
+the bottom right corner has the coordinate (x = 1, y = 1). If you want to get the position of a marker on the local
+canvas you have to multiply the x position with the width of the canvas and the y position with the height of the canvas.
 
-// WIP (planned)
-const markers = papers[number].markers;
+```
+var x = canvas.width * marker.positionOnPaper.x
+var y = canvas.height * marker.positionOnPaper.y
+```
+
+### Get markers of paper
+
+```
+const paperNumber = await paper.get('number')
+const markers = await paper.get('markers')
+const markersOnPaper = markers.filter(marker => marker.paperNumber === paperNumber)
 ```

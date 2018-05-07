@@ -201,7 +201,7 @@ export default function detectPrograms({ config, videoCapture, dataToRemember, d
     allPoints,
     ({ size }) => size > avgPaperDotSize + paperDotSizeVariance
   );
-  
+
   // Sort by x position. We rely on this when scanning through the circles
   // to find connected components, and when calibrating.
   keyPoints = sortBy(keyPoints, keyPoint => keyPoint.pt.x);
@@ -382,11 +382,14 @@ export default function detectPrograms({ config, videoCapture, dataToRemember, d
     }
 
     if (points[0] && points[1] && points[2] && points[3]) {
+      const scaledPoints = shrinkPoints(avgKeyPointSize * 0.75, points).map(point =>
+        projectPointToUnitSquare(point, videoMat, config.knobPoints)
+      );
+
       const programToRender = {
-        points: shrinkPoints(avgKeyPointSize * 0.75, points).map(point =>
-          projectPointToUnitSquare(point, videoMat, config.knobPoints)
-        ),
+        points: scaledPoints,
         number: id,
+        projectionMatrix: forwardProjectionMatrixForPoints(scaledPoints).adjugate(),
       };
       programsToRender.push(programToRender);
 
@@ -410,7 +413,6 @@ export default function detectPrograms({ config, videoCapture, dataToRemember, d
     }
   });
 
-  // all points which haven't been matched to a shape are added as markers
   markers = markers.map(({ colorIndex, avgColor, pt, size }) => {
     const markerPosition = projectPointToUnitSquare(pt, videoMat, config.knobPoints);
 
@@ -446,6 +448,8 @@ export default function detectPrograms({ config, videoCapture, dataToRemember, d
     });
 
     return {
+      positionOnPaper:
+        matchingProgram && projectPoint(markerPosition, matchingProgram.projectionMatrix),
       paperNumber: matchingProgram && matchingProgram.number,
       size,
       position: markerPosition,
