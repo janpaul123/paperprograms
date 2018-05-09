@@ -31,13 +31,19 @@
 :local(.sidebar) {
   flex: 1 1 cameraMainSidebarWidth;
   color: white;
-  font: 20px sans-serif;
+  font: 18px sans-serif;
   font-weight: 300;
 }
 
 :local(.sidebarSection) {
   margin-bottom: cameraMainPadding;
   word-break: break-all;
+}
+
+:local(.sidebar) a,
+:local(.sidebar) a:hover,
+:local(.sidebar) a:visited {
+  color: rgb(50, 50, 255);
 }
 
 :local(.sidebarSectionSection) {
@@ -89,4 +95,14 @@
 }
 :local(.colorListItemSelected):hover {
   box-shadow: 0 0 0 3px white, 0 0 0 20px rgba(255, 255, 255, 0.3) inset;
+}
+
+:local(.spaceUrl) {
+  color: gray;
+  margin-bottom: calc(cameraMainPadding / 4);
+}
+
+:local(.spaceNameInput) {
+  width: 100%;
+  margin-bottom: calc(cameraMainPadding / 4);
 }
