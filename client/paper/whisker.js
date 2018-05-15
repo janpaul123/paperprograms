@@ -118,7 +118,7 @@ class Whisker extends EventEmitter {
     ctx.lineTo(whiskerEnd.x, whiskerEnd.y);
     ctx.stroke();
 
-    const dotFraction = Math.abs(Math.sin((Date.now() / 600)));
+    const dotFraction = Math.abs(Math.sin(Date.now() / 600));
 
     // only show dot when whisker is connected to other paper
     if (this._pointAtData) {
