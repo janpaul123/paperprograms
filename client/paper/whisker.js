@@ -53,6 +53,7 @@ class Whisker extends EventEmitter {
     direction = 'up',
     whiskerLength = 0.7,
     requiredData = [],
+    color = 'rgb(255, 0, 0)',
   }) {
     super();
 
@@ -60,6 +61,7 @@ class Whisker extends EventEmitter {
     this.direction = direction;
     this.whiskerLength = whiskerLength;
     this.requiredData = requiredData;
+    this.color = color;
 
     this._pointAtData = null;
     this._lastWhiskerEnd = null;
@@ -108,24 +110,28 @@ class Whisker extends EventEmitter {
       this._pointAtData = newPointAtData;
     }
 
-    // render line
+    // render whisker with dot animation
     ctx.clearRect(0, 0, ctx.width, ctx.height);
-    ctx.fillStyle = ctx.strokeStyle = this._pointAtData ? 'rgb(0, 255, 0)' : 'rgb(255, 0, 0)';
+    ctx.fillStyle = ctx.strokeStyle = this.color;
     ctx.beginPath();
     ctx.moveTo(whiskerStart.x, whiskerStart.y);
     ctx.lineTo(whiskerEnd.x, whiskerEnd.y);
     ctx.stroke();
 
-    const dotFraction = (Date.now() / 600) % 1;
-    ctx.beginPath();
-    ctx.arc(
-      whiskerEnd.x * dotFraction + whiskerStart.x * (1 - dotFraction),
-      whiskerEnd.y * dotFraction + whiskerStart.y * (1 - dotFraction),
-      2,
-      0,
-      2 * Math.PI
-    );
-    ctx.fill();
+    const dotFraction = Math.abs(Math.sin((Date.now() / 600)));
+
+    // only show dot when whisker is connected to other paper
+    if (this._pointAtData) {
+      ctx.beginPath();
+      ctx.arc(
+        whiskerEnd.x * dotFraction + whiskerStart.x * (1 - dotFraction),
+        whiskerEnd.y * dotFraction + whiskerStart.y * (1 - dotFraction),
+        2,
+        0,
+        2 * Math.PI
+      );
+      ctx.fill();
+    }
 
     if (
       !this._lastWhiskerEnd ||
