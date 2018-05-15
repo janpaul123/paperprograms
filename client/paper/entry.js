@@ -1,6 +1,7 @@
 import Matrix from 'node-matrices';
 import { projectPoint } from '../utils';
 import { fillQuadTex, fillTriTex } from './canvasUtils';
+import WhiskerFactory from './whisker';
 
 (function(workerContext) {
   if (workerContext.paper) return;
@@ -11,8 +12,20 @@ import { fillQuadTex, fillTriTex } from './canvasUtils';
     messageCallbacks[event.data.messageId](event.data.receiveData);
   });
 
+  const whiskerFactory = new WhiskerFactory(workerContext);
+
   workerContext.paper = {
     get(name, data, callback) {
+      if (name === 'whisker') {
+        const whisker = whiskerFactory.createWhisker(data);
+
+        if (callback) {
+          whisker.then(callback);
+          return;
+        }
+        return whisker;
+      }
+
       if (typeof data === 'function') {
         callback = data;
         data = {};
@@ -44,6 +57,7 @@ import { fillQuadTex, fillTriTex } from './canvasUtils';
 
   let logs = [];
   let willFlushLogs = false;
+
   function flushLogs() {
     if (willFlushLogs) return;
     setTimeout(() => {
@@ -52,6 +66,7 @@ import { fillQuadTex, fillTriTex } from './canvasUtils';
     }, 50);
     willFlushLogs = true;
   }
+
   function log(name, args, stackLine) {
     const logData = {
       name,
@@ -76,6 +91,7 @@ import { fillQuadTex, fillTriTex } from './canvasUtils';
     logs.push(logData);
     flushLogs();
   }
+
   workerContext.console = {};
   workerContext.console.log = (...args) => log('console.log', args);
   workerContext.console.warn = (...args) => log('console.warn', args);
@@ -111,6 +127,7 @@ import { fillQuadTex, fillTriTex } from './canvasUtils';
     }
   };
 
+  // TODO: remove paper.whenPointsAt
   workerContext.paper.whenPointsAt = async ({
     direction,
     whiskerLength,
@@ -119,6 +136,9 @@ import { fillQuadTex, fillTriTex } from './canvasUtils';
     callback,
     whiskerPointCallback,
   } = {}) => {
+    // eslint-disable-next-line no-console
+    console.warn('paper.whenPointsAt is deprecated, use the new whisker api instead');
+
     whiskerLength = whiskerLength || 0.7;
     paperNumber = paperNumber || (await workerContext.paper.get('number'));
     requiredData = requiredData || [];
