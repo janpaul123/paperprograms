@@ -49,6 +49,7 @@ import { fillQuadTex, fillTriTex } from './canvasUtils';
     setTimeout(() => {
       willFlushLogs = false;
       workerContext.postMessage({ command: 'flushLogs', sendData: logs });
+      logs = [];
     }, 50);
     willFlushLogs = true;
   }
