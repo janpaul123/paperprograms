@@ -20,6 +20,16 @@ import { fillQuadTex, fillTriTex } from './canvasUtils';
         data = {};
       }
 
+      if (name === 'supporterCanvas') {
+        return getSupporterCanvas(data, callback);
+      } else if (name === 'canvas') {
+        return getCanvas(data, callback);
+      }
+
+      return this._get(name, data, callback);
+    },
+
+    _get(name, data, callback) {
       messageId++;
       workerContext.postMessage({ command: 'get', sendData: { name, data }, messageId });
       return new workerContext.Promise(resolve => {
@@ -42,8 +52,51 @@ import { fillQuadTex, fillTriTex } from './canvasUtils';
     },
   };
 
+  const supporterCanvasesById = {};
+
+  function getSupporterCanvas(data, callback) {
+    const id = data.id || 'default';
+
+    return new workerContext.Promise(resolve => {
+      const cachedCanvas = supporterCanvasesById[id];
+      if (cachedCanvas) {
+        resolve(cachedCanvas);
+      } else {
+        resolve(
+          workerContext.paper._get('supporterCanvas', data, callback).then(canvas => {
+            supporterCanvasesById[id] = canvas;
+            return canvas;
+          })
+        );
+      }
+    });
+  }
+
+  const paperCanvasesById = {};
+
+  function getCanvas(data, callback) {
+    return new workerContext.Promise(resolve => {
+      if (data.number) {
+        resolve(data.number);
+      } else {
+        resolve(workerContext.paper.get('number'));
+      }
+    }).then(id => {
+      const cachedCanvas = paperCanvasesById[id];
+      if (cachedCanvas) {
+        return cachedCanvas;
+      }
+
+      return workerContext.paper._get('canvas', data, callback).then(canvas => {
+        paperCanvasesById[id] = canvas;
+        return canvas;
+      });
+    });
+  }
+
   let logs = [];
   let willFlushLogs = false;
+
   function flushLogs() {
     if (willFlushLogs) return;
     setTimeout(() => {
@@ -53,6 +106,7 @@ import { fillQuadTex, fillTriTex } from './canvasUtils';
     }, 50);
     willFlushLogs = true;
   }
+
   function log(name, args, stackLine) {
     const logData = {
       name,
@@ -77,6 +131,7 @@ import { fillQuadTex, fillTriTex } from './canvasUtils';
     logs.push(logData);
     flushLogs();
   }
+
   workerContext.console = {};
   workerContext.console.log = (...args) => log('console.log', args);
   workerContext.console.warn = (...args) => log('console.warn', args);
@@ -139,6 +194,7 @@ import { fillQuadTex, fillTriTex } from './canvasUtils';
         return 0 < lambda && lambda < 1 && (0 < gamma && gamma < 1);
       }
     }
+
     function intersectsPaper(whiskerStart, whiskerEnd, paper) {
       return (
         (intersects(whiskerStart, whiskerEnd, paper.points.topLeft, paper.points.topRight) ||
