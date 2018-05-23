@@ -180,22 +180,6 @@ If you don't need a whisker any more you can remove it:
 whisker.destroy()
 ```
 
-*deprecated* old api:
-
-```js
-paper.whenPointsAt({
-  callback: ({paperNumber, paper}) => {
-    /* do something */
-  },
-
-  // optional
-  direction,      // "up" (default), "down", "left", "right"
-  whiskerLength,  // as fraction of the side (default 0.7)
-  requiredData,   // array of data fields that must be present in the other paper
-  paperNumber,    // paper number to do this for (default is own paper number)
-});
-```
-
 ## Camera Access
 
 You can draw a region of the camera picture to another destination region (using arbitrary quadrilaterals).

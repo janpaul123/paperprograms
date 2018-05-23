@@ -1,63 +1,16 @@
+/*global paper, Promise*/
 import EventEmitter from 'events';
+import uniqueId from 'lodash/uniqueId';
 
-export default class WhiskerFactory {
-  constructor(workerContext) {
-    this.whiskers = [];
-    this.workerContext = workerContext;
-    this.update = this.update.bind(this);
-  }
-
-  async createWhisker(options) {
-    const whisker = new Whisker({
-      ...options,
-      paperNumber: options.paperNumber || (await this.workerContext.paper.get('number')),
-      workerContext: this.workerContext,
-      whiskerFactory: this,
-    });
-
-    if (this.whiskers.length === 0) {
-      setInterval(this.update, 10);
-    }
-
-    if (!this.canvas) {
-      this.canvas = await this.workerContext.paper.get('supporterCanvas', { id: 'whisker' });
-      this.ctx = this.canvas.getContext('2d');
-    }
-
-    this.whiskers.push(whisker);
-
-    return whisker;
-  }
-
-  async destroyWhisker(whisker) {
-    this.whiskers = this.whiskers.filter(other => other !== whisker);
-
-    if (this.whiskers.length === 0) {
-      clearInterval(this.update);
-    }
-  }
-
-  async update() {
-    const papers = await this.workerContext.paper.get('papers');
-
-    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-    this.whiskers.forEach(whisker => whisker.update(papers, this.ctx));
-    this.ctx.commit();
-  }
-}
-
-class Whisker extends EventEmitter {
+export default class Whisker extends EventEmitter {
   constructor({
-    whiskerFactory,
-    paperNumber,
+    paperNumber = paper.get('number'),
     direction = 'up',
     whiskerLength = 0.7,
     requiredData = [],
     color = 'rgb(255, 0, 0)',
   }) {
     super();
-
-    this.paperNumber = paperNumber;
     this.direction = direction;
     this.whiskerLength = whiskerLength;
     this.requiredData = requiredData;
@@ -65,10 +18,31 @@ class Whisker extends EventEmitter {
 
     this._pointAtData = null;
     this._lastWhiskerEnd = null;
-    this._whiskerFactory = whiskerFactory;
+
+    this.update = this.update.bind(this);
+
+    Promise.all([
+      paper.get('supporterCanvas', { id: uniqueId('whiskerCanvas') }),
+      paperNumber,
+    ]).then(([canvas, number]) => {
+      if (this._destroyed) {
+        return;
+      }
+
+      this._canvas = canvas;
+      this._ctx = canvas.getContext('2d');
+      this.paperNumber = number;
+
+      this._updateInterval = setInterval(this.update, 10);
+    });
   }
 
-  update(papers, ctx) {
+  async update() {
+    if (!this._ctx) {
+      return;
+    }
+
+    const papers = await paper.get('papers');
     const points = papers[this.paperNumber].points;
 
     let segment = [points.topLeft, points.topRight];
@@ -93,7 +67,7 @@ class Whisker extends EventEmitter {
     ) {
       let newPointAtData = null;
       Object.keys(papers).forEach(otherPaperNumber => {
-        if (otherPaperNumber === this.paperNumber) return;
+        if (otherPaperNumber == this.paperNumber.toString()) return;
         if (this._intersectsPaper(whiskerStart, whiskerEnd, papers[otherPaperNumber])) {
           newPointAtData = { paperNumber: otherPaperNumber, paper: papers[otherPaperNumber] };
         }
@@ -111,26 +85,26 @@ class Whisker extends EventEmitter {
     }
 
     // render whisker with dot animation
-    ctx.clearRect(0, 0, ctx.width, ctx.height);
-    ctx.fillStyle = ctx.strokeStyle = this.color;
-    ctx.beginPath();
-    ctx.moveTo(whiskerStart.x, whiskerStart.y);
-    ctx.lineTo(whiskerEnd.x, whiskerEnd.y);
-    ctx.stroke();
+    this._ctx.clearRect(0, 0, this._canvas.width, this._canvas.height);
+    this._ctx.fillStyle = this._ctx.strokeStyle = this.color;
+    this._ctx.beginPath();
+    this._ctx.moveTo(whiskerStart.x, whiskerStart.y);
+    this._ctx.lineTo(whiskerEnd.x, whiskerEnd.y);
+    this._ctx.stroke();
 
     const dotFraction = Math.abs(Math.sin(Date.now() / 600));
 
     // only show dot when whisker is connected to other paper
     if (this._pointAtData) {
-      ctx.beginPath();
-      ctx.arc(
+      this._ctx.beginPath();
+      this._ctx.arc(
         whiskerEnd.x * dotFraction + whiskerStart.x * (1 - dotFraction),
         whiskerEnd.y * dotFraction + whiskerStart.y * (1 - dotFraction),
         2,
         0,
         2 * Math.PI
       );
-      ctx.fill();
+      this._ctx.fill();
     }
 
     if (
@@ -141,6 +115,8 @@ class Whisker extends EventEmitter {
       this._lastWhiskerEnd = whiskerEnd;
       this.emit('whiskerMoved', { x: Math.round(whiskerEnd.x), y: Math.round(whiskerEnd.y) });
     }
+
+    this._ctx.commit();
   }
 
   _intersectsPaper(whiskerStart, whiskerEnd, paper) {
@@ -154,7 +130,19 @@ class Whisker extends EventEmitter {
   }
 
   destroy() {
-    this._whiskerFactory.destroyWhisker(this);
+    this._destroyed = true;
+
+    if (this._ctx) {
+      this._ctx.clearRect(0, 0, this._canvas.width, this._canvas.height);
+      this._ctx.commit();
+      this._ctx = null;
+    }
+
+    // TODO: cleanup canvas, currently not possible to destroy requested canvas
+
+    if (this._updateInterval !== undefined) {
+      clearInterval(this._updateInterval);
+    }
   }
 }
 
