@@ -31,6 +31,16 @@ import Whisker from './whisker';
         data = {};
       }
 
+      if (name === 'supporterCanvas') {
+        return getSupporterCanvas(data, callback);
+      } else if (name === 'canvas') {
+        return getCanvas(data, callback);
+      }
+
+      return this._get(name, data, callback);
+    },
+
+    _get(name, data, callback) {
       messageId++;
       workerContext.postMessage({ command: 'get', sendData: { name, data }, messageId });
       return new workerContext.Promise(resolve => {
@@ -53,6 +63,48 @@ import Whisker from './whisker';
     },
   };
 
+  const supporterCanvasesById = {};
+
+  function getSupporterCanvas(data, callback) {
+    const id = data.id || 'default';
+
+    return new workerContext.Promise(resolve => {
+      const cachedCanvas = supporterCanvasesById[id];
+      if (cachedCanvas) {
+        resolve(cachedCanvas);
+      } else {
+        resolve(
+          workerContext.paper._get('supporterCanvas', data, callback).then(canvas => {
+            supporterCanvasesById[id] = canvas;
+            return canvas;
+          })
+        );
+      }
+    });
+  }
+
+  const paperCanvasesById = {};
+
+  function getCanvas(data, callback) {
+    return new workerContext.Promise(resolve => {
+      if (data.number) {
+        resolve(data.number);
+      } else {
+        resolve(workerContext.paper.get('number'));
+      }
+    }).then(id => {
+      const cachedCanvas = paperCanvasesById[id];
+      if (cachedCanvas) {
+        return cachedCanvas;
+      }
+
+      return workerContext.paper._get('canvas', data, callback).then(canvas => {
+        paperCanvasesById[id] = canvas;
+        return canvas;
+      });
+    });
+  }
+
   let logs = [];
   let willFlushLogs = false;
 
@@ -61,6 +113,7 @@ import Whisker from './whisker';
     setTimeout(() => {
       willFlushLogs = false;
       workerContext.postMessage({ command: 'flushLogs', sendData: logs });
+      logs = [];
     }, 50);
     willFlushLogs = true;
   }
@@ -143,7 +196,8 @@ import Whisker from './whisker';
 
     if (callback) {
       whisker.on('paperAdded', callback);
-      whisker.on('paperRemoved', () => callback(null));
+      whisker.on('paperRemoved', () => callback(null
+      ));
     }
 
     if (whiskerPointCallback) {
