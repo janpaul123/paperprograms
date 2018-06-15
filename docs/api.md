@@ -133,18 +133,51 @@ await paper.set('iframe', { src: 'http://www.example.com' });
 
 A paper can be given a "whisker" that lets you know when it touches another paper:
 
-```js
-paper.whenPointsAt({
-  callback: ({paperNumber, paperObj}) => {
-    /* do something */
-  },
 
-  // optional
+```js
+const whisker = await paper.get('whisker', {direction: 'up'})
+```
+
+You can react to different events with a whisker
+
+```js
+whisker.on('paperAdded', ({paperNumber, paper}) => {
+  console.log('added paper', paperNumber)
+})
+
+whisker.on('paperRemoved', ({paperNumber, paper}) => {
+  console.log('removed paper', paperNumber)
+})
+
+whisker.on('movedWhisker', ({ x, y }) => {
+  console.log('whisker tip x : ' + x + ' y: ' + y);
+})
+```
+
+You can customize a whisker:
+
+```js
+const whisker = paper.get('whisker', {
   direction,      // "up" (default), "down", "left", "right"
   whiskerLength,  // as fraction of the side (default 0.7)
   requiredData,   // array of data fields that must be present in the other paper
   paperNumber,    // paper number to do this for (default is own paper number)
-});
+  color,          // color of the whisker (default "rgb(255, 0, 0)")
+})
+```
+
+You can also change these attributes after the whisker was created:
+
+```js
+whisker.direction = "down"
+whisker.color = "green"
+```
+
+
+If you don't need a whisker any more you can remove it:
+
+```js
+whisker.destroy()
 ```
 
 ## Camera Access

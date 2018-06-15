@@ -1,6 +1,7 @@
 import Matrix from 'node-matrices';
 import { projectPoint } from '../utils';
 import { fillQuadTex, fillTriTex } from './canvasUtils';
+import Whisker from './whisker';
 
 (function(workerContext) {
   if (workerContext.paper) return;
@@ -13,6 +14,16 @@ import { fillQuadTex, fillTriTex } from './canvasUtils';
 
   workerContext.paper = {
     get(name, data, callback) {
+      if (name === 'whisker') {
+        const whisker = new Whisker(data);
+
+        if (callback) {
+          callback(whisker);
+          return;
+        }
+        return whisker;
+      }
+
       if (typeof data === 'function') {
         callback = data;
         data = {};
@@ -167,6 +178,7 @@ import { fillQuadTex, fillTriTex } from './canvasUtils';
     }
   };
 
+  // TODO: remove paper.whenPointsAt
   workerContext.paper.whenPointsAt = async ({
     direction,
     whiskerLength,
@@ -175,102 +187,21 @@ import { fillQuadTex, fillTriTex } from './canvasUtils';
     callback,
     whiskerPointCallback,
   } = {}) => {
-    whiskerLength = whiskerLength || 0.7;
-    paperNumber = paperNumber || (await workerContext.paper.get('number'));
-    requiredData = requiredData || [];
-    const supporterCanvas = await workerContext.paper.get('supporterCanvas', { id: 'whisker' });
-    const supporterCtx = supporterCanvas.getContext('2d');
-    let pointAtData = null;
-    let lastWhiskerEnd = null;
+    const whisker = new Whisker({
+      direction,
+      whiskerLength,
+      paperNumber,
+      requiredData,
+    });
 
-    // Adapted from https://stackoverflow.com/questions/9043805/test-if-two-lines-intersect-javascript-function
-    function intersects(v1, v2, v3, v4) {
-      const det = (v2.x - v1.x) * (v4.y - v3.y) - (v4.x - v3.x) * (v2.y - v1.y);
-      if (det === 0) {
-        return false;
-      } else {
-        const lambda = ((v4.y - v3.y) * (v4.x - v1.x) + (v3.x - v4.x) * (v4.y - v1.y)) / det;
-        const gamma = ((v1.y - v2.y) * (v4.x - v1.x) + (v2.x - v1.x) * (v4.y - v1.y)) / det;
-        return 0 < lambda && lambda < 1 && (0 < gamma && gamma < 1);
-      }
+    if (callback) {
+      whisker.on('paperAdded', callback);
+      whisker.on('paperRemoved', () => callback(null
+      ));
     }
 
-    function intersectsPaper(whiskerStart, whiskerEnd, paper) {
-      return (
-        (intersects(whiskerStart, whiskerEnd, paper.points.topLeft, paper.points.topRight) ||
-          intersects(whiskerStart, whiskerEnd, paper.points.topRight, paper.points.bottomRight) ||
-          intersects(whiskerStart, whiskerEnd, paper.points.bottomRight, paper.points.bottomLeft) ||
-          intersects(whiskerStart, whiskerEnd, paper.points.bottomLeft, paper.points.topLeft)) &&
-        requiredData.every(name => paper.data[name] !== undefined)
-      );
+    if (whiskerPointCallback) {
+      whisker.on('whiskerMoved', whiskerPointCallback);
     }
-
-    setInterval(async () => {
-      const papers = await workerContext.paper.get('papers');
-      const points = papers[paperNumber].points;
-
-      let segment = [points.topLeft, points.topRight];
-      if (direction === 'right') segment = [points.topRight, points.bottomRight];
-      if (direction === 'down') segment = [points.bottomRight, points.bottomLeft];
-      if (direction === 'left') segment = [points.bottomLeft, points.topLeft];
-
-      const whiskerStart = {
-        x: (segment[0].x + segment[1].x) / 2,
-        y: (segment[0].y + segment[1].y) / 2,
-      };
-      const whiskerEnd = {
-        x: whiskerStart.x + (segment[1].y - segment[0].y) * whiskerLength,
-        y: whiskerStart.y - (segment[1].x - segment[0].x) * whiskerLength,
-      };
-
-      if (
-        !pointAtData ||
-        !papers[pointAtData.paperNumber] ||
-        // Try keeping `pointAtData` stable if possible.
-        !intersectsPaper(whiskerStart, whiskerEnd, papers[pointAtData.paperNumber])
-      ) {
-        let newPointAtData = null;
-        Object.keys(papers).forEach(otherPaperNumber => {
-          if (otherPaperNumber === paperNumber) return;
-          if (intersectsPaper(whiskerStart, whiskerEnd, papers[otherPaperNumber])) {
-            newPointAtData = { paperNumber: otherPaperNumber, paper: papers[otherPaperNumber] };
-          }
-        });
-        if (newPointAtData !== pointAtData) {
-          pointAtData = newPointAtData;
-          if (callback) callback(pointAtData);
-        }
-      }
-
-      supporterCtx.clearRect(0, 0, supporterCanvas.width, supporterCanvas.height);
-      supporterCtx.fillStyle = supporterCtx.strokeStyle = pointAtData
-        ? 'rgb(0, 255, 0)'
-        : 'rgb(255, 0, 0)';
-      supporterCtx.beginPath();
-      supporterCtx.moveTo(whiskerStart.x, whiskerStart.y);
-      supporterCtx.lineTo(whiskerEnd.x, whiskerEnd.y);
-      supporterCtx.stroke();
-
-      const dotFraction = (Date.now() / 600) % 1;
-      supporterCtx.beginPath();
-      supporterCtx.arc(
-        whiskerEnd.x * dotFraction + whiskerStart.x * (1 - dotFraction),
-        whiskerEnd.y * dotFraction + whiskerStart.y * (1 - dotFraction),
-        2,
-        0,
-        2 * Math.PI
-      );
-      supporterCtx.fill();
-      supporterCtx.commit();
-
-      if (
-        !lastWhiskerEnd ||
-        lastWhiskerEnd.x !== whiskerEnd.x ||
-        lastWhiskerEnd.y !== whiskerEnd.y
-      ) {
-        lastWhiskerEnd = whiskerEnd;
-        if (whiskerPointCallback) whiskerPointCallback(whiskerEnd.x, whiskerEnd.y);
-      }
-    }, 10);
   };
 })(self);
