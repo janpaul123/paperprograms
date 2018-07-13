@@ -152,7 +152,13 @@ function colorIndexesForShape(shape, keyPoints, videoMat, colorsRGB) {
   return shapeColors.map(color => colorIndexForColor(color, closestColors));
 }
 
-export default function detectPrograms({ config, videoCapture, dataToRemember, displayMat }) {
+export default function detectPrograms({
+  config,
+  videoCapture,
+  dataToRemember,
+  displayMat,
+  scaleFactor,
+}) {
   const startTime = Date.now();
   const paperDotSizes = config.paperDotSizes;
   const paperDotSizeVariance = // difference min/max size * 2
@@ -183,6 +189,7 @@ export default function detectPrograms({ config, videoCapture, dataToRemember, d
     minArea: 25,
     filterByInertia: false,
     faster: true,
+    scaleFactor,
   });
 
   clippedVideoMat.delete();

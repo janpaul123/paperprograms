@@ -142,6 +142,7 @@ export default class CameraMain extends React.Component {
         </div>
         <div className={styles.appRoot}>
           <div className={styles.video}>
+
             <CameraVideo
               width={this.state.pageWidth - padding * 3 - sidebarWidth}
               config={this.props.config}
@@ -176,7 +177,25 @@ export default class CameraMain extends React.Component {
               </div>
 
               <div className={styles.sidebarSection}>
-                framerate <strong>{this.state.framerate}</strong>
+                <span>Accuracy</span>
+                <input
+                  name="scaleFactor"
+                  type="range"
+                  min="1"
+                  max="10"
+                  step="1"
+                  value={this.props.config.scaleFactor}
+                  onChange={event => {
+                    this.props.onConfigChange({
+                      ...this.props.config,
+                      scaleFactor: event.target.valueAsNumber,
+                    });
+                  }}
+                />
+                <span>Performance</span>
+                <div>
+                  framerate <strong>{this.state.framerate}</strong>
+                </div>
               </div>
 
               <div className={styles.sidebarSection}>

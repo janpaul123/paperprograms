@@ -35,9 +35,10 @@ const defaultParams = {
   maxConvexity: 1000000,
 
   faster: false,
+  scaleFactor: 4,
 };
 
-function findBlobs(image, binaryImage, params) {
+function findBlobs(binaryImage, params) {
   const contours = new cv.MatVector();
   const hierarchy = new cv.Mat();
   if (params.faster) {
@@ -153,8 +154,17 @@ function findBlobs(image, binaryImage, params) {
 export default function simpleBlobDetector(image, params) {
   params = { ...defaultParams, ...params };
 
-  const grayScaleImage = new cv.Mat(image.rows, image.cols, cv.CV_8UC1);
-  cv.cvtColor(image, grayScaleImage, cv.COLOR_RGB2GRAY);
+  params.minArea /= params.scaleFactor;
+  params.maxArea /= params.scaleFactor;
+
+  const scaledSize = new cv.Size(image.cols / params.scaleFactor, image.rows / params.scaleFactor);
+  const scaledImage = new cv.Mat(scaledSize, image.type());
+  cv.resize(image, scaledImage, scaledSize, 0, 0, cv.INTER_LINEAR);
+
+  const grayScaleImage = new cv.Mat(scaledSize, cv.CV_8UC1);
+  cv.cvtColor(scaledImage, grayScaleImage, cv.COLOR_RGB2GRAY);
+
+  scaledImage.delete();
 
   let centers = [];
   for (
@@ -162,13 +172,17 @@ export default function simpleBlobDetector(image, params) {
     thresh < params.maxThreshold;
     thresh += params.thresholdStep
   ) {
-    const binaryImage = new cv.Mat(image.rows, image.cols, cv.CV_8UC1);
+    const binaryImage = new cv.Mat(scaledSize, cv.CV_8UC1);
     cv.threshold(grayScaleImage, binaryImage, thresh, 255, cv.THRESH_BINARY);
-    let curCenters = findBlobs(image, binaryImage, params);
+    let curCenters = findBlobs(binaryImage, params);
     binaryImage.delete();
-    let newCenters = [];
 
+    let newCenters = [];
     for (let i = 0; i < curCenters.length; i++) {
+      curCenters[i].location.x *= params.scaleFactor;
+      curCenters[i].location.y *= params.scaleFactor;
+      curCenters[i].radius *= params.scaleFactor;
+
       let isNew = true;
       for (let j = 0; j < centers.length; j++) {
         const dist = norm(

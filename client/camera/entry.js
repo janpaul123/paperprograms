@@ -19,6 +19,7 @@ const defaultConfig = {
   autoPrintEnabled: false,
   freezeDetection: false,
   showPrintedInQueue: false,
+  scaleFactor: 4,
 };
 
 function sanitizeConfig(config) {
