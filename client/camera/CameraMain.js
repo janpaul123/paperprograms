@@ -2,7 +2,7 @@ import React from 'react';
 import xhr from 'xhr';
 
 import { codeToName, codeToPrint, getApiUrl } from '../utils';
-import { colorNames } from '../constants';
+import { colorNames, commonPaperSizeNames, otherPaperSizeNames } from '../constants';
 import { printCalibrationPage, printPage } from './printPdf';
 
 import helloWorld from './helloWorld';
@@ -54,21 +54,29 @@ export default class CameraMain extends React.Component {
   };
 
   _print = program => {
-    printPage(program.number, codeToName(program.originalCode), codeToPrint(program.originalCode));
+    printPage(
+      program.number,
+      codeToName(program.originalCode),
+      codeToPrint(program.originalCode),
+      this.props.config.paperSize
+    );
+    this._markPrinted(program, true);
   };
 
   _printCalibration = () => {
-    printCalibrationPage();
+    printCalibrationPage(this.props.config.paperSize);
   };
 
-  _markPrinted = program => {
+  _markPrinted = (program, printed) => {
     xhr.post(
       getApiUrl(this.state.spaceData.spaceName, `/programs/${program.number}/markPrinted`),
-      { json: true },
+      { json: { printed } },
       (error, response) => {
         if (error) {
+          console.log('this');
           console.error(error); // eslint-disable-line no-console
         } else {
+          console.log('that');
           this.setState({ spaceData: response.body });
         }
       }
@@ -82,10 +90,7 @@ export default class CameraMain extends React.Component {
     if (toPrint.length > 0) {
       this.setState(
         { autoPrintedNumbers: this.state.autoPrintedNumbers.concat([toPrint[0].number]) },
-        () => {
-          this._print(toPrint[0]);
-          this._markPrinted(toPrint[0]);
-        }
+        () => this._print(toPrint[0])
       );
     }
   };
@@ -142,7 +147,6 @@ export default class CameraMain extends React.Component {
         </div>
         <div className={styles.appRoot}>
           <div className={styles.video}>
-
             <CameraVideo
               width={this.state.pageWidth - padding * 3 - sidebarWidth}
               config={this.props.config}
@@ -168,15 +172,153 @@ export default class CameraMain extends React.Component {
             />
           </div>
           <div className={styles.sidebar}>
-            <div>
-              <div className={styles.sidebarSection}>
-                <div className={styles.sidebarSectionSection}>editor url</div>
-                <a href={editorUrl} target="_blank">
-                  {editorUrl}
-                </a>
+            <div className={`${styles.sidebarSection} ${styles.create}`}>
+              <button onClick={this._createHelloWorld}>Create Program</button>
+              <a href={editorUrl} target="_blank" className={styles.editorAnchor}>
+                Open Editor
+              </a>
+            </div>
+            <div className={styles.sidebarSection}>
+              <h3>Printing</h3>
+              <div className={styles.sidebarSubSection}>
+                <span>Paper Size: </span>
+                <select
+                  value={this.props.config.paperSize}
+                  onChange={event => {
+                    const paperSize = event.target.value;
+                    this.props.onConfigChange({ ...this.props.config, paperSize });
+                  }}
+                >
+                  <optgroup label="Common">
+                    {commonPaperSizeNames.map(name => {
+                      return (
+                        <option key={name} value={name}>
+                          {name}
+                        </option>
+                      );
+                    })}
+                  </optgroup>
+                  <optgroup label="Other">
+                    {otherPaperSizeNames.map(name => {
+                      return (
+                        <option key={name} value={name}>
+                          {name}
+                        </option>
+                      );
+                    })}
+                  </optgroup>
+                </select>
+              </div>
+              <div className={styles.sidebarSubSection}>
+                <h4 className={styles.headerWithOption}>Queue</h4>
+                <div className={styles.optionWithHeader}>
+                  <label htmlFor="show-printed">show printed</label>
+                  <input
+                    type="checkbox"
+                    name="show-printed"
+                    checked={this.props.config.showPrintedInQueue}
+                    onChange={() =>
+                      this.props.onConfigChange({
+                        ...this.props.config,
+                        showPrintedInQueue: !this.props.config.showPrintedInQueue,
+                      })
+                    }
+                  />
+                </div>
+              </div>
+              <div className={`${styles.sidebarSubSection} ${styles.printQueue}`}>
+                <div>
+                  {this.state.spaceData.programs
+                    .filter(program => !program.printed || this.props.config.showPrintedInQueue)
+                    .map(program => (
+                      <div
+                        key={program.number}
+                        className={[
+                          styles.printQueueItem,
+                          program.printed
+                            ? styles.printQueueItemPrinted
+                            : styles.printQueueItemNotPrinted,
+                        ].join(' ')}
+                        onClick={() => this._print(program)}
+                      >
+                        <span className={styles.printQueueItemName}>
+                          <strong>#{program.number}</strong> {codeToName(program.currentCode)}{' '}
+                        </span>
+                        <span
+                          className={styles.printQueueItemToggle}
+                          onClick={event => {
+                            event.stopPropagation();
+                            this._markPrinted(program, !program.printed);
+                          }}
+                        >
+                          {program.printed ? '[mark not printed]' : '[mark as printed]'}
+                        </span>
+                      </div>
+                    ))}
+                </div>
+              </div>
+              <div>
+                <button onClick={this._printCalibration}>Print Calibration Page</button>{' '}
+              </div>
+              <div>
+                <input
+                  type="checkbox"
+                  name="autoPrint"
+                  checked={this.props.config.autoPrintEnabled}
+                  onChange={() =>
+                    this.props.onConfigChange({
+                      ...this.props.config,
+                      autoPrintEnabled: !this.props.config.autoPrintEnabled,
+                    })
+                  }
+                />
+                <label htmlFor="autoPrint">auto-print</label>
+                <div className={styles.note}>(start Chrome with "--kiosk-printing" flag)</div>
+              </div>
+            </div>
+
+            <div className={styles.sidebarSection}>
+              <h3>Calibration</h3>
+              <div className={styles.sidebarSubSection}>
+                {this.props.config.colorsRGB.map((color, colorIndex) => (
+                  <div
+                    key={colorIndex}
+                    className={[
+                      styles.colorListItem,
+                      this.state.selectedColorIndex === colorIndex && styles.colorListItemSelected,
+                    ].join(' ')}
+                    style={{ background: `rgb(${color.slice(0, 3).join(',')})` }}
+                    onClick={() =>
+                      this.setState(state => ({
+                        selectedColorIndex:
+                          state.selectedColorIndex === colorIndex ? -1 : colorIndex,
+                      }))
+                    }
+                  >
+                    <strong>{colorNames[colorIndex]}</strong>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className={styles.sidebarSection}>
+              <h3 className={styles.headerWithOption}>Detection</h3>
+              <div className={styles.optionWithHeader}>
+                <input
+                  type="checkbox"
+                  name="freezeDetection"
+                  checked={this.props.config.freezeDetection}
+                  onChange={() =>
+                    this.props.onConfigChange({
+                      ...this.props.config,
+                      freezeDetection: !this.props.config.freezeDetection,
+                    })
+                  }
+                />
+                <label htmlFor="freezeDetection">pause</label>
               </div>
 
-              <div className={styles.sidebarSection}>
+              <div className={styles.sidebarSubSection}>
                 <span>Accuracy</span>
                 <input
                   name="scaleFactor"
@@ -193,195 +335,96 @@ export default class CameraMain extends React.Component {
                   }}
                 />
                 <span>Performance</span>
-                <div>
-                  framerate <strong>{this.state.framerate}</strong>
-                </div>
+              </div>
+              <div className={styles.sidebarSubSection}>
+                Framerate <strong>{this.state.framerate}</strong>
               </div>
 
-              <div className={styles.sidebarSection}>
-                <div className={styles.sidebarSectionSection}>print queue</div>
-                <div>
-                  {this.state.spaceData.programs
-                    .filter(program => !program.printed || this.props.config.showPrintedInQueue)
-                    .map(program => (
-                      <div
-                        key={program.number}
-                        className={
-                          program.printed
-                            ? styles.printQueueItemPrinted
-                            : styles.printQueueItemNotPrinted
-                        }
-                        onClick={() => this._print(program)}
-                      >
-                        <strong>#{program.number}</strong> {codeToName(program.originalCode)}{' '}
-                        {!program.printed && (
-                          <span
-                            className={styles.printQueueItemDone}
-                            onClick={event => {
-                              event.stopPropagation();
-                              this._markPrinted(program);
-                            }}
-                          >
-                            [done]
-                          </span>
-                        )}
-                      </div>
-                    ))}
-                </div>
-                <button onClick={this._printCalibration}>print calibration page</button>{' '}
-                <button onClick={this._createHelloWorld}>create hello world program</button>
-                <div>
-                  <input
-                    type="checkbox"
-                    checked={this.props.config.autoPrintEnabled}
-                    onChange={() =>
-                      this.props.onConfigChange({
-                        ...this.props.config,
-                        autoPrintEnabled: !this.props.config.autoPrintEnabled,
-                      })
-                    }
-                  />{' '}
-                  auto-print (start Chrome with "--kiosk-printing" flag)
-                </div>
-                <div>
-                  <input
-                    type="checkbox"
-                    checked={this.props.config.showPrintedInQueue}
-                    onChange={() =>
-                      this.props.onConfigChange({
-                        ...this.props.config,
-                        showPrintedInQueue: !this.props.config.showPrintedInQueue,
-                      })
-                    }
-                  />{' '}
-                  show printed in queue
-                </div>
+              <h4>Overlays</h4>
+              <div className={styles.sidebarSubSection}>
+                <input
+                  type="checkbox"
+                  checked={this.props.config.showOverlayKeyPointCircles}
+                  onChange={() =>
+                    this.props.onConfigChange({
+                      ...this.props.config,
+                      showOverlayKeyPointCircles: !this.props.config.showOverlayKeyPointCircles,
+                    })
+                  }
+                />{' '}
+                keypoint circles
               </div>
 
-              <div className={styles.sidebarSection}>
-                <div className={styles.sidebarSectionSection}>colors</div>
-                <div>
-                  {this.props.config.colorsRGB.map((color, colorIndex) => (
-                    <div
-                      key={colorIndex}
-                      className={[
-                        styles.colorListItem,
-                        this.state.selectedColorIndex === colorIndex &&
-                          styles.colorListItemSelected,
-                      ].join(' ')}
-                      style={{ background: `rgb(${color.slice(0, 3).join(',')})` }}
-                      onClick={() =>
-                        this.setState(state => ({
-                          selectedColorIndex:
-                            state.selectedColorIndex === colorIndex ? -1 : colorIndex,
-                        }))
-                      }
-                    >
-                      <strong>{colorNames[colorIndex]}</strong>
-                    </div>
-                  ))}
-                </div>
+              <div className={styles.sidebarSubSection}>
+                <input
+                  type="checkbox"
+                  checked={this.props.config.showOverlayKeyPointText}
+                  onChange={() =>
+                    this.props.onConfigChange({
+                      ...this.props.config,
+                      showOverlayKeyPointText: !this.props.config.showOverlayKeyPointText,
+                    })
+                  }
+                />{' '}
+                keypoint text
               </div>
 
-              <div className={styles.sidebarSection}>
-                <div className={styles.sidebarSectionSection}>show overlay</div>
-
-                <div className={styles.sidebarSectionSection}>
-                  <input
-                    type="checkbox"
-                    checked={this.props.config.showOverlayKeyPointCircles}
-                    onChange={() =>
-                      this.props.onConfigChange({
-                        ...this.props.config,
-                        showOverlayKeyPointCircles: !this.props.config.showOverlayKeyPointCircles,
-                      })
-                    }
-                  />{' '}
-                  keypoint circles
-                </div>
-
-                <div className={styles.sidebarSectionSection}>
-                  <input
-                    type="checkbox"
-                    checked={this.props.config.showOverlayKeyPointText}
-                    onChange={() =>
-                      this.props.onConfigChange({
-                        ...this.props.config,
-                        showOverlayKeyPointText: !this.props.config.showOverlayKeyPointText,
-                      })
-                    }
-                  />{' '}
-                  keypoint text
-                </div>
-
-                <div className={styles.sidebarSectionSection}>
-                  <input
-                    type="checkbox"
-                    checked={this.props.config.showOverlayComponentLines}
-                    onChange={() =>
-                      this.props.onConfigChange({
-                        ...this.props.config,
-                        showOverlayComponentLines: !this.props.config.showOverlayComponentLines,
-                      })
-                    }
-                  />{' '}
-                  component lines
-                </div>
-
-                <div className={styles.sidebarSectionSection}>
-                  <input
-                    type="checkbox"
-                    checked={this.props.config.showOverlayShapeId}
-                    onChange={() =>
-                      this.props.onConfigChange({
-                        ...this.props.config,
-                        showOverlayShapeId: !this.props.config.showOverlayShapeId,
-                      })
-                    }
-                  />{' '}
-                  shape ids
-                </div>
-
-                <div className={styles.sidebarSectionSection}>
-                  <input
-                    type="checkbox"
-                    checked={this.props.config.showOverlayProgram}
-                    onChange={() =>
-                      this.props.onConfigChange({
-                        ...this.props.config,
-                        showOverlayProgram: !this.props.config.showOverlayProgram,
-                      })
-                    }
-                  />{' '}
-                  programs
-                </div>
+              <div className={styles.sidebarSubSection}>
+                <input
+                  type="checkbox"
+                  checked={this.props.config.showOverlayComponentLines}
+                  onChange={() =>
+                    this.props.onConfigChange({
+                      ...this.props.config,
+                      showOverlayComponentLines: !this.props.config.showOverlayComponentLines,
+                    })
+                  }
+                />{' '}
+                component lines
               </div>
 
-              <div className={styles.sidebarSection}>
-                <div className={styles.sidebarSectionSection}>debugging</div>
-                <div className={styles.sidebarSectionSection}>
-                  <input
-                    type="checkbox"
-                    checked={this.props.config.freezeDetection}
-                    onChange={() =>
-                      this.props.onConfigChange({
-                        ...this.props.config,
-                        freezeDetection: !this.props.config.freezeDetection,
-                      })
-                    }
-                  />{' '}
-                  freeze detection
-                </div>
+              <div className={styles.sidebarSubSection}>
+                <input
+                  type="checkbox"
+                  checked={this.props.config.showOverlayShapeId}
+                  onChange={() =>
+                    this.props.onConfigChange({
+                      ...this.props.config,
+                      showOverlayShapeId: !this.props.config.showOverlayShapeId,
+                    })
+                  }
+                />{' '}
+                shape ids
+              </div>
+
+              <div className={styles.sidebarSubSection}>
+                <input
+                  type="checkbox"
+                  checked={this.props.config.showOverlayProgram}
+                  onChange={() =>
+                    this.props.onConfigChange({
+                      ...this.props.config,
+                      showOverlayProgram: !this.props.config.showOverlayProgram,
+                    })
+                  }
+                />{' '}
+                programs
               </div>
             </div>
             <div className={styles.sidebarSection}>
-              <div className={styles.sidebarSectionSection}>space url </div>
+              <h3 className={styles.sidebarSubSection}>Space</h3>
               {!this.state.isEditingSpaceUrl ? (
                 <div>
-                  <div className={styles.spaceUrl}>{this.props.config.spaceUrl}</div>
-                  <button onClick={() => this.setState({ isEditingSpaceUrl: true })}>
-                    change space
-                  </button>
+                  <div>
+                    <a className={styles.spaceUrl} href={this.props.config.spaceUrl}>
+                      {this.props.config.spaceUrl}
+                    </a>
+                  </div>
+                  <div>
+                    <button onClick={() => this.setState({ isEditingSpaceUrl: true })}>
+                      Change Space
+                    </button>
+                  </div>
                 </div>
               ) : (
                 <div>

@@ -102,9 +102,11 @@ router.put('/api/spaces/:spaceName/programs/:number', (req, res) => {
 
 router.post('/api/spaces/:spaceName/programs/:number/markPrinted', (req, res) => {
   const { spaceName, number } = req.params;
+  const { printed } = req.body;
+  if (printed === undefined) return res.status(400).send('Missing "printed"');
 
   knex('programs')
-    .update({ printed: true })
+    .update({ printed })
     .where({ spaceName, number })
     .then(() => {
       getSpaceData(req, spaceData => {

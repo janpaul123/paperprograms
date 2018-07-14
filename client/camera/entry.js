@@ -6,6 +6,7 @@ import * as d3 from 'd3';
 import CameraMain from './CameraMain';
 
 const defaultConfig = {
+  paperSize: 'LETTER',
   colorsRGB: [[119, 43, 24, 255], [94, 104, 48, 255], [65, 80, 84, 255], [0, 0, 0, 255]],
   paperDotSizes: [8, 8, 8, 8],
   knobPoints: [{ x: 0, y: 0 }, { x: 1, y: 0 }, { x: 1, y: 1 }, { x: 0, y: 1 }],

@@ -2,13 +2,20 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 
 import ProjectorMain from './ProjectorMain';
+import { paperSizes } from '../constants';
 
 const element = document.createElement('div');
 document.body.appendChild(element);
 function render(callback) {
+  const paperProgramsConfig = JSON.parse(localStorage.paperProgramsConfig);
+  const paperSizeName = paperProgramsConfig.paperSize;
+  const paperSize = paperSizeName in paperSizes ? paperSizes[paperSizeName] : paperSizes.LETTER;
+  const paperRatio = paperSize.dimensions[1] / paperSize.dimensions[0];
+
   ReactDOM.render(
     <ProjectorMain
-      knobPoints={JSON.parse(localStorage.paperProgramsConfig).knobPoints}
+      knobPoints={paperProgramsConfig.knobPoints}
+      paperRatio={paperRatio}
       programsToRender={JSON.parse(localStorage.paperProgramsProgramsToRender || '[]')}
       markers={JSON.parse(localStorage.paperProgramsMarkers || '[]')}
       dataByProgramNumber={JSON.parse(localStorage.paperProgramsDataByProgramNumber || '{}')}

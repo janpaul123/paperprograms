@@ -58,8 +58,8 @@ function drawPagePatterns({ doc, patterns, width, height, circleRadius, circleDi
   });
 }
 
-function drawPage({ patterns, title, code, metadata }) {
-  const doc = new PDFDocument({ margin: 0 });
+function drawPage({ patterns, title, code, metadata, paperSize }) {
+  const doc = new PDFDocument({ size: paperSize, margin: 0 });
   const { width, height } = doc.page;
 
   const circleRadius = 20;
@@ -102,8 +102,8 @@ function drawPage({ patterns, title, code, metadata }) {
   return doc;
 }
 
-function drawCalibrationPage({ allColors }) {
-  const doc = new PDFDocument({ layout: 'landscape' });
+function drawCalibrationPage({ allColors, paperSize }) {
+  const doc = new PDFDocument({ size: paperSize, layout: 'landscape' });
   const circleRadius = 20;
   const circleDistance = 20;
   doc.fontSize(35).text('Calibration page', 0, 30, { width: doc.page.width, align: 'center' });
@@ -147,17 +147,18 @@ function printDoc(doc) {
 
 const allColors = ['#ff0000', '#51ff00', '#00ccff', '#130030'];
 
-export function printPage(number, name, code) {
+export function printPage(number, name, code, paperSize) {
   printDoc(
     drawPage({
       patterns: generatePatterns({ number, allColors }),
       title: name,
       code,
       metadata: `${number} @ ${new Date().toISOString().split('T')[0]}`,
+      paperSize,
     })
   );
 }
 
-export function printCalibrationPage() {
-  printDoc(drawCalibrationPage({ allColors }));
+export function printCalibrationPage(paperSize) {
+  printDoc(drawCalibrationPage({ allColors, paperSize }));
 }
