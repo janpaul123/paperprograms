@@ -39,7 +39,12 @@
   font-weight: 300;
 }
 
-:local(.sidebar) h1, h2, h3, h4, h5, h6 {
+:local(.sidebar) h1,
+:local(.sidebar) h2,
+:local(.sidebar) h3,
+:local(.sidebar) h4,
+:local(.sidebar) h5,
+:local(.sidebar) h6 {
   margin: 10px 0;
 }
 
