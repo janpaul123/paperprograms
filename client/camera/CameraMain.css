@@ -28,6 +28,10 @@
   flex: 1 0 auto;
 }
 
+:local(.note) {
+  font-size: 0.9em;
+}
+
 :local(.sidebar) {
   flex: 1 1 cameraMainSidebarWidth;
   color: white;
@@ -35,20 +39,72 @@
   font-weight: 300;
 }
 
-:local(.sidebarSection) {
-  margin-bottom: cameraMainPadding;
+:local(.sidebar) h1, h2, h3, h4, h5, h6 {
+  margin: 10px 0;
+}
+
+:local(.sidebar) a {
+  color: white;
+}
+
+:local(.sidebar) button {
+  font-size: 15px;
+  margin: 5px 0;
+  padding: 5px;
+}
+
+:local(.sidebarSection:not(:last-child)) {
+  position: relative;
+  margin-bottom: 10px;
   word-break: break-all;
+  border-bottom: 1px white solid;
+  padding-bottom: 10px;
 }
 
 :local(.sidebar) a,
-:local(.sidebar) a:hover,
 :local(.sidebar) a:visited {
-  color: rgb(50, 50, 255);
+  color: rgb(43, 156, 212);
 }
 
-:local(.sidebarSectionSection) {
+:local(.sidebar) a:hover {
+  color: white;
+}
+
+:local(.sidebar) label {
+  margin: 0 5px;
+}
+
+:local(.sidebarSubSection) {
   margin-bottom: calc(cameraMainPadding / 4);
 }
+
+:local(.headerWithOption) {
+  display: inline-block;
+  margin-right: 20px;
+}
+
+:local(.optionWithHeader) {
+  display: inline-block;
+  position: absolute;
+  right: 0;
+  top: 10px;
+}
+
+:local(.create) {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+:local(.create) > {
+  height: 100%;
+}
+
+:local(.printQueue) {
+  border: 1px white solid;
+  padding: 5px;
+}
+
 
 :local(.printQueueItemPrinted),
 :local(.printQueueItemNotPrinted) {
@@ -60,18 +116,18 @@
   background: #666;
 }
 
-:local(.printQueueItemPrinted) {
+:local(.printQueueItemPrinted) :local(.printQueueItemName) {
   text-decoration: line-through;
 }
 
-:local(.printQueueItemDone) {
+:local(.printQueueItemToggle) {
   visibility: hidden;
   cursor: pointer;
 }
-:local(.printQueueItem):hover > :local(.printQueueItemDone) {
+:local(.printQueueItem):hover > :local(.printQueueItemToggle) {
   visibility: visible;
 }
-:local(.printQueueItemDone):hover {
+:local(.printQueueItemToggle):hover {
   background: #999;
 }
 
@@ -98,11 +154,18 @@
 }
 
 :local(.spaceUrl) {
-  color: gray;
   margin-bottom: calc(cameraMainPadding / 4);
+  font-size: 0.9em;
 }
 
 :local(.spaceNameInput) {
   width: 100%;
   margin-bottom: calc(cameraMainPadding / 4);
 }
+
+:local(.editorAnchor) {
+  font-size: 20px;
+  margin-bottom: 10px;
+}
+
+
