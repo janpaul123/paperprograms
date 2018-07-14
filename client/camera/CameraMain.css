@@ -65,7 +65,7 @@
 :local(.sidebarSection:not(:last-child)) {
   margin-bottom: 10px;
   word-break: break-all;
-  border-bottom: 1px white solid;
+  border-bottom: 1px #999 solid;
   padding-bottom: 10px;
 }
 
