@@ -2,7 +2,7 @@ import React from 'react';
 import xhr from 'xhr';
 
 import { codeToName, codeToPrint, getApiUrl } from '../utils';
-import { colorNames, commonPaperSizes, otherPaperSizes } from '../constants';
+import { colorNames, commonPaperSizeNames, otherPaperSizeNames } from '../constants';
 import { printCalibrationPage, printPage } from './printPdf';
 
 import helloWorld from './helloWorld';
@@ -185,25 +185,21 @@ export default class CameraMain extends React.Component {
                   }}
                 >
                   <optgroup label="Common">
-                    {commonPaperSizes.map(paperSize => {
-                      const option = (
-                        <option key={paperSize.name} value={paperSize.name}>
-                          {paperSize.name}
+                    {commonPaperSizeNames.map(name => {
+                      return (
+                        <option key={name} value={name}>
+                          {name}
                         </option>
                       );
-
-                      return option;
                     })}
                   </optgroup>
-                  <optgroup label="All">
-                    {otherPaperSizes.map(paperSize => {
-                      const option = (
-                        <option key={paperSize.name} value={paperSize.name}>
-                          {paperSize.name}
+                  <optgroup label="Other">
+                    {otherPaperSizeNames.map(name => {
+                      return (
+                        <option key={name} value={name}>
+                          {name}
                         </option>
                       );
-
-                      return option;
                     })}
                   </optgroup>
                 </select>
