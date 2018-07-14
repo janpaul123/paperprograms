@@ -15,7 +15,7 @@ export const cameraVideoConstraints = {
   ],
 };
 
-export const paperSize = {
+export const paperSizes = {
   A0: [2383.94, 3370.39],
   A1: [1683.78, 2383.94],
   A2: [1190.55, 1683.78],
