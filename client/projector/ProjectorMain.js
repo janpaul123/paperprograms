@@ -89,6 +89,7 @@ export default class ProjectorMain extends React.Component {
             papers={papers}
             width={width}
             height={height}
+            paperRatio={this.props.paperRatio}
             onDataChange={(data, callback) => {
               this.props.onDataByProgramNumberChange(
                 {

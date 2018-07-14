@@ -32,12 +32,8 @@ function getCanvasSizeMatrix(width, height) {
   return canvasSizeMatrixes[key];
 }
 
-const paperRatio = 1.3; // US Letter
 const defaultCanvasWidth = 100;
-const defaultCanvasHeight = defaultCanvasWidth * paperRatio;
 const iframeWidth = 400;
-const iframeHeight = iframeWidth * paperRatio;
-
 const maxLogLength = 100;
 
 export default class Program extends React.Component {
@@ -47,6 +43,7 @@ export default class Program extends React.Component {
       canvasSizeByProgramNumber: {},
       showSupporterCanvasById: {},
       iframe: null,
+      paperRatio: this.props.paperRatio,
       debugData: { logs: [] },
     };
   }
@@ -95,7 +92,8 @@ export default class Program extends React.Component {
                 width: sendData.data.width || defaultCanvasWidth,
                 height:
                   sendData.data.height ||
-                  (sendData.data.width ? sendData.data.width * paperRatio : defaultCanvasHeight),
+                  (sendData.data.width ? sendData.data.width : defaultCanvasWidth) *
+                    this.state.paperRatio,
               },
             },
           });
@@ -266,6 +264,7 @@ export default class Program extends React.Component {
   }
 
   renderIframe() {
+    const iframeHeight = iframeWidth * this.state.paperRatio;
     const iframeStyle = {
       position: 'absolute',
       left: 0,
