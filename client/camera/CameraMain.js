@@ -2,7 +2,7 @@ import React from 'react';
 import xhr from 'xhr';
 
 import { codeToName, codeToPrint, getApiUrl } from '../utils';
-import { colorNames } from '../constants';
+import { colorNames, commonPaperSizes, otherPaperSizes } from '../constants';
 import { printCalibrationPage, printPage } from './printPdf';
 
 import helloWorld from './helloWorld';
@@ -174,20 +174,56 @@ export default class CameraMain extends React.Component {
               </a>
             </div>
             <div className={styles.sidebarSection}>
-              <h3 className={styles.headerWithOption}>Print Queue</h3>
-              <div className={styles.optionWithHeader}>
-                <label htmlFor="show-printed">show printed</label>
-                <input
-                  type="checkbox"
-                  name="show-printed"
-                  checked={this.props.config.showPrintedInQueue}
-                  onChange={() =>
-                    this.props.onConfigChange({
-                      ...this.props.config,
-                      showPrintedInQueue: !this.props.config.showPrintedInQueue,
-                    })
-                  }
-                />
+              <h3>Printing</h3>
+              <div className={styles.sidebarSubSection}>
+                <span>Paper Size: </span>
+                <select
+                  value={this.props.config.paperSize}
+                  onChange={event => {
+                    const paperSize = event.target.value;
+                    this.props.onConfigChange({ ...this.props.config, paperSize });
+                  }}
+                >
+                  <optgroup label="Common">
+                    {commonPaperSizes.map(paperSize => {
+                      const option = (
+                        <option key={paperSize.name} value={paperSize.name}>
+                          {paperSize.name}
+                        </option>
+                      );
+
+                      return option;
+                    })}
+                  </optgroup>
+                  <optgroup label="All">
+                    {otherPaperSizes.map(paperSize => {
+                      const option = (
+                        <option key={paperSize.name} value={paperSize.name}>
+                          {paperSize.name}
+                        </option>
+                      );
+
+                      return option;
+                    })}
+                  </optgroup>
+                </select>
+              </div>
+              <div className={styles.sidebarSubSection}>
+                <h4 className={styles.headerWithOption}>Queue</h4>
+                <div className={styles.optionWithHeader}>
+                  <label htmlFor="show-printed">show printed</label>
+                  <input
+                    type="checkbox"
+                    name="show-printed"
+                    checked={this.props.config.showPrintedInQueue}
+                    onChange={() =>
+                      this.props.onConfigChange({
+                        ...this.props.config,
+                        showPrintedInQueue: !this.props.config.showPrintedInQueue,
+                      })
+                    }
+                  />
+                </div>
               </div>
               <div className={`${styles.sidebarSubSection} ${styles.printQueue}`}>
                 <div>
