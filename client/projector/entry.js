@@ -10,7 +10,7 @@ function render(callback) {
   const paperProgramsConfig = JSON.parse(localStorage.paperProgramsConfig);
   const paperSizeName = paperProgramsConfig.paperSize;
   const paperSize = paperSizeName in paperSizes ? paperSizes[paperSizeName] : paperSizes.LETTER;
-  const paperRatio = paperSize.dimensions[1] / paperSize.dimensions[0];
+  const paperRatio = paperSize[1] / paperSize[0];
 
   ReactDOM.render(
     <ProjectorMain
