@@ -73,10 +73,8 @@ export default class CameraMain extends React.Component {
       { json: { printed } },
       (error, response) => {
         if (error) {
-          console.log('this');
           console.error(error); // eslint-disable-line no-console
         } else {
-          console.log('that');
           this.setState({ spaceData: response.body });
         }
       }
