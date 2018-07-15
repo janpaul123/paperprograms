@@ -159,6 +159,7 @@ export default function detectPrograms({
   displayMat,
   scaleFactor,
   allBlobsAreKeyPoints,
+  debugPrograms = [],
 }) {
   const startTime = Date.now();
   const paperDotSizes = config.paperDotSizes;
@@ -170,13 +171,14 @@ export default function detectPrograms({
   const videoMat = new cv.Mat(videoCapture.video.height, videoCapture.video.width, cv.CV_8UC4);
   videoCapture.read(videoMat);
 
+  const knobPointMatrix = forwardProjectionMatrixForPoints(config.knobPoints);
+  const mapToKnobPointMatrix = point => {
+    return mult(projectPoint(point, knobPointMatrix), { x: videoMat.cols, y: videoMat.rows })
+  };
+
   if (displayMat) {
     videoMat.copyTo(displayMat);
-    const matrix = forwardProjectionMatrixForPoints(config.knobPoints);
-
-    const knobPoints = [{ x: 0, y: 0 }, { x: 1, y: 0 }, { x: 1, y: 1 }, { x: 0, y: 1 }].map(point =>
-      mult(projectPoint(point, matrix), { x: videoMat.cols, y: videoMat.rows })
-    );
+    const knobPoints = [{ x: 0, y: 0 }, { x: 1, y: 0 }, { x: 1, y: 1 }, { x: 0, y: 1 }].map(mapToKnobPointMatrix);
 
     for (let i = 0; i < 4; i++) {
       cv.line(displayMat, knobPoints[i], knobPoints[(i + 1) % 4], [255, 0, 0, 255]);
@@ -402,10 +404,7 @@ export default function detectPrograms({
       programsToRender.push(programToRender);
 
       if (displayMat && config.showOverlayProgram) {
-        const matrix = forwardProjectionMatrixForPoints(config.knobPoints);
-        const reprojectedPoints = programToRender.points.map(point =>
-          mult(projectPoint(point, matrix), { x: videoMat.cols, y: videoMat.rows })
-        );
+        const reprojectedPoints = programToRender.points.map(mapToKnobPointMatrix);
 
         cv.line(displayMat, reprojectedPoints[0], reprojectedPoints[1], [0, 0, 255, 255]);
         cv.line(displayMat, reprojectedPoints[2], reprojectedPoints[1], [0, 0, 255, 255]);
@@ -421,6 +420,22 @@ export default function detectPrograms({
     }
   });
 
+  // Debug programs
+  debugPrograms.forEach(({ points, number }) => {
+    const scaledPoints = points.map(point => {
+      const absPoint = mult(point, { x: videoMat.cols, y: videoMat.rows });
+      return projectPointToUnitSquare(absPoint, videoMat, config.knobPoints);
+    });
+
+    const debugProgram = {
+      points: scaledPoints,
+      number,
+      projectionMatrix: forwardProjectionMatrixForPoints(scaledPoints).adjugate(),
+    };
+    programsToRender.push(debugProgram);
+  });
+
+  // Markers
   markers = markers.map(({ colorIndex, avgColor, pt, size }) => {
     const markerPosition = projectPointToUnitSquare(pt, videoMat, config.knobPoints);
 

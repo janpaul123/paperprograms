@@ -21,6 +21,7 @@ export default class CameraMain extends React.Component {
       autoPrintedNumbers: [],
       isEditingSpaceUrl: false,
       spaceUrlSwitcherValue: props.config.spaceUrl,
+      debugPrograms: []
     };
   }
 
@@ -167,6 +168,7 @@ export default class CameraMain extends React.Component {
                 this.props.onConfigChange({ ...this.props.config, colorsRGB, paperDotSizes });
                 this.setState({ selectedColorIndex: -1 });
               }}
+              debugPrograms={this.state.debugPrograms}
             />
           </div>
           <div className={styles.sidebar}>

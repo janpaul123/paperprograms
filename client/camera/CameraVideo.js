@@ -82,6 +82,7 @@ export default class CameraVideo extends React.Component {
         displayMat,
         scaleFactor: this.props.config.scaleFactor,
         allBlobsAreKeyPoints: this.props.allowSelectingDetectedPoints,
+        debugPrograms: this.props.debugPrograms,
       });
       this._dataToRemember = dataToRemember;
       this.setState({ keyPoints });
