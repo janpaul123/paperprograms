@@ -158,12 +158,14 @@ export default function detectPrograms({
   dataToRemember,
   displayMat,
   scaleFactor,
+  allBlobsAreKeyPoints,
 }) {
   const startTime = Date.now();
   const paperDotSizes = config.paperDotSizes;
   const paperDotSizeVariance = // difference min/max size * 2
     Math.max(1, Math.max.apply(null, paperDotSizes) - Math.min.apply(null, paperDotSizes)) * 2;
   const avgPaperDotSize = paperDotSizes.reduce((sum, value) => sum + value) / paperDotSizes.length;
+  const markerSizeThreshold = avgPaperDotSize + paperDotSizeVariance;
 
   const videoMat = new cv.Mat(videoCapture.video.height, videoCapture.video.width, cv.CV_8UC4);
   videoCapture.read(videoMat);
@@ -204,10 +206,9 @@ export default function detectPrograms({
       keyPoint.colorIndex || colorIndexForColor(keyPoint.avgColor, config.colorsRGB);
   });
 
-  let [markers, keyPoints] = partition(
-    allPoints,
-    ({ size }) => size > avgPaperDotSize + paperDotSizeVariance
-  );
+  let [markers, keyPoints] = allBlobsAreKeyPoints
+    ? [[], allPoints]
+    : partition(allPoints, ({ size }) => size > markerSizeThreshold);
 
   // Sort by x position. We rely on this when scanning through the circles
   // to find connected components, and when calibrating.
