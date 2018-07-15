@@ -2,7 +2,7 @@ import React from 'react';
 import xhr from 'xhr';
 
 import { codeToName, codeToPrint, getApiUrl } from '../utils';
-import { colorNames, commonPaperSizeNames, otherPaperSizeNames } from '../constants';
+import { colorNames, paperSizes, commonPaperSizeNames, otherPaperSizeNames } from '../constants';
 import { printCalibrationPage, printPage } from './printPdf';
 
 import helloWorld from './helloWorld';
@@ -104,6 +104,26 @@ export default class CameraMain extends React.Component {
         }
       }
     );
+  };
+
+  _createDebugProgram = number => {
+    const paperSize = paperSizes[this.props.config.paperSize];
+    const widthToHeightRatio = paperSize[0] / paperSize[1];
+    const height = 0.1;
+    const width = height * widthToHeightRatio;
+
+    const debugPrograms = this.state.debugPrograms;
+    const newProgram = {
+      number,
+      points: [
+        { x: 0.0, y: 0.0 },
+        { x: width, y: 0.0 },
+        { x: width, y: height },
+        { x: 0.0, y: height },
+      ]
+    };
+    debugPrograms.push(newProgram);
+    this.setState({ debugPrograms });
   };
 
   _programsChange = programsToRender => {
