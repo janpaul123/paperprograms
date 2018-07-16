@@ -55,6 +55,9 @@ export default class CameraMain extends React.Component {
   render() {
     const tl = this.state.program.points[0];
     const br = this.state.program.points[2];
+    const videoRatio = this.props.videoHeight / this.props.videoWidth;
+    const width = (br.x - tl.x) * videoRatio;
+    const height = br.y - tl.y;
 
     return (
       <div
@@ -68,8 +71,8 @@ export default class CameraMain extends React.Component {
           position: 'absolute',
           left: `${tl.x * 100}%`,
           top: `${tl.y * 100}%`,
-          width: `${(br.x - tl.x) * 100}%`,
-          height: `${(br.y - tl.y) * 100}%`,
+          width: `${width * 100}%`,
+          height: `${height * 100}%`,
           background: 'white',
           color: 'black',
         }}

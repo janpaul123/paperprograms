@@ -21,7 +21,7 @@ export default class CameraMain extends React.Component {
       autoPrintedNumbers: [],
       isEditingSpaceUrl: false,
       spaceUrlSwitcherValue: props.config.spaceUrl,
-      debugPrograms: []
+      debugPrograms: [],
     };
   }
 
@@ -120,7 +120,7 @@ export default class CameraMain extends React.Component {
         { x: width, y: 0.0 },
         { x: width, y: height },
         { x: 0.0, y: height },
-      ]
+      ],
     };
     debugPrograms.push(newProgram);
     this.setState({ debugPrograms });
