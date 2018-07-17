@@ -5,6 +5,13 @@ import { add } from '../utils';
 export default class CameraMain extends React.Component {
   constructor(props) {
     super(props);
+
+    const videoRatio = this.props.videoWidth / this.props.videoHeight;
+    const bl = props.program.points[3];
+    const br = props.program.points[2];
+    bl.y *= videoRatio;
+    br.y *= videoRatio;
+
     this.state = {
       program: props.program,
       grabbed: false,

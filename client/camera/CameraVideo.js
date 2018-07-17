@@ -33,14 +33,6 @@ export default class CameraVideo extends React.Component {
             this._videoCapture = new cv.VideoCapture(video);
             this._dataToRemember = {};
             this._processVideo();
-
-            this.props.debugPrograms.forEach(program => {
-              const videoRatio = video.videoWidth / video.videoHeight;
-              const bl = program.points[3];
-              const br = program.points[2];
-              bl.y *= videoRatio;
-              br.y *= videoRatio;
-            });
           };
         });
     };
