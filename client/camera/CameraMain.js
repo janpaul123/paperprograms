@@ -29,6 +29,8 @@ export default class CameraMain extends React.Component {
     window.addEventListener('resize', this._updatePageWidth);
     this._updatePageWidth();
     this._pollSpaceUrl();
+
+    this._createDebugProgram(234);
   }
 
   _pollSpaceUrl = () => {
