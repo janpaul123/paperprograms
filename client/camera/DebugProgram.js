@@ -1,6 +1,7 @@
 import React from 'react';
 
 import { add } from '../utils';
+import styles from './DebugProgram.css';
 
 export default class CameraMain extends React.Component {
   constructor(props) {
@@ -99,44 +100,20 @@ export default class CameraMain extends React.Component {
         onMouseEnter={this._onMouseEnter}
         onMouseLeave={this._onMouseLeave}
         onDrag={this._onDrag}
+        className={styles.program}
         style={{
-          userSelect: 'none',
           position: 'absolute',
           left: `${tl.x * 100}%`,
           top: `${tl.y * 100}%`,
           width: `${width * 100}%`,
           height: `${height * 100}%`,
-          background: 'white',
-          color: 'black',
-          opacity: 0.7,
         }}
       >
         <h3>Program {this.state.program.number}</h3>
 
-        <div
-          ref={el => (this._handleEl = el)}
-          style={{
-            position: 'absolute',
-            right: '0px',
-            bottom: '0px',
-            width: '20px',
-            height: '20px',
-            background: 'black',
-          }}
-        />
+        <div ref={el => (this._handleEl = el)} className={styles.resizeHandle} />
 
-        <div
-          ref={el => (this._closeEl = el)}
-          style={{
-            position: 'absolute',
-            top: '0px',
-            left: '0px',
-            width: '20px',
-            height: '20px',
-            background: 'red',
-            zIndex: 20,
-          }}
-        />
+        <div ref={el => (this._closeEl = el)} className={styles.closeButton} />
       </div>
     );
   }
