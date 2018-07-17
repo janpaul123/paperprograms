@@ -191,6 +191,10 @@ export default class CameraMain extends React.Component {
                 this.setState({ selectedColorIndex: -1 });
               }}
               debugPrograms={this.state.debugPrograms}
+              removeDebugProgram={program => {
+                const debugPrograms = this.state.debugPrograms.filter(p => p !== program);
+                this.setState({ debugPrograms });
+              }}
             />
           </div>
           <div className={styles.sidebar}>
@@ -263,17 +267,28 @@ export default class CameraMain extends React.Component {
                         ].join(' ')}
                         onClick={() => this._print(program)}
                       >
-                        <span className={styles.printQueueItemName}>
-                          <strong>#{program.number}</strong> {codeToName(program.currentCode)}{' '}
+                        <span className={styles.printQueueItemContent}>
+                          <span className={styles.printQueueItemName}>
+                            <strong>#{program.number}</strong> {codeToName(program.currentCode)}{' '}
+                          </span>
+                          <span
+                            className={styles.printQueueItemToggle}
+                            onClick={event => {
+                              event.stopPropagation();
+                              this._markPrinted(program, !program.printed);
+                            }}
+                          >
+                            {program.printed ? '[show]' : '[hide]'}
+                          </span>
                         </span>
                         <span
-                          className={styles.printQueueItemToggle}
+                          className={styles.printQueueDebug}
                           onClick={event => {
                             event.stopPropagation();
-                            this._markPrinted(program, !program.printed);
+                            this._createDebugProgram(program.number);
                           }}
                         >
-                          {program.printed ? '[mark not printed]' : '[mark as printed]'}
+                          [Debug]
                         </span>
                       </div>
                     ))}

@@ -115,6 +115,13 @@
 }
 
 
+:local(.printQueueItem) {
+  width: 100%;
+}
+:local(.printQueueItemContent) {
+  width: 75%;
+  display: inline-block;
+}
 :local(.printQueueItemPrinted),
 :local(.printQueueItemNotPrinted) {
   margin-bottom: calc(cameraMainPadding / 4);
@@ -133,12 +140,23 @@
   visibility: hidden;
   cursor: pointer;
 }
-:local(.printQueueItem):hover > :local(.printQueueItemToggle) {
+:local(.printQueueItem):hover :local(.printQueueItemToggle) {
   visibility: visible;
 }
 :local(.printQueueItemToggle):hover {
   background: #999;
 }
+
+:local(.printQueueDebug) {
+  display: inline-block;
+  width: 25%;
+  text-align: right;
+}
+
+:local(.printQueueDebug):hover {
+  background: #999;
+}
+
 
 :local(.colorListItem) {
   display: inline-block;
