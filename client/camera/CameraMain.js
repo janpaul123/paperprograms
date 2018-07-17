@@ -288,7 +288,7 @@ export default class CameraMain extends React.Component {
                               this._createDebugProgram(program.number);
                             }}
                           >
-                            [Debug]
+                            [Preview]
                           </span>
                         ) : (
                           ''

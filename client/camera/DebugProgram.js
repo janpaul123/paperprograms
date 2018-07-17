@@ -109,7 +109,7 @@ export default class CameraMain extends React.Component {
           height: `${height * 100}%`,
         }}
       >
-        <h3>Program {this.state.program.number}</h3>
+        <h3>Program #{this.state.program.number}</h3>
 
         <div ref={el => (this._handleEl = el)} className={styles.resizeHandle} />
 

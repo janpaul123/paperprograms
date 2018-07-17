@@ -4,8 +4,13 @@
   left: 0px;
   width: 20px;
   height: 20px;
-  background: red;
+  background: rgb(190, 0, 0);
 }
+
+:local(.closeButton):hover {
+  background: rgb(255, 0, 0);
+}
+
 
 :local(.program) {
   font-family: Helvetica;
@@ -21,6 +26,9 @@
   bottom: 0px;
   width: 20px;
   height: 20px;
-  background: black;
+  background: rgb(100, 100, 100);
 }
 
+:local(.resizeHandle):hover {
+  background: rgb(0, 0, 0);
+}
