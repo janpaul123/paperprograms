@@ -279,15 +279,20 @@ export default class CameraMain extends React.Component {
                             {program.printed ? '[show]' : '[hide]'}
                           </span>
                         </span>
-                        <span
-                          className={styles.printQueueDebug}
-                          onClick={event => {
-                            event.stopPropagation();
-                            this._createDebugProgram(program.number);
-                          }}
-                        >
-                          [Debug]
-                        </span>
+                        {this.state.debugPrograms.find(p => p.number === program.number) ===
+                        undefined ? (
+                          <span
+                            className={styles.printQueueDebug}
+                            onClick={event => {
+                              event.stopPropagation();
+                              this._createDebugProgram(program.number);
+                            }}
+                          >
+                            [Debug]
+                          </span>
+                        ) : (
+                          ''
+                        )}
                       </div>
                     ))}
                 </div>

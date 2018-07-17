@@ -24,9 +24,7 @@ export default class CameraMain extends React.Component {
     this.props.onMouseEnter();
   };
 
-  _onMouseOut = event => {
-    if (event.relatedTarget === this._el) return;
-    if (event.relatedTarget === this._handleEl) return;
+  _onMouseLeave = () => {
     if (this.state.grabbed) return;
     if (this.state.resizing) return;
 
@@ -34,12 +32,16 @@ export default class CameraMain extends React.Component {
   };
 
   _onMouseDown = event => {
+    if (event.target === this._closeEl) {
+      this.props.remove();
+      return;
+    }
     const rect = this._el.getBoundingClientRect();
     const x = event.clientX - rect.x;
     const y = event.clientY - rect.y;
 
-    const grabbed = event.target === this._el;
     const resizing = event.target === this._handleEl;
+    const grabbed = !resizing;
 
     this.setState({ grabbed, resizing, grabbedOffset: { x, y } });
     document.addEventListener('mouseup', this._onMouseUp, false);
@@ -55,7 +57,6 @@ export default class CameraMain extends React.Component {
   _onMouseMove = event => {
     const rect = this._el.getBoundingClientRect();
     const parentRect = this._el.parentElement.getBoundingClientRect();
-
     const program = this.state.program;
     if (this.state.grabbed) {
       const x = event.clientX - rect.x - this.state.grabbedOffset.x;
@@ -96,7 +97,7 @@ export default class CameraMain extends React.Component {
         ref={el => (this._el = el)}
         onMouseDown={this._onMouseDown}
         onMouseEnter={this._onMouseEnter}
-        onMouseOut={this._onMouseOut}
+        onMouseLeave={this._onMouseLeave}
         onDrag={this._onDrag}
         style={{
           userSelect: 'none',
@@ -121,6 +122,19 @@ export default class CameraMain extends React.Component {
             width: '20px',
             height: '20px',
             background: 'black',
+          }}
+        />
+
+        <div
+          ref={el => (this._closeEl = el)}
+          style={{
+            position: 'absolute',
+            top: '0px',
+            left: '0px',
+            width: '20px',
+            height: '20px',
+            background: 'red',
+            zIndex: 20,
           }}
         />
       </div>

@@ -146,6 +146,7 @@ export default class CameraVideo extends React.Component {
                   onRelease={() => this._attachZoomer()}
                   videoWidth={this.state.videoWidth}
                   videoHeight={this.state.videoHeight}
+                  remove={() => this.props.removeDebugProgram(program)}
                 />
               );
             })}
