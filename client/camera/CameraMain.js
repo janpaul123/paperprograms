@@ -2,7 +2,7 @@ import React from 'react';
 import xhr from 'xhr';
 
 import { codeToName, codeToPrint, getApiUrl } from '../utils';
-import { colorNames, commonPaperSizeNames, otherPaperSizeNames } from '../constants';
+import { colorNames, paperSizes, commonPaperSizeNames, otherPaperSizeNames } from '../constants';
 import { printCalibrationPage, printPage } from './printPdf';
 
 import helloWorld from './helloWorld';
@@ -21,6 +21,7 @@ export default class CameraMain extends React.Component {
       autoPrintedNumbers: [],
       isEditingSpaceUrl: false,
       spaceUrlSwitcherValue: props.config.spaceUrl,
+      debugPrograms: [],
     };
   }
 
@@ -105,6 +106,26 @@ export default class CameraMain extends React.Component {
     );
   };
 
+  _createDebugProgram = number => {
+    const paperSize = paperSizes[this.props.config.paperSize];
+    const widthToHeightRatio = paperSize[0] / paperSize[1];
+    const height = 0.2;
+    const width = height * widthToHeightRatio;
+
+    const debugPrograms = this.state.debugPrograms;
+    const newProgram = {
+      number,
+      points: [
+        { x: 0.0, y: 0.0 },
+        { x: width, y: 0.0 },
+        { x: width, y: height },
+        { x: 0.0, y: height },
+      ],
+    };
+    debugPrograms.push(newProgram);
+    this.setState({ debugPrograms });
+  };
+
   _programsChange = programsToRender => {
     this.props.onProgramsChange(
       programsToRender
@@ -166,6 +187,11 @@ export default class CameraMain extends React.Component {
 
                 this.props.onConfigChange({ ...this.props.config, colorsRGB, paperDotSizes });
                 this.setState({ selectedColorIndex: -1 });
+              }}
+              debugPrograms={this.state.debugPrograms}
+              removeDebugProgram={program => {
+                const debugPrograms = this.state.debugPrograms.filter(p => p !== program);
+                this.setState({ debugPrograms });
               }}
             />
           </div>
@@ -239,18 +265,34 @@ export default class CameraMain extends React.Component {
                         ].join(' ')}
                         onClick={() => this._print(program)}
                       >
-                        <span className={styles.printQueueItemName}>
-                          <strong>#{program.number}</strong> {codeToName(program.currentCode)}{' '}
+                        <span className={styles.printQueueItemContent}>
+                          <span className={styles.printQueueItemName}>
+                            <strong>#{program.number}</strong> {codeToName(program.currentCode)}{' '}
+                          </span>
+                          <span
+                            className={styles.printQueueItemToggle}
+                            onClick={event => {
+                              event.stopPropagation();
+                              this._markPrinted(program, !program.printed);
+                            }}
+                          >
+                            {program.printed ? '[show]' : '[hide]'}
+                          </span>
                         </span>
-                        <span
-                          className={styles.printQueueItemToggle}
-                          onClick={event => {
-                            event.stopPropagation();
-                            this._markPrinted(program, !program.printed);
-                          }}
-                        >
-                          {program.printed ? '[mark not printed]' : '[mark as printed]'}
-                        </span>
+                        {this.state.debugPrograms.find(p => p.number === program.number) ===
+                        undefined ? (
+                          <span
+                            className={styles.printQueueDebug}
+                            onClick={event => {
+                              event.stopPropagation();
+                              this._createDebugProgram(program.number);
+                            }}
+                          >
+                            [Preview]
+                          </span>
+                        ) : (
+                          ''
+                        )}
                       </div>
                     ))}
                 </div>

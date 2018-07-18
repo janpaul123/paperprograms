@@ -5,6 +5,7 @@ import * as d3 from 'd3';
 
 import { cornerNames, cameraVideoConstraints } from '../constants';
 import Knob from './Knob';
+import DebugProgram from './DebugProgram';
 import detectPrograms from './detectPrograms';
 import styles from './CameraVideo.css';
 
@@ -64,6 +65,11 @@ export default class CameraVideo extends React.Component {
     surface.call(zoom);
   };
 
+  _disableZoomer = () => {
+    const surface = d3.select(this._zoomSurface);
+    surface.on('.zoom', null);
+  };
+
   _processVideo = () => {
     setTimeout(this._processVideo);
     if (this.props.config.freezeDetection) return;
@@ -82,6 +88,7 @@ export default class CameraVideo extends React.Component {
         displayMat,
         scaleFactor: this.props.config.scaleFactor,
         allBlobsAreKeyPoints: this.props.allowSelectingDetectedPoints,
+        debugPrograms: this.props.debugPrograms,
       });
       this._dataToRemember = dataToRemember;
       this.setState({ keyPoints });
@@ -121,6 +128,29 @@ export default class CameraVideo extends React.Component {
             }}
             ref={el => (this._canvas = el)}
           />
+          <div
+            style={{
+              position: 'absolute',
+              transform: `translate(${x}px, ${y}px) scale(${k})`,
+              transformOrigin: '0 0',
+              width,
+              height,
+            }}
+          >
+            {this.props.debugPrograms.map(program => {
+              return (
+                <DebugProgram
+                  key={program.number}
+                  program={program}
+                  onMouseEnter={() => this._disableZoomer()}
+                  onRelease={() => this._attachZoomer()}
+                  videoWidth={this.state.videoWidth}
+                  videoHeight={this.state.videoHeight}
+                  remove={() => this.props.removeDebugProgram(program)}
+                />
+              );
+            })}
+          </div>
           {[0, 1, 2, 3].map(position => {
             const point = this.props.config.knobPoints[position];
             return (
