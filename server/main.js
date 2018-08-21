@@ -2,6 +2,8 @@ const api = require('./api');
 const express = require('express');
 const path = require('path');
 
+express.static.mime.types['wasm'] = 'application/wasm';
+
 process.on('unhandledRejection', error => {
   console.error('unhandledRejection', error.message); // eslint-disable-line no-console
 });
