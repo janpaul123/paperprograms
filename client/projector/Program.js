@@ -19,6 +19,7 @@ function matrixToCssTransform(matrix) {
 }
 
 const canvasSizeMatrixes = [];
+
 function getCanvasSizeMatrix(width, height) {
   const key = `${width},${height}`;
   canvasSizeMatrixes[key] =
@@ -48,7 +49,7 @@ export default class Program extends React.Component {
     };
   }
 
-  componentDidMount() {
+  componentWillMount() {
     this._worker = new Worker(this._program().currentCodeUrl);
     this._worker.onmessage = this._receiveMessage;
     this._worker.onerror = this._receiveError;
@@ -143,6 +144,8 @@ export default class Program extends React.Component {
       }
     } else if (command === 'flushLogs') {
       this._addLogs(sendData);
+    } else if (command === 'update') {
+      this.props.onUpdate(sendData);
     }
   };
 
@@ -179,6 +182,13 @@ export default class Program extends React.Component {
       ).multiply(getCanvasSizeMatrix(width, height))
     );
   };
+
+  componentDidUpdate() {
+    this._worker.postMessage({
+      type: 'updateMatches',
+      data: { matches: this.props.matches },
+    });
+  }
 
   render() {
     const program = this._program();

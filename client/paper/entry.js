@@ -2,14 +2,35 @@ import Matrix from 'node-matrices';
 import { projectPoint } from '../utils';
 import { fillQuadTex, fillTriTex } from './canvasUtils';
 import Whisker from './whisker';
+import DbClient from './DbClient';
+import { parseClaim, parseWhen } from '../db/dslParser';
 
 (function(workerContext) {
   if (workerContext.paper) return;
 
+  const dbClient = new DbClient({
+    onEmitChanges({ claims, whens }) {
+      workerContext.postMessage({
+        command: 'update',
+        sendData: { claims, whens },
+        messageId: messageId++,
+      });
+    },
+  });
+
   const messageCallbacks = {};
   let messageId = 0;
   workerContext.addEventListener('message', event => {
-    messageCallbacks[event.data.messageId](event.data.receiveData);
+    if (event.type === 'updateMatches') {
+      dbClient.evaluateWhens(event.data.matches);
+      return;
+    }
+
+    const callback = messageCallbacks[event.data.messageId];
+
+    if (callback) {
+      callback(event.data.receiveData);
+    }
   });
 
   workerContext.paper = {
@@ -196,12 +217,26 @@ import Whisker from './whisker';
 
     if (callback) {
       whisker.on('paperAdded', callback);
-      whisker.on('paperRemoved', () => callback(null
-      ));
+      whisker.on('paperRemoved', () => callback(null));
     }
 
     if (whiskerPointCallback) {
       whisker.on('whiskerMoved', whiskerPointCallback);
     }
   };
+
+  workerContext.When = (literals, ...params) => {
+    const when = parseWhen(literals, params);
+
+    return callback => {
+      dbClient.addWhen(when, callback);
+    };
+  };
+
+  workerContext.Claim = (literals, ...params) => {
+    const claim = parseClaim(literals, params);
+
+    dbClient.addClaim(claim);
+  };
+
 })(self);

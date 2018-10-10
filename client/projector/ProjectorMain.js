@@ -2,6 +2,7 @@ import React from 'react';
 
 import { mult, forwardProjectionMatrixForPoints } from '../utils';
 import Program from './Program';
+import Db from './Db';
 import { cameraVideoConstraints } from '../constants';
 
 function projectorSize() {
@@ -11,6 +12,15 @@ function projectorSize() {
 }
 
 export default class ProjectorMain extends React.Component {
+  constructor() {
+    super();
+
+    this.state = {
+      whensByProgram: {},
+      claimsByProgram: {},
+    };
+  }
+
   componentWillMount() {
     navigator.mediaDevices
       .getUserMedia({
@@ -21,6 +31,7 @@ export default class ProjectorMain extends React.Component {
         this._videoCapture = new ImageCapture(stream.getVideoTracks()[0]);
       });
   }
+
   grabCameraImageAndProjectionData = async () => {
     const cameraImage = await this._videoCapture.grabFrame();
 
@@ -45,7 +56,9 @@ export default class ProjectorMain extends React.Component {
 
     return { cameraImage, forwardProjectionData };
   };
+
   render() {
+    const { claimsByProgram, whensByProgram } = this.state;
     const { width, height } = projectorSize();
     const multPoint = { x: width, y: height };
 
@@ -77,33 +90,80 @@ export default class ProjectorMain extends React.Component {
       position: mult(data.position, multPoint),
     }));
 
+    const db = (window.$DB$ = new Db());
+
+    this.props.programsToRender.forEach(program => {
+      const programClaims = claimsByProgram[program.number];
+
+      if (!programClaims) {
+        return;
+      }
+
+      debugger;
+
+
+      programClaims.forEach(claim => db.addClaim(claim));
+    });
+
+    const matchesCache = {};
+
     return (
       <div>
-        {this.props.programsToRender.map(program => (
-          <Program
-            key={`${program.number}-${program.currentCodeHash}`}
-            programsToRenderByNumber={programsToRenderByNumber}
-            markers={markers}
-            programNumber={program.number}
-            grabCameraImageAndProjectionData={this.grabCameraImageAndProjectionData}
-            papers={papers}
-            width={width}
-            height={height}
-            paperRatio={this.props.paperRatio}
-            onDataChange={(data, callback) => {
-              this.props.onDataByProgramNumberChange(
-                {
-                  ...this.props.dataByProgramNumber,
-                  [program.number]: {
-                    ...this.props.dataByProgramNumber[program.number],
-                    ...data,
+        {this.props.programsToRender.map(program => {
+          const whens = whensByProgram[program.number];
+
+          const matches = {};
+
+          if (whens) {
+            whens.forEach(({ claims, id }) => {
+              if (matches[id]) {
+                return;
+              }
+
+              if (matchesCache[id]) {
+                matches[id] = matchesCache[id];
+                return;
+              }
+
+              matches[id] = db.query(claims);
+            });
+          }
+
+          return (
+            <Program
+              key={`${program.number}-${program.currentCodeHash}`}
+              programsToRenderByNumber={programsToRenderByNumber}
+              markers={markers}
+              matches={matches}
+              programNumber={program.number}
+              grabCameraImageAndProjectionData={this.grabCameraImageAndProjectionData}
+              papers={papers}
+              width={width}
+              height={height}
+              paperRatio={this.props.paperRatio}
+              onUpdate={data => {
+                console.log('update', program.number, data);
+
+                this.setState({
+                  claimsByProgram: { [program.number]: data.claims },
+                  whensByProgram: { [program.number]: data.whens },
+                });
+              }}
+              onDataChange={(data, callback) => {
+                this.props.onDataByProgramNumberChange(
+                  {
+                    ...this.props.dataByProgramNumber,
+                    [program.number]: {
+                      ...this.props.dataByProgramNumber[program.number],
+                      ...data,
+                    },
                   },
-                },
-                callback
-              );
-            }}
-          />
-        ))}
+                  callback
+                );
+              }}
+            />
+          );
+        })}
       </div>
     );
   }
