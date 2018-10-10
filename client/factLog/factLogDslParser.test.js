@@ -22,7 +22,10 @@ test('claim: parse string', t => {
 test('claim: normalize whitespace', t => {
   t.deepEqual(
     Claim`${'Homer'} is father of ${'Bart'}`,
-    Claim`${'Homer'}   is   father    of ${'Bart'}`
+    Claim`
+        ${'Homer'}   is   father    of ${'Bart'} 
+      
+      `
   );
 
   t.end();
@@ -37,4 +40,26 @@ test('when: parse string', t => {
   t.end();
 });
 
-// TODO multiple claims
+test('when: parse with joins', t => {
+  t.deepEqual(
+    When`{x} is father of {y}, {y} is father of {z}`,
+    dsl.when([
+      dsl.claim('@ is father of @', [dsl.variable('x'), dsl.variable('y')]),
+      dsl.claim('@ is father of @', [dsl.variable('y'), dsl.variable('z')]),
+    ])
+  );
+
+  t.end();
+});
+
+test('when: parse with join normalize whitespace', t => {
+  t.deepEqual(
+    When`{x} is father of {y}, {y} is father of {x}`,
+    When` {x} is father of {y}, 
+    {y} is father of {x} 
+    
+    
+    `
+  );
+  t.end();
+});

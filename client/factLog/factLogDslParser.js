@@ -1,7 +1,7 @@
 const ast = require('./factLogAst');
 
 function parseClaim(literals, params) {
-  const name = normalizeWhitespace(literals.join('@'));
+  const name = normalizeWhitespace(literals.join('@')).trim();
   const args = params.map(ast.constant);
 
   return ast.claim(name, args);
@@ -10,53 +10,62 @@ function parseClaim(literals, params) {
 function parseWhen(literals, params) {
   const whenStatement = literals.join('');
   const constantValues = params.map(ast.constant);
-  const tokens = interleave(literals, constantValues)
-    .map(chunk => {
-      if (typeof chunk !== 'string') {
-        return [chunk];
+
+  const claims = [];
+  let tempClaim = { name: '', args: [] };
+
+  interleave(literals, constantValues).forEach(chunk => {
+    if (typeof chunk !== 'string') {
+      tempClaim.name += '@';
+      tempClaim.args.push(chunk);
+      return;
+    }
+
+    let normalizedChunk = normalizeWhitespace(chunk);
+    let buffer = '';
+    let insideVariableToken = false;
+
+    for (let i = 0; i < normalizedChunk.length; i++) {
+      switch (normalizedChunk[i]) {
+        case '{':
+          if (insideVariableToken) {
+            throw new Error(`unexpected character { in When: '${whenStatement}'`);
+          }
+
+          insideVariableToken = true;
+          buffer = '';
+          break;
+
+        case '}':
+          if (!insideVariableToken) {
+            throw new Error(`unexpected character } in When: '${whenStatement}'`);
+          }
+
+          insideVariableToken = false;
+          tempClaim.name += '@';
+          tempClaim.args.push(ast.variable(buffer));
+          buffer = '';
+          break;
+
+        case ',':
+          claims.push(ast.claim(tempClaim.name.trim(), tempClaim.args));
+          tempClaim = { name: '', args: [] };
+          break;
+
+        default:
+          if (insideVariableToken) {
+            buffer += normalizedChunk[i];
+          } else {
+            tempClaim.name += normalizedChunk[i];
+          }
+          break;
       }
+    }
+  });
 
-      let normalizedChunk = normalizeWhitespace(chunk);
-      let tokensOfChunk = [];
-      let insideVariableToken = false;
-      let part = '';
+  claims.push(ast.claim(tempClaim.name.trim(), tempClaim.args));
 
-      for (let i = 0; i < normalizedChunk.length; i++) {
-        switch (normalizedChunk[i]) {
-          case '{':
-            if (insideVariableToken) {
-              throw new Error(`unexpected character { in When: '${whenStatement}'`);
-            }
-
-            insideVariableToken = true;
-            tokensOfChunk.push(part);
-            part = '';
-            break;
-
-          case '}':
-            if (!insideVariableToken) {
-              throw new Error(`unexpected character } in When: '${whenStatement}'`);
-            }
-
-            insideVariableToken = false;
-            tokensOfChunk.push(ast.variable(part));
-            part = '';
-            break;
-
-          default:
-            part += normalizedChunk[i];
-            break;
-        }
-      }
-
-      return tokensOfChunk;
-    })
-    .reduce(flatten);
-
-  const name = tokens.map(token => (typeof token === 'string' ? token : '@')).join('');
-  const args = tokens.filter(token => typeof token !== 'string');
-
-  return ast.when([ast.claim(name, args)]);
+  return ast.when(claims);
 }
 
 function normalizeWhitespace(str) {
@@ -78,10 +87,6 @@ function interleave(arr1, arr2) {
   }
 
   return result;
-}
-
-function flatten(arr1, arr2) {
-  return arr1.concat(arr2);
 }
 
 module.exports = {
