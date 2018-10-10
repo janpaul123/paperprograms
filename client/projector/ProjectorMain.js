@@ -2,7 +2,7 @@ import React from 'react';
 
 import { mult, forwardProjectionMatrixForPoints } from '../utils';
 import Program from './Program';
-import Db from './Db';
+import Db from '../factLog/FactLogDb';
 import { cameraVideoConstraints } from '../constants';
 
 function projectorSize() {
@@ -99,9 +99,6 @@ export default class ProjectorMain extends React.Component {
         return;
       }
 
-      debugger;
-
-
       programClaims.forEach(claim => db.addClaim(claim));
     });
 
@@ -142,8 +139,6 @@ export default class ProjectorMain extends React.Component {
               height={height}
               paperRatio={this.props.paperRatio}
               onUpdate={data => {
-                console.log('update', program.number, data);
-
                 this.setState({
                   claimsByProgram: { [program.number]: data.claims },
                   whensByProgram: { [program.number]: data.whens },

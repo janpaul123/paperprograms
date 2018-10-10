@@ -186,7 +186,7 @@ export default class Program extends React.Component {
   componentDidUpdate() {
     this._worker.postMessage({
       type: 'updateMatches',
-      data: { matches: this.props.matches },
+      receiveData: { matches: this.props.matches },
     });
   }
 

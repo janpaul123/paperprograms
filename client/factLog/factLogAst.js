@@ -16,7 +16,7 @@ function claim(name, args) {
 }
 
 function constantClaim(name, args) {
-  return claim(name, args.map(constant))
+  return claim(name, args.map(constant));
 }
 
 function when(claims) {

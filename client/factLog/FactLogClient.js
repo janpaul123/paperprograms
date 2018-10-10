@@ -8,7 +8,7 @@ function FactLogClient({ onEmitChanges }) {
 }
 
 FactLogClient.prototype = {
-  evaluateWhens(groupedMatches) {
+  evaluateWhens(matchesByWhenId) {
     const currentWhens = this.whens.slice();
 
     // remove dynamic whens and claims
@@ -18,28 +18,22 @@ FactLogClient.prototype = {
     // START: WHEN EVALUATION MODE
     this.isInWhenEvaluationMode = true;
 
-    groupedMatches.forEach((matches, subscriptionName) => {
-      const callbacks = currentWhens[subscriptionName];
+    currentWhens.forEach(({ id, callback }) => {
+      const matches = matchesByWhenId[id];
 
-      if (callbacks.length === 0) {
+      if (!matches || matches.length === 0) {
         return;
       }
 
-      callbacks.forEach(callback => matches.forEach(callback));
+      matches.forEach(callback);
     });
 
     // END: WHEN EVALUATION MODE
     this.isInWhenEvaluationMode = false;
   },
 
-  addWhen(claims, callback) {
-    this.whens.push({
-      id: JSON.stringify(claims),
-      claims,
-      callback: callback,
-      isDynamic: this.isInWhenEvaluationMode,
-    });
-
+  addWhen(when, callback) {
+    this.whens.push({ ...when, callback, isDynamic: this.isInWhenEvaluationMode });
     this._emitChanges();
   },
 
@@ -57,8 +51,8 @@ FactLogClient.prototype = {
 
     setTimeout(() => {
       this.onEmitChanges({
-        claims: this.claims.map(({ name, args }) => ({ name, args })),
-        whens: this.whens.map(({ id, claims }) => ({ id, claims })), // drop callbacks
+        claims: this.claims.map(({ type, name, args }) => ({ type, name, args })),
+        whens: this.whens.map(({ type, id, claims }) => ({ type, id, claims })),
       });
     });
   },

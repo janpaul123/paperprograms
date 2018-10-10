@@ -2,13 +2,13 @@ import Matrix from 'node-matrices';
 import { projectPoint } from '../utils';
 import { fillQuadTex, fillTriTex } from './canvasUtils';
 import Whisker from './whisker';
-import DbClient from './DbClient';
-import { parseClaim, parseWhen } from '../db/dslParser';
+import FactLogClient from '../factLog/FactLogClient';
+import parser from '../factLog/factLogDslParser';
 
 (function(workerContext) {
   if (workerContext.paper) return;
 
-  const dbClient = new DbClient({
+  const factLogClient = new FactLogClient({
     onEmitChanges({ claims, whens }) {
       workerContext.postMessage({
         command: 'update',
@@ -20,9 +20,10 @@ import { parseClaim, parseWhen } from '../db/dslParser';
 
   const messageCallbacks = {};
   let messageId = 0;
+
   workerContext.addEventListener('message', event => {
-    if (event.type === 'updateMatches') {
-      dbClient.evaluateWhens(event.data.matches);
+    if (event.data.type === 'updateMatches') {
+      factLogClient.evaluateWhens(event.data.receiveData.matches);
       return;
     }
 
@@ -164,8 +165,14 @@ import { parseClaim, parseWhen } from '../db/dslParser';
     flushLogs();
   }
 
+  const nativeConsole = workerContext.console;
+
   workerContext.console = {};
-  workerContext.console.log = (...args) => log('console.log', args);
+  workerContext.console.log = (...args) => {
+    // eslint-disable-next-line no-console
+    nativeConsole.log(...args);
+    log('console.log', args);
+  };
   workerContext.console.warn = (...args) => log('console.warn', args);
   workerContext.console.error = (...args) => log('console.error', args);
   workerContext.console.info = (...args) => log('console.info', args);
@@ -226,17 +233,16 @@ import { parseClaim, parseWhen } from '../db/dslParser';
   };
 
   workerContext.When = (literals, ...params) => {
-    const when = parseWhen(literals, params);
+    const when = parser.parseWhen(literals, params);
 
     return callback => {
-      dbClient.addWhen(when, callback);
+      factLogClient.addWhen(when, callback);
     };
   };
 
   workerContext.Claim = (literals, ...params) => {
-    const claim = parseClaim(literals, params);
+    const claim = parser.parseClaim(literals, params);
 
-    dbClient.addClaim(claim);
+    factLogClient.addClaim(claim);
   };
-
 })(self);
