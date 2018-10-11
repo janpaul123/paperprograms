@@ -7,6 +7,15 @@ function parseClaim(literals, params) {
   return ast.claim(name, args);
 }
 
+function parseWish(literals, params, paperNumber) {
+  const claim = parseClaim(literals, params);
+
+  claim.name = `@ wishes ${claim.name}`;
+  claim.args = [ast.constant(paperNumber)].concat(claim.args);
+
+  return claim;
+}
+
 function parseWhen(literals, params) {
   const whenStatement = literals.join('');
   const constantValues = params.map(ast.constant);
@@ -91,5 +100,6 @@ function interleave(arr1, arr2) {
 
 module.exports = {
   parseClaim,
+  parseWish,
   parseWhen,
 };

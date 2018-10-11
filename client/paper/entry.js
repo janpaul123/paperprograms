@@ -245,4 +245,11 @@ import parser from '../factLog/factLogDslParser';
 
     factLogClient.addClaim(claim);
   };
+
+  const paperNumber = workerContext.paper.get('number');
+
+  workerContext.Wish = async (literals, ...params) => {
+    const wishClaim = parser.parseWish(literals, params, paperNumber);
+    factLogClient.addClaim(wishClaim);
+  };
 })(self);

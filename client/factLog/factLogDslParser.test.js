@@ -2,12 +2,18 @@ const test = require('tape');
 const parser = require('./factLogDslParser');
 const dsl = require('./factLogAst');
 
-function When(literals, ...args) {
-  return parser.parseWhen(literals, args);
-}
+const you = 123;
 
 function Claim(literals, ...args) {
   return parser.parseClaim(literals, args);
+}
+
+function Wish(literals, ...args) {
+  return parser.parseWish(literals, args, you);
+}
+
+function When(literals, ...args) {
+  return parser.parseWhen(literals, args);
 }
 
 test('claim: parse string', t => {
@@ -28,6 +34,29 @@ test('claim: normalize whitespace', t => {
       `
   );
 
+  t.end();
+});
+
+test('wish: parse string', t => {
+  t.deepEqual(
+    Wish`${you} is labelled ${'Hello World!'}`,
+    dsl.claim('@ wishes @ is labelled @', [
+      dsl.constant(you),
+      dsl.constant(you),
+      dsl.constant('Hello World!'),
+    ])
+  );
+  t.end();
+});
+
+test('wish: normalize whitespace', t => {
+  t.deepEqual(
+    Wish`${you} is labelled ${'Hello World!'}`,
+    Wish`
+        ${you}  is  labelled  ${'Hello World!'} 
+      
+      `
+  );
   t.end();
 });
 

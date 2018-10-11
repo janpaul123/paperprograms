@@ -3,6 +3,7 @@ import React from 'react';
 import { mult, forwardProjectionMatrixForPoints } from '../utils';
 import Program from './Program';
 import Db from '../factLog/FactLogDb';
+import ast from '../factLog/factLogAst';
 import { cameraVideoConstraints } from '../constants';
 
 function projectorSize() {
@@ -90,7 +91,7 @@ export default class ProjectorMain extends React.Component {
       position: mult(data.position, multPoint),
     }));
 
-    const db = (window.$DB$ = new Db());
+    const db = new Db();
 
     this.props.programsToRender.forEach(program => {
       const programClaims = claimsByProgram[program.number];
@@ -98,6 +99,29 @@ export default class ProjectorMain extends React.Component {
       if (!programClaims) {
         return;
       }
+
+      // base claims
+
+      db.addClaim(ast.constantClaim('@ is a @', [program.number, 'program']));
+      db.addClaim(
+        ast.constantClaim('@ has corner points @', [
+          program.number,
+          {
+            topLeft: program.points.topLeft,
+            topRight: program.points.topRight,
+            bottomRight: program.points.bottomRight,
+            bottomLeft: program.points.bottomLeft,
+          },
+        ])
+      );
+      db.addClaim(
+        ast.constantClaim('@ has center point @', [program.number, program.points.center])
+      );
+      db.addClaim(ast.constantClaim('@ has width  @', [program.number, width]));
+      db.addClaim(ast.constantClaim('@ has height  @', [program.number, height]));
+      db.addClaim(ast.constantClaim('@ has markers @', [program.number, 'program']));
+
+      // custom claims
 
       programClaims.forEach(claim => db.addClaim(claim));
     });
