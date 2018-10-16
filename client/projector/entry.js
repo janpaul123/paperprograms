@@ -75,7 +75,6 @@ main();
 
 function getProgramsToRun() {
   const programs = JSON.parse(localStorage.paperProgramsProgramsToRender || '[]');
-
   return programs.concat(ghostPages);
 }
 
@@ -83,17 +82,25 @@ function updatePrograms(programsToRun) {
   const { runningProgramsByNumber, claims, whens } = state;
 
   const programsToRunByNumber = {};
-  const programsToTerminateByNumber = {};
+  const programsToClearByNumber = {};
   const nextRunningProgramsByNumber = {};
 
   programsToRun.forEach(program => {
     programsToRunByNumber[program.number] = program;
   });
 
-  // start new programs
   programsToRun.forEach(program => {
+    // start program if new
     if (!runningProgramsByNumber[program.number]) {
       nextRunningProgramsByNumber[program.number] = program;
+      evaluateProgram.apply({ namespace: programNamespace, program }, program);
+
+      // restart program if code has changed
+    } else if (
+      program.currentCodeHash !== runningProgramsByNumber[program.number].currentCodeHash
+    ) {
+      nextRunningProgramsByNumber[program.number] = program;
+      programsToClearByNumber[program.number] = program;
       evaluateProgram.apply({ namespace: programNamespace, program }, program);
     }
   });
@@ -101,15 +108,15 @@ function updatePrograms(programsToRun) {
   // check if running programs should be terminated
   Object.keys(runningProgramsByNumber).forEach(programNumber => {
     if (!programsToRunByNumber[programNumber]) {
-      programsToTerminateByNumber[programNumber] = runningProgramsByNumber[programNumber];
+      programsToClearByNumber[programNumber] = runningProgramsByNumber[programNumber];
       return;
     }
 
     nextRunningProgramsByNumber[programNumber] = programsToRunByNumber[programNumber];
   });
 
-  state.whens = whens.filter(({ source }) => !programsToTerminateByNumber[source]);
-  state.claims = claims.filter(({ source }) => !programsToTerminateByNumber[source]);
+  state.whens = whens.filter(({ source }) => !programsToClearByNumber[source]);
+  state.claims = claims.filter(({ source }) => !programsToClearByNumber[source]);
   state.runningProgramsByNumber = nextRunningProgramsByNumber;
 }
 

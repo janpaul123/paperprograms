@@ -6,11 +6,14 @@ module.exports = function() {
 
   When` current time is {time} `(({ time }) => {
     WithAll` {paper} has corner points {points},
-             {someone} wishes {paper} has outline `(matches => {
+             {someone} wishes {paper} has outline with color {color}`(matches => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-      ctx.strokeStyle = `rgb(${Math.abs(Math.sin(time / 100)) * 100 + 100}, 0, 100)`;
 
-      matches.forEach(({ points }) => {
+      matches.forEach(({ points, color }) => {
+        ctx.strokeStyle = `rgba(${color[0]}, ${color[1]}, ${color[2]}, ${Math.abs(
+          Math.sin(time / 200)
+        ) + 0.5})`;
+
         ctx.beginPath();
         ctx.moveTo(points.topLeft.x, points.topLeft.y);
         ctx.lineTo(points.topRight.x, points.topRight.y);
@@ -20,5 +23,9 @@ module.exports = function() {
         ctx.stroke();
       });
     });
+  });
+
+  When` {someone} wishes {paper} has outline `(({ paper }) => {
+    Wish`${paper} has outline with color ${[255, 0, 0]}`;
   });
 };
