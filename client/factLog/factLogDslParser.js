@@ -1,22 +1,22 @@
 const ast = require('./factLogAst');
 
-function parseClaim(literals, params) {
+function parseClaim({ literals, params, source, isDynamic }) {
   const name = normalizeWhitespace(literals.join('@')).trim();
   const args = params.map(ast.constant);
 
-  return ast.claim(name, args);
+  return ast.claim({ name, args, source, isDynamic });
 }
 
-function parseWish(literals, params, paperNumber) {
-  const claim = parseClaim(literals, params);
+function parseWishClaim({ literals, params, source, isDynamic }) {
+  const claim = parseClaim({ literals, params, source, isDynamic });
 
   claim.name = `@ wishes ${claim.name}`;
-  claim.args = [ast.constant(paperNumber)].concat(claim.args);
+  claim.args = [ast.constant(source)].concat(claim.args);
 
   return claim;
 }
 
-function parseWhen(literals, params) {
+function parseWhenClaims({ literals, params }) {
   const whenStatement = literals.join('');
   const constantValues = params.map(ast.constant);
 
@@ -57,7 +57,7 @@ function parseWhen(literals, params) {
           break;
 
         case ',':
-          claims.push(ast.claim(tempClaim.name.trim(), tempClaim.args));
+          claims.push(ast.claim({ name: tempClaim.name.trim(), args: tempClaim.args }));
           tempClaim = { name: '', args: [] };
           break;
 
@@ -72,9 +72,9 @@ function parseWhen(literals, params) {
     }
   });
 
-  claims.push(ast.claim(tempClaim.name.trim(), tempClaim.args));
+  claims.push(ast.claim({ name: tempClaim.name.trim(), args: tempClaim.args }));
 
-  return ast.when(claims);
+  return claims;
 }
 
 function normalizeWhitespace(str) {
@@ -100,6 +100,6 @@ function interleave(arr1, arr2) {
 
 module.exports = {
   parseClaim,
-  parseWish,
-  parseWhen,
+  parseWishClaim,
+  parseWhenClaims,
 };

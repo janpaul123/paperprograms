@@ -3,8 +3,11 @@ function FactLogClient({ onEmitChanges }) {
   this.whens = [];
   this.claims = [];
 
-  this.isEmittingChanges = false;
   this.isInWhenEvaluationMode = false;
+
+  setTimeout(() => {
+    this._emitChanges();
+  });
 }
 
 FactLogClient.prototype = {
@@ -30,30 +33,22 @@ FactLogClient.prototype = {
 
     // END: WHEN EVALUATION MODE
     this.isInWhenEvaluationMode = false;
+
+    this._emitChanges();
   },
 
   addWhen(when, callback) {
     this.whens.push({ ...when, callback, isDynamic: this.isInWhenEvaluationMode });
-    this._emitChanges();
   },
 
   addClaim(claim) {
     this.claims.push({ ...claim, isDynamic: this.isInWhenEvaluationMode });
-    this._emitChanges();
   },
 
   _emitChanges() {
-    if (this.isEmittingChanges) {
-      return;
-    }
-
-    this.isEmittingChanges = true;
-
-    setTimeout(() => {
-      this.onEmitChanges({
-        claims: this.claims.map(({ type, name, args }) => ({ type, name, args })),
-        whens: this.whens.map(({ type, id, claims }) => ({ type, id, claims })),
-      });
+    this.onEmitChanges({
+      claims: this.claims.map(({ type, name, args }) => ({ type, name, args })),
+      whens: this.whens.map(({ type, id, claims }) => ({ type, id, claims })),
     });
   },
 };

@@ -11,17 +11,16 @@ function variable(name) {
   return { type: VARIABLE_ARG, name };
 }
 
-function claim(name, args) {
-  return { type: CLAIM, name, args };
+function claim({ name, args, source = null, isDynamic = true }) {
+  return { type: CLAIM, name, args, source, isDynamic };
 }
 
-function constantClaim(name, args) {
-  return claim(name, args.map(constant));
+function constantClaim({ name, args, source = null, isDynamic = true }) {
+  return claim({ name, args: args.map(constant), source, isDynamic });
 }
 
-function when(claims) {
-  const id = JSON.stringify(claims);
-  return { type: WHEN, id, claims };
+function when({ claims, callback, source = null, isDynamic = true }) {
+  return { type: WHEN, claims, callback, source, isDynamic };
 }
 
 function isConstant(obj) {

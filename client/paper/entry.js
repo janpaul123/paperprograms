@@ -8,6 +8,8 @@ import parser from '../factLog/factLogDslParser';
 (function(workerContext) {
   if (workerContext.paper) return;
 
+  const you = (workerContext.you = parseInt(location.search.slice(1)));
+
   const factLogClient = new FactLogClient({
     onEmitChanges({ claims, whens }) {
       workerContext.postMessage({
@@ -165,7 +167,7 @@ import parser from '../factLog/factLogDslParser';
     flushLogs();
   }
 
-  const nativeConsole = workerContext.console;
+  const nativeConsole = (workerContext.$c = workerContext.console);
 
   workerContext.console = {};
   workerContext.console.log = (...args) => {

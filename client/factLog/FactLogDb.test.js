@@ -5,17 +5,17 @@ const ast = require('./factLogAst');
 function getFamilyDb() {
   const db = new Db();
 
-  db.addClaim(ast.constantClaim('@ is father of @', ['Abe', 'Homer']));
-  db.addClaim(ast.constantClaim('@ is father of @', ['Homer', 'Bart']));
-  db.addClaim(ast.constantClaim('@ is father of @', ['Homer', 'Lisa']));
+  db.addClaim(ast.constantClaim({ name: '@ is father of @', args: ['Abe', 'Homer'] }));
+  db.addClaim(ast.constantClaim({ name: '@ is father of @', args: ['Homer', 'Bart'] }));
+  db.addClaim(ast.constantClaim({ name: '@ is father of @', args: ['Homer', 'Lisa'] }));
 
-  db.addClaim(ast.constantClaim('@ has gender @', ['Homer', 'male']));
-  db.addClaim(ast.constantClaim('@ has gender @', ['Bart', 'male']));
-  db.addClaim(ast.constantClaim('@ has gender @', ['Lisa', 'female']));
-  db.addClaim(ast.constantClaim('@ has gender @', ['Abe', 'male']));
+  db.addClaim(ast.constantClaim({ name: '@ has gender @', args: ['Homer', 'male'] }));
+  db.addClaim(ast.constantClaim({ name: '@ has gender @', args: ['Bart', 'male'] }));
+  db.addClaim(ast.constantClaim({ name: '@ has gender @', args: ['Lisa', 'female'] }));
+  db.addClaim(ast.constantClaim({ name: '@ has gender @', args: ['Abe', 'male'] }));
 
-  db.addClaim(ast.constantClaim('@ likes person @', ['Homer', 'Homer']));
-  db.addClaim(ast.constantClaim('@ likes person @', ['Homer', 'Lisa']));
+  db.addClaim(ast.constantClaim({ name: '@ likes person @', args: ['Homer', 'Homer'] }));
+  db.addClaim(ast.constantClaim({ name: '@ likes person @', args: ['Homer', 'Lisa'] }));
 
   return db;
 }
@@ -23,7 +23,7 @@ function getFamilyDb() {
 test('simple query', t => {
   const db = getFamilyDb();
   const result = db.query([
-    ast.claim('@ is father of @', [ast.constant('Homer'), ast.variable('child')]),
+    ast.claim({ name: '@ is father of @', args: [ast.constant('Homer'), ast.variable('child')] }),
   ]);
 
   t.deepEqual(result, [{ child: 'Bart' }, { child: 'Lisa' }]);
@@ -33,8 +33,8 @@ test('simple query', t => {
 test('single join query', t => {
   const db = getFamilyDb();
   const result = db.query([
-    ast.claim('@ is father of @', [ast.variable('x'), ast.variable('y')]),
-    ast.claim('@ is father of @', [ast.variable('y'), ast.variable('z')]),
+    ast.claim({ name: '@ is father of @', args: [ast.variable('x'), ast.variable('y')] }),
+    ast.claim({ name: '@ is father of @', args: [ast.variable('y'), ast.variable('z')] }),
   ]);
 
   t.deepEqual(result, [{ x: 'Abe', y: 'Homer', z: 'Bart' }, { x: 'Abe', y: 'Homer', z: 'Lisa' }]);
@@ -44,9 +44,9 @@ test('single join query', t => {
 test('double join query', t => {
   const db = getFamilyDb();
   const result = db.query([
-    ast.claim('@ is father of @', [ast.variable('x'), ast.variable('y')]),
-    ast.claim('@ is father of @', [ast.variable('y'), ast.variable('z')]),
-    ast.claim('@ has gender @', [ast.variable('z'), ast.constant('female')]),
+    ast.claim({ name: '@ is father of @', args: [ast.variable('x'), ast.variable('y')] }),
+    ast.claim({ name: '@ is father of @', args: [ast.variable('y'), ast.variable('z')] }),
+    ast.claim({ name: '@ has gender @', args: [ast.variable('z'), ast.constant('female')] }),
   ]);
 
   t.deepEqual(result, [{ x: 'Abe', y: 'Homer', z: 'Lisa' }]);
@@ -55,7 +55,9 @@ test('double join query', t => {
 
 test('query with equal constraints', t => {
   const db = getFamilyDb();
-  const result = db.query([ast.claim('@ likes person @', [ast.variable('x'), ast.variable('x')])]);
+  const result = db.query([
+    ast.claim({ name: '@ likes person @', args: [ast.variable('x'), ast.variable('x')] }),
+  ]);
 
   t.deepEqual(result, [{ x: 'Homer' }]);
   t.end();
@@ -63,7 +65,9 @@ test('query with equal constraints', t => {
 
 test('non primitive constants', t => {
   const db = getFamilyDb();
-  const result = db.query([ast.claim('@ is father of @', [ast.constant({}), ast.variable('y')])]);
+  const result = db.query([
+    ast.claim({ name: '@ is father of @', args: [ast.constant({}), ast.variable('y')] }),
+  ]);
 
   t.deepEqual(result, []);
   t.end();
