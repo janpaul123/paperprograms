@@ -18,7 +18,6 @@ const state = (window.$state = {
 
 const ghostPages = [getGhostPage('illumination', require('./core/illumination.js'))];
 
-
 function getGhostPage(name, fn) {
   return {
     number: name,
@@ -28,28 +27,30 @@ function getGhostPage(name, fn) {
 
 const programNamespace = Object.create(null);
 
-programNamespace.__getClaimTagFunction = (source, isDynamic) => (literals, ...params) => {
+programNamespace.__getClaimTagFunction = ({ source, isDynamic }) => (literals, ...params) => {
   const claim = parser.parseClaim({ literals, params, source, isDynamic });
   state.claims.push(claim);
 };
 
-programNamespace.__getWishTagFunction = (source, isDynamic) => (literals, ...params) => {
+programNamespace.__getWishTagFunction = ({ source, isDynamic }) => (literals, ...params) => {
   const claim = parser.parseWishClaim({ literals, params, source, isDynamic });
   state.claims.push(claim);
 };
 
-programNamespace.__getWhenTagFunction = (source, isDynamic) => (literals, ...params) => {
+programNamespace.__getWhenTagFunction = ({ source, isDynamic, groupMatches }) => (
+  literals,
+  ...params
+) => {
   const claims = parser.parseWhenClaims({ literals, params });
 
   return callback => {
-    const when = ast.when({ claims, callback, isDynamic, source });
+    const when = ast.when({ claims, callback, isDynamic, source, groupMatches });
     state.whens.push(when);
   };
 };
 
-
 let counter = 0;
-let RUN_FOREVER = true
+let RUN_FOREVER = true;
 
 function main() {
   canvas.width = document.body.clientWidth;
@@ -160,8 +161,13 @@ function evaluateClaimsAndWhens() {
 
   // evaluate whens
 
-  currentWhens.forEach(({ claims, callback }) => {
+  currentWhens.forEach(({ claims, callback, groupMatches }) => {
     const matches = db.query(claims);
+
+    if (groupMatches) {
+      callback(matches);
+      return;
+    }
 
     matches.forEach(match => callback(match));
   });

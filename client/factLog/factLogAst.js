@@ -19,8 +19,8 @@ function constantClaim({ name, args, source = null, isDynamic = true }) {
   return claim({ name, args: args.map(constant), source, isDynamic });
 }
 
-function when({ claims, callback, source = null, isDynamic = true }) {
-  return { type: WHEN, claims, callback, source, isDynamic };
+function when({ claims, callback, source = null, isDynamic = true, groupMatches = false }) {
+  return { type: WHEN, claims, callback, source, isDynamic, groupMatches };
 }
 
 function isConstant(obj) {
