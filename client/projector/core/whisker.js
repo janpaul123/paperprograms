@@ -2,7 +2,6 @@
 
 module.exports = function () {
 
-
   When` {supporter} is a ${'supporter'}`(({ supporter }) => {
     Wish`${supporter} has canvas with name ${'whiskerCanvas'}`
   });
@@ -13,8 +12,8 @@ module.exports = function () {
       const {supporter, canvas} = data;
 
       WithAll` {someone} wishes {whiskerPaper} has whisker that points {direction},
-             {whiskerPaper} is on supporter ${supporter},
-             {whiskerPaper} has corner points {points}` (matches => {
+               {whiskerPaper} is on supporter ${supporter},
+               {whiskerPaper} has corner points {points}` (matches => {
 
           const ctx = canvas.getContext('2d');
 
