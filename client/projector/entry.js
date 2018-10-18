@@ -4,19 +4,16 @@ import ast from '../factLog/factLogAst';
 import evaluateProgram from './evaluateProgram';
 import FactLogDb from '../factLog/FactLogDb';
 
-const canvas = document.createElement('canvas');
-canvas.width = document.width;
-canvas.height = document.height;
-
-document.body.appendChild(canvas);
-
 const state = (window.$state = {
   runningProgramsByNumber: {},
   claims: [],
   whens: [],
 });
 
-const ghostPages = [getGhostPage('illumination', require('./core/illumination.js'))];
+const ghostPages = [
+  getGhostPage('illumination', require('./core/canvas.js')),
+  getGhostPage('geometry', require('./core/geometry.js')),
+];
 
 function getGhostPage(name, fn) {
   return {
@@ -53,10 +50,6 @@ let counter = 0;
 let RUN_FOREVER = true;
 
 function main() {
-  canvas.width = document.body.clientWidth;
-  canvas.height = document.body.clientHeight;
-  programNamespace.canvas = canvas;
-
   const programsToRun = getProgramsToRun();
   //const markers = JSON.parse(localStorage.paperProgramsMarkers || '[]')
 
@@ -75,7 +68,7 @@ main();
 
 function getProgramsToRun() {
   const programs = JSON.parse(localStorage.paperProgramsProgramsToRender || '[]');
-  return programs.concat(ghostPages);
+  return ghostPages.concat(programs);
 }
 
 function updatePrograms(programsToRun) {
@@ -134,6 +127,17 @@ function evaluateClaimsAndWhens() {
   // base claims
 
   db.addClaim(baseClaim('current time is @', [Date.now()]));
+  db.addClaim(
+    baseClaim('@ has corner points @', [
+      'table',
+      {
+        topLeft: { x: 0, y: 0 },
+        topRight: { x: document.body.clientWidth, y: 0 },
+        bottomRight: { x: document.body.clientWidth, y: document.body.clientHeight },
+        bottomLeft: { x: 0, y: document.body.clientHeight },
+      },
+    ])
+  );
 
   const multPoint = { x: document.body.clientWidth, y: document.body.clientHeight };
 
@@ -141,6 +145,7 @@ function evaluateClaimsAndWhens() {
     // base paper claims
 
     db.addClaim(baseClaim('@ is a @', [program.number, 'program']));
+    db.addClaim(baseClaim('@ is on supporter @', [program.number, 'table']));
 
     if (program.points) {
       db.addClaim(
