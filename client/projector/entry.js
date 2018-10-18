@@ -1,4 +1,3 @@
-import throttle from 'lodash/throttle';
 import errorStackParser from 'error-stack-parser';
 import xhr from 'xhr';
 import { mult } from '../utils';
@@ -33,6 +32,7 @@ function reportError({ source, isDynamic, error }) {
     source,
     isDynamic,
     message: error.message,
+    isInFile: stackFrame[0].fileName.endsWith(`${source}.js`),
     lineNumber: stackFrame[0].lineNumber,
     columnNumber: stackFrame[0].columnNumber,
   });
@@ -82,7 +82,7 @@ function getProgramsToRun() {
 }
 
 function updatePrograms(programsToRun) {
-  const { runningProgramsByNumber, claims, whens } = state;
+  const { runningProgramsByNumber, claims, whens, errors } = state;
 
   const programsToRunByNumber = {};
   const programsToClearByNumber = {};
@@ -120,6 +120,7 @@ function updatePrograms(programsToRun) {
 
   state.whens = whens.filter(({ source }) => !programsToClearByNumber[source]);
   state.claims = claims.filter(({ source }) => !programsToClearByNumber[source]);
+  state.errors = errors.filter(({ source }) => !programsToClearByNumber[source]);
   state.runningProgramsByNumber = nextRunningProgramsByNumber;
 }
 

@@ -31,6 +31,7 @@
     "babel-preset-react": "^6.24.1",
     "blob-stream": "^0.1.3",
     "brfs": "^1.5.0",
+    "codemirror": "^5.40.2",
     "color-diff": "^1.1.0",
     "copy-webpack-plugin": "^4.5.0",
     "cors": "^2.8.4",

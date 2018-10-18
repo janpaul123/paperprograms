@@ -93,7 +93,7 @@ router.put('/api/spaces/:spaceName/programs/:number', (req, res) => {
   if (!code) return res.status(400).send('Missing "code"');
 
   knex('programs')
-    .update({ currentCode: code })
+    .update({ currentCode: code, debugInfo: {} })
     .where({ spaceName, number })
     .then(() => {
       res.json({});

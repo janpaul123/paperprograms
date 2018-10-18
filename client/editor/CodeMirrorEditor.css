@@ -1,0 +1,11 @@
+:local(.errorMessage) {
+    background: lightcoral;
+    padding: 3px 25px;
+    color: white;
+    background-image: url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIiBmaWxsPSJ3aGl0ZSI+PHBhdGggZD0iTTI1NiA0OEMxNDEuNiA0OCA0OCAxNDEuNjAxIDQ4IDI1NnM5My42IDIwOCAyMDggMjA4IDIwOC05My42MDEgMjA4LTIwOFMzNzAuNCA0OCAyNTYgNDh6bTI0IDMxMmgtNDh2LTQwaDQ4djQwem0wLTg4aC00OFYxNDRoNDh2MTI4eiIvPjwvc3ZnPg==);
+    background-repeat: no-repeat;
+}
+
+.CodeMirror, :local(.container) {
+    height: 100%;
+}

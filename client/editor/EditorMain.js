@@ -1,4 +1,3 @@
-import MonacoEditor from 'react-monaco-editor';
 import React from 'react';
 import randomColor from 'randomcolor';
 import sortBy from 'lodash/sortBy';
@@ -6,6 +5,7 @@ import xhr from 'xhr';
 
 import { codeToName, getApiUrl } from '../utils';
 import styles from './EditorMain.css';
+import CodeMirrorEditor from './CodeMirrorEditor';
 
 export default class EditorMain extends React.Component {
   constructor(props) {
@@ -79,6 +79,7 @@ export default class EditorMain extends React.Component {
 
   _save = () => {
     const { code, selectedProgramNumber } = this.state;
+    this.setState({ debugInfo: {} });
     xhr.put(
       getApiUrl(this.props.spaceName, `/programs/${selectedProgramNumber}`),
       {
@@ -86,6 +87,7 @@ export default class EditorMain extends React.Component {
       },
       error => {
         if (error) console.error(error); // eslint-disable-line no-console
+        this.setState({ isDirty: false });
       }
     );
   };
@@ -126,11 +128,6 @@ export default class EditorMain extends React.Component {
     }
   };
 
-  _onEditorDidMount = (editor, monaco) => {
-    editor.focus();
-    editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KEY_S, this._save);
-  };
-
   _selectedProgram = selectedProgramNumber => {
     return this.state.spaceData.programs.find(
       program => program.number.toString() === selectedProgramNumber.toString()
@@ -143,9 +140,13 @@ export default class EditorMain extends React.Component {
 
   render() {
     const selectedProgram = this._selectedProgram(this.state.selectedProgramNumber);
-    const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
+    // TODO: readd support for cmd
+    const isMac = false // navigator.platform.toUpperCase().indexOf('MAC') >= 0;
     const errors = this.state.debugInfo.errors || [];
-    const logs = this.state.debugInfo.logs || [];
+    const inlineErrors = errors.filter(({ isInFile }) => isInFile);
+    const externalErrors = errors.filter(({ isInFile }) => !isInFile);
+
+    //  const logs = this.state.debugInfo.logs || [];
 
     return (
       <div className={styles.root}>
@@ -154,13 +155,12 @@ export default class EditorMain extends React.Component {
         )}
         {selectedProgram && (
           <div className={styles.editor}>
-            <MonacoEditor
-              language="javascript"
-              theme="vs-dark"
+            <CodeMirrorEditor
+              isDirty={this.state.isDirty}
               value={this.state.code}
-              onChange={code => this.setState({ code })}
-              editorDidMount={this._onEditorDidMount}
-              options={{ tabSize: 2 }}
+              errors={inlineErrors}
+              onSave={this._save}
+              onChange={code => this.setState({ code, isDirty: true })}
             />
           </div>
         )}
@@ -216,6 +216,21 @@ export default class EditorMain extends React.Component {
               <button onClick={this._restore}>restore original</button>
             </div>
           )}
+
+          {selectedProgram &&
+            externalErrors.length > 0 && (
+              <div className={styles.sidebarSection}>
+                Errors:{' '}
+                {externalErrors.map((error, index) => (
+                  <div key={index} className={styles.logline}>
+                    <strong>
+                      error[{error.fileName}:{error.lineNumber}:{error.columnNumber}]:
+                    </strong>{' '}
+                    {error.message}
+                  </div>
+                ))}
+              </div>
+            )}
         </div>
       </div>
     );
