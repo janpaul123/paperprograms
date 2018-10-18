@@ -171,16 +171,6 @@ export default class EditorMain extends React.Component {
           </div>
 
           <div className={styles.sidebarSection}>
-            <a
-              href="https://github.com/janpaul123/paperprograms/blob/master/docs/api.md"
-              target="_blank"
-              className={styles.link}
-            >
-              API reference
-            </a>
-          </div>
-
-          <div className={styles.sidebarSection}>
             <select
               value={this.state.selectedProgramNumber}
               onChange={event => {
@@ -226,35 +216,6 @@ export default class EditorMain extends React.Component {
               <button onClick={this._restore}>restore original</button>
             </div>
           )}
-
-          {selectedProgram &&
-            errors.length > 0 && (
-              <div className={styles.sidebarSection}>
-                errors:{' '}
-                {errors.map((error, index) => (
-                  <div key={index} className={styles.logline}>
-                    <strong>
-                      error[{error.filename}:{error.lineNumber}:{error.columnNumber}]:
-                    </strong>{' '}
-                    {error.message}
-                  </div>
-                ))}
-              </div>
-            )}
-
-          {selectedProgram &&
-            logs.length > 0 && (
-              <div className={styles.sidebarSection}>
-                {logs.map((logLine, index) => (
-                  <div key={index} className={styles.logline}>
-                    <strong>
-                      {logLine.name}[{logLine.filename}:{logLine.lineNumber}:{logLine.columnNumber}]:
-                    </strong>{' '}
-                    {logLine.args.join(', ')}
-                  </div>
-                ))}
-              </div>
-            )}
         </div>
       </div>
     );

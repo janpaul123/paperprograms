@@ -2,14 +2,14 @@ export default async function evaluateProgram() {
   const you = this.program.number;
 
   /* eslint-disable no-unused-vars*/
-  let Claim = this.namespace.__getClaimTagFunction({ source: you, isDynamic: false });
-  let Wish = this.namespace.__getWishTagFunction({ source: you, isDynamic: false });
-  let When = this.namespace.__getWhenTagFunction({
+  let Claim = this.getClaimTagFunction({ source: you, isDynamic: false });
+  let Wish = this.getWishTagFunction({ source: you, isDynamic: false });
+  let When = this.getWhenTagFunction({
     source: you,
     isDynamic: false,
     groupMatches: false,
   });
-  let WithAll = this.namespace.__getWhenTagFunction({
+  let WithAll = this.getWhenTagFunction({
     source: you,
     isDynamic: false,
     groupMatches: true,
@@ -17,24 +17,24 @@ export default async function evaluateProgram() {
   /* eslint-enable no-unused-vars*/
 
   try {
-    const code = `(function (global) {
-     ${this.program.currentCode ||
-       (await fetch(this.program.currentCodeUrl).then(res => res.text()))}
-}).call(null, this.namespace)`;
-    eval(code);
-  } catch (err) {
-    // eslint-disable-next-line no-console
-    console.log(`program ${this.program.number} failed:`, err);
+    const userCode =
+      this.program.currentCode ||
+      (await fetch(this.program.currentCodeUrl).then(res => res.text()));
+
+    const fullCode = [userCode, `//@ sourceURL=${this.program.currentCodeUrl}`].join('\n') + '\n';
+    eval(fullCode);
+  } catch (error) {
+    this.reportError({ error, source: you, isDynamic: false });
   }
 
-  Claim = this.namespace.__getClaimTagFunction({ source: you, isDynamic: true });
-  Wish = this.namespace.__getWishTagFunction({ source: you, isDynamic: true });
-  When = this.namespace.__getWhenTagFunction({
+  Claim = this.getClaimTagFunction({ source: you, isDynamic: true });
+  Wish = this.getWishTagFunction({ source: you, isDynamic: true });
+  When = this.getWhenTagFunction({
     source: you,
     isDynamic: true,
     groupMatches: true,
   });
-  WithAll = this.namespace.__getWhenTagFunction({
+  WithAll = this.getWhenTagFunction({
     source: you,
     isDynamic: true,
     groupMatches: true,
