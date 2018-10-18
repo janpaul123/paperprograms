@@ -2,6 +2,52 @@
 
 module.exports = function () {
 
+
+  When` {supporter} is a ${'supporter'}`(({ supporter }) => {
+    Wish`${supporter} has canvas with name ${'whiskerCanvas'}`
+  });
+
+  When` {supporter} is a ${'supporter'},
+        {supporter} has canvas {canvas} with name ${'whiskerCanvas'}`((data) => {
+
+      const {supporter, canvas} = data;
+
+      WithAll` {someone} wishes {whiskerPaper} has whisker that points {direction},
+             {whiskerPaper} is on supporter ${supporter},
+             {whiskerPaper} has corner points {points}` (matches => {
+
+          const ctx = canvas.getContext('2d');
+
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+          matches.forEach(({ points, direction, whiskerPaper }) => {
+
+            ctx.strokeStyle = 'rgba(255, 0, 0)';
+            const { topLeft, topRight, bottomLeft, bottomRight } = points;
+
+            const { whiskerStart, whiskerEnd } =
+              direction === 'up' ? drawWhisker(topLeft, topRight, ctx) :
+                direction === 'right' ? drawWhisker(topRight, bottomRight, ctx) :
+                  direction === 'down' ? drawWhisker(bottomRight, bottomLeft, ctx) :
+                    direction === 'left' ? drawWhisker(bottomLeft, topLeft, ctx) :
+                      {};
+
+            WithAll` {paper} has corner points {points},
+                     {paper} is a ${'program'}`(matches => {
+
+              matches.forEach(({ paper, points }) => {
+                if (paper === whiskerPaper) { return; }
+                if (intersectsPaper(whiskerStart, whiskerEnd, points)) {
+                  Claim`${whiskerPaper} points at ${paper}`
+                }
+              });
+            });
+          });
+        });
+    });
+
+
+  /* helper functions */
+
   function drawWhisker(p1, p2, ctx) {
     const { x: x1, y: y1 } = p1;
     const { x: x2, y: y2 } = p2;
@@ -19,16 +65,6 @@ module.exports = function () {
     ctx.closePath();
     ctx.stroke();
     return { whiskerStart, whiskerEnd };
-  }
-
-  function drawBorder(points, ctx) {
-    ctx.beginPath();
-    ctx.moveTo(points.topLeft.x, points.topLeft.y);
-    ctx.lineTo(points.topRight.x, points.topRight.y);
-    ctx.lineTo(points.bottomRight.x, points.bottomRight.y);
-    ctx.lineTo(points.bottomLeft.x, points.bottomLeft.y);
-    ctx.closePath();
-    ctx.stroke();
   }
 
   function intersects(v1, v2, v3, v4) {
@@ -50,41 +86,5 @@ module.exports = function () {
       intersects(whiskerStart, whiskerEnd, points.bottomLeft, points.topLeft)
     );
   }
-
-  const canvas = global.canvas;
-  const ctx = canvas.getContext('2d');
-
-  When` current time is {time} `(({ time }) => {
-    WithAll` {whiskerPaper} has corner points {points},
-             {someone} wishes {whiskerPaper} has whisker that points {direction}` (matches => {
-
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-        matches.forEach(({ points, direction, whiskerPaper }) => {
-
-          ctx.strokeStyle = 'rgba(255, 0, 0)';
-          const { topLeft, topRight, bottomLeft, bottomRight } = points;
-
-          // drawBorder(points, ctx);
-
-          const { whiskerStart, whiskerEnd } =
-            direction === 'up' ? drawWhisker(topLeft, topRight, ctx) :
-              direction === 'right' ? drawWhisker(topRight, bottomRight, ctx) :
-                direction === 'down' ? drawWhisker(bottomRight, bottomLeft, ctx) :
-                  direction === 'left' ? drawWhisker(bottomLeft, topLeft, ctx) :
-                    {};
-
-          WithAll` {paper} has corner points {points}`(matches => {
-            
-            matches.forEach(({ paper, points }) => {
-              if (paper === whiskerPaper) { return; }
-              if (intersectsPaper(whiskerStart, whiskerEnd, points)) {
-                Claim`${whiskerPaper} points at ${paper}`
-              }
-            });
-          });
-        });
-      });
-  });
 
 };

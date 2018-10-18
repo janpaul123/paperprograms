@@ -13,6 +13,7 @@ const state = (window.$state = {
 const ghostPages = [
   getGhostPage('illumination', require('./core/canvas.js')),
   getGhostPage('geometry', require('./core/geometry.js')),
+  getGhostPage('whisker', require('./core/whisker.js')),
 ];
 
 function getGhostPage(name, fn) {
@@ -127,6 +128,7 @@ function evaluateClaimsAndWhens() {
   // base claims
 
   db.addClaim(baseClaim('current time is @', [Date.now()]));
+  db.addClaim(baseClaim('@ is a @', ['table', 'supporter']));
   db.addClaim(
     baseClaim('@ has corner points @', [
       'table',
