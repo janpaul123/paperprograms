@@ -23,6 +23,7 @@
     ".babel-cache"
   ],
   "dependencies": {
+    "acorn": "^6.0.2",
     "babel": "^6.23.0",
     "babel-core": "^6.26.0",
     "babel-loader": "^7.1.4",
@@ -44,6 +45,7 @@
     "json-loader": "^0.5.7",
     "knex": "^0.14.4",
     "lodash": "^4.17.5",
+    "md5": "^2.2.1",
     "morgan": "^1.9.0",
     "nocache": "^2.0.0",
     "node-matrices": "^1.0.0",
@@ -53,6 +55,7 @@
     "react": "^16.2.0",
     "react-dom": "^16.2.0",
     "react-monaco-editor": "^0.13.0",
+    "react-spinners": "^0.4.7",
     "shuffle-seed": "^1.1.6",
     "style-loader": "^0.19.1",
     "tape": "^4.9.1",

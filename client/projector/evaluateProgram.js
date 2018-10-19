@@ -16,11 +16,25 @@ export default async function evaluateProgram() {
   });
   /* eslint-enable no-unused-vars*/
 
-  try {
-    const userCode =
-      this.program.currentCode ||
-      (await fetch(this.program.currentCodeUrl).then(res => res.text()));
+  const userCode =
+    this.program.currentCode || (await fetch(this.program.currentCodeUrl).then(res => res.text()));
 
+  // validate code first
+  try {
+    this.acorn.parse(userCode);
+  } catch (err) {
+    this.reportErrorMessage({
+      isDynamic: false,
+      source: you,
+      message: err.message,
+      lineNumber: err.loc.line,
+      columnNumber: err.loc.column,
+    });
+    return;
+  }
+
+  // run code and catch errors
+  try {
     const fullCode = [userCode, `//@ sourceURL=${this.program.currentCodeUrl}`].join('\n') + '\n';
     eval(fullCode);
   } catch (error) {

@@ -2,6 +2,7 @@ import React from 'react';
 import randomColor from 'randomcolor';
 import sortBy from 'lodash/sortBy';
 import xhr from 'xhr';
+import PulseLoader from 'react-spinners/PulseLoader';
 
 import { codeToName, getApiUrl } from '../utils';
 import styles from './EditorMain.css';
@@ -141,10 +142,17 @@ export default class EditorMain extends React.Component {
   render() {
     const selectedProgram = this._selectedProgram(this.state.selectedProgramNumber);
     // TODO: readd support for cmd
-    const isMac = false // navigator.platform.toUpperCase().indexOf('MAC') >= 0;
+    const isMac = false; // navigator.platform.toUpperCase().indexOf('MAC') >= 0;
     const errors = this.state.debugInfo.errors || [];
     const inlineErrors = errors.filter(({ isInFile }) => isInFile);
     const externalErrors = errors.filter(({ isInFile }) => !isInFile);
+
+    const isLoading =
+      !!(!this.state.isDirty &&
+      (this.state.debugInfo.currentCodeHash &&
+        this.state.debugInfo.currentCodeHash !== md5(this.state.code)) &&
+      this.state.selectedProgramNumber);
+
 
     //  const logs = this.state.debugInfo.logs || [];
 
@@ -165,6 +173,8 @@ export default class EditorMain extends React.Component {
           </div>
         )}
         <div className={styles.sidebar}>
+          <PulseLoader sizeUnit={'px'} size={10} color={'white'} loading={isLoading} />
+
           <div className={styles.sidebarSection}>
             editor color{' '}
             <div className={styles.editorColor} style={{ background: this._editorColor() }} />

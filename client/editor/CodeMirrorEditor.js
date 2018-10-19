@@ -13,8 +13,6 @@ export default class CodeMirrorEditor extends React.Component {
   }
 
   componentDidMount() {
-    debugger;
-
     this._codeMirror = CodeMirror(this._editor, {
       tabSize: 2,
       value: this.props.value,

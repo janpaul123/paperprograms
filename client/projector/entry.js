@@ -5,6 +5,7 @@ import parser from '../factLog/factLogDslParser';
 import ast from '../factLog/factLogAst';
 import evaluateProgram from './evaluateProgram';
 import FactLogDb from '../factLog/FactLogDb';
+const acorn = require('acorn');
 
 const state = (window.$state = {
   runningProgramsByNumber: {},
@@ -20,6 +21,7 @@ const ghostPages = [
 
 function getGhostPage(name, fn) {
   return {
+    isGhostPage: true,
     number: name,
     currentCode: `(${fn.toString()})();`,
   };
@@ -35,6 +37,24 @@ function reportError({ source, isDynamic, error }) {
     isInFile: stackFrame[0].fileName.endsWith(`${source}.js`),
     lineNumber: stackFrame[0].lineNumber,
     columnNumber: stackFrame[0].columnNumber,
+  });
+}
+
+function reportErrorMessage({
+  source,
+  isDynamic,
+  message,
+  isInFile = true,
+  lineNumber,
+  columnNumber,
+}) {
+  state.errors.push({
+    source,
+    isDynamic,
+    isInFile,
+    message,
+    lineNumber,
+    columnNumber,
   });
 }
 
@@ -57,8 +77,9 @@ const programHelperFunctions = {
       state.whens.push(when);
     };
   },
-
   reportError,
+  reportErrorMessage,
+  acorn,
 };
 
 function main() {
@@ -77,8 +98,7 @@ main();
 function getProgramsToRun() {
   const programs = JSON.parse(localStorage.paperProgramsProgramsToRender || '[]');
 
-  return programs;
-  //return ghostPages.concat(programs);
+  return ghostPages.concat(programs);
 }
 
 function updatePrograms(programsToRun) {
@@ -200,11 +220,13 @@ function evaluateClaimsAndWhens() {
 // error reporting
 
 setInterval(() => {
-  Object.values(state.runningProgramsByNumber).forEach(program => {
-    const debugData = {
-      errors: state.errors.filter(({ source }) => source === program.number),
-    };
+  Object.values(state.runningProgramsByNumber)
+    .filter(({ isGhostPage }) => !isGhostPage)
+    .forEach(program => {
+      const debugData = {
+        errors: state.errors.filter(({ source }) => source === program.number),
+      };
 
-    xhr.put(program.debugUrl, { json: debugData }, () => {});
-  });
+      xhr.put(program.debugUrl, { json: debugData }, () => {});
+    });
 }, 300);
