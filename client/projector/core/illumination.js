@@ -43,8 +43,8 @@ window.Illumination = function() {
     this.addMethod('restore', []);
     return this;
   };
-  this.translate = translation => {
-    this.addMethod('translate', translation);
+  this.translate = ({ x, y }) => {
+    this.addMethod('translate', [x, y]);
     return this;
   };
   this.fill = color => {
@@ -56,9 +56,9 @@ window.Illumination = function() {
     return this;
   };
 
-  this.rect = ({ x, y, width, height, overlay = true, stroke, fill }) => {
+  this.rect = ({ x, y, width, height, stroke, fill }) => {
     this.addMethod('save', []);
-    overlay && this.addMethod('beginPath', []);
+    this.addMethod('beginPath', []);
     stroke && this.addAssert('strokeStyle', stroke);
     fill && this.addAssert('fillStyle', fill);
     this.addMethod('rect', [x, y, width, height]);
@@ -77,9 +77,9 @@ window.Illumination = function() {
     return this;
   };
 
-  this.ellipse = ({ x, y, width, height, overlay = true, stroke, fill }) => {
+  this.ellipse = ({ x, y, width, height, stroke, fill }) => {
     this.addMethod('save', []);
-    overlay && this.addMethod('beginPath', []);
+    this.addMethod('beginPath', []);
     stroke && this.addAssert('strokeStyle', stroke);
     fill && this.addAssert('fillStyle', fill);
     this.addMethod('ellipse', [x, y, width / 2, height / 2, 0, 0, 2 * Math.PI]);
@@ -91,8 +91,8 @@ window.Illumination = function() {
 
   this.polygon = ({ points, stroke, fill }) => {
     this.addMethod('beginPath', []);
-    points.forEach(point => {
-      this.addMethod('lineTo', point);
+    points.forEach(({ x, y }) => {
+      this.addMethod('lineTo', [x, y]);
     });
     this.addMethod('closePath', []);
     stroke && this.addAssert('strokeStyle', stroke);
@@ -103,9 +103,8 @@ window.Illumination = function() {
     return this;
   };
 
-  this.line = ({ from, to, overlay = true, stroke }) => {
+  this.line = ({ from, to, stroke }) => {
     this.addMethod('save', []);
-    overlay && this.addMethod('beginPath', []);
     stroke && this.addAssert('strokeStyle', stroke);
     this.addMethod('moveTo', from);
     this.addMethod('lineTo', to);
