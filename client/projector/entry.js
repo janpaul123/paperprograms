@@ -12,6 +12,7 @@ const state = (window.$state = {
   claims: [],
   whens: [],
   errors: [],
+  matches: [],
 });
 
 const ghostPages = [
@@ -72,10 +73,18 @@ const programHelperFunctions = {
   },
 
   getWhenTagFunction: ({ source, isDynamic, groupMatches }) => (literals, ...params) => {
+    const stackFrame = errorStackParser.parse(new Error());
+    const originalCall = stackFrame.find(({ fileName }) => fileName.endsWith(`${source}.js`));
+
     const claims = parser.parseWhenClaims({ literals, params });
 
     return callback => {
       const when = ast.when({ claims, callback, isDynamic, source, groupMatches });
+
+      if (originalCall) {
+        when.lineNumber = originalCall.lineNumber;
+      }
+
       state.whens.push(when);
     };
   },
@@ -204,11 +213,16 @@ function evaluateClaimsAndWhens() {
   state.whens = state.whens.filter(({ isDynamic }) => !isDynamic);
   state.claims = state.claims.filter(({ isDynamic }) => !isDynamic);
   state.errors = state.errors.filter(({ isDynamic }) => !isDynamic);
+  state.matches = [];
 
   // evaluate whens
 
-  currentWhens.forEach(({ source, claims, callback, groupMatches }) => {
+  currentWhens.forEach(({ source, claims, callback, groupMatches, lineNumber }) => {
     const matches = db.query(claims);
+
+    if (lineNumber !== undefined) {
+      state.matches.push({ source, count: matches.length, lineNumber });
+    }
 
     try {
       if (groupMatches) {
@@ -230,6 +244,7 @@ setInterval(() => {
     .filter(({ isGhostPage }) => !isGhostPage)
     .forEach(program => {
       const debugData = {
+        matches: state.matches.filter(({ source }) => source === program.number),
         errors: state.errors.filter(({ source }) => source === program.number),
       };
 

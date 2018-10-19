@@ -10,6 +10,7 @@ export default class CodeMirrorEditor extends React.Component {
     super();
 
     this._errorWidgets = [];
+    this._lineClasses = [];
   }
 
   componentDidMount() {
@@ -41,6 +42,10 @@ export default class CodeMirrorEditor extends React.Component {
       this._codeMirror.removeLineWidget(widget);
     });
 
+    this._lineClasses.forEach(({ lineNumber, className }) => {
+      this._codeMirror.removeLineClass(lineNumber, 'text', className);
+    });
+
     if (!this.props.isDirty) {
       this._errorWidgets = this.props.errors.map(error => {
         const message = document.createElement('div');
@@ -52,17 +57,38 @@ export default class CodeMirrorEditor extends React.Component {
           noHScroll: true,
         });
       });
+
+      this._lineClasses = this.props.matches.map(({ count, lineNumber }) => {
+        const className = `${styles.matchesIndicator} has-${count}-matches`;
+        this._codeMirror.addLineClass(lineNumber, 'text', className);
+        return { className, lineNumber };
+      });
     }
+  }
+
+  getHelperClasses() {
+    const __html = this.props.matches
+      .map(({ count }) => {
+        return `.has-${count}-matches:after { content: '${count} ${
+          count === 1 ? 'match' : 'matches'
+        }' }`;
+      })
+      .join('\n');
+
+    return { __html };
   }
 
   render() {
     return (
-      <div
-        className={styles.container}
-        ref={ref => {
-          this._editor = ref;
-        }}
-      />
+      <div className={styles.container}>
+        <style dangerouslySetInnerHTML={this.getHelperClasses()} />
+        <div
+          className={styles.container}
+          ref={ref => {
+            this._editor = ref;
+          }}
+        />
+      </div>
     );
   }
 }

@@ -9,3 +9,9 @@
 .CodeMirror, :local(.container) {
     height: 100%;
 }
+
+
+:local(.matchesIndicator:after) {
+    padding-left: 5px;
+    color: darkgray;
+}

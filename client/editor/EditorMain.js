@@ -146,15 +146,7 @@ export default class EditorMain extends React.Component {
     const errors = this.state.debugInfo.errors || [];
     const inlineErrors = errors.filter(({ isInFile }) => isInFile);
     const externalErrors = errors.filter(({ isInFile }) => !isInFile);
-
-    const isLoading =
-      !!(!this.state.isDirty &&
-      (this.state.debugInfo.currentCodeHash &&
-        this.state.debugInfo.currentCodeHash !== md5(this.state.code)) &&
-      this.state.selectedProgramNumber);
-
-
-    //  const logs = this.state.debugInfo.logs || [];
+    const matches = this.state.debugInfo.matches || [];
 
     return (
       <div className={styles.root}>
@@ -167,13 +159,14 @@ export default class EditorMain extends React.Component {
               isDirty={this.state.isDirty}
               value={this.state.code}
               errors={inlineErrors}
+              matches={matches}
               onSave={this._save}
               onChange={code => this.setState({ code, isDirty: true })}
             />
           </div>
         )}
         <div className={styles.sidebar}>
-          <PulseLoader sizeUnit={'px'} size={10} color={'white'} loading={isLoading} />
+          <PulseLoader sizeUnit={'px'} size={10} color={'white'} loading={false} />
 
           <div className={styles.sidebarSection}>
             editor color{' '}
