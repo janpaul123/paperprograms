@@ -16,6 +16,7 @@ const ghostPages = [
   getGhostPage('whisker', require('./core/whisker.js')),
   getGhostPage('illumination', require('./core/illumination.js')),
   getGhostPage('labeller', require('./core/labeller.js')),
+  getGhostPage('outline', require('./core/outline.js')),
 ];
 
 function getGhostPage(name, fn) {
