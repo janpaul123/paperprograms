@@ -115,8 +115,7 @@ window.Illumination = function() {
   };
 
   this.draw = ctx => {
-    ctx.fillStyle = '#fff';
-    ctx.strokeStyle = 'dodgerblue';
+    ctx.fillStyle = 'crimson';
     ctx.lineWidth = 2;
 
     this.commands.forEach(command => {
