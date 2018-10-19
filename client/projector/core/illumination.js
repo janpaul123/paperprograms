@@ -1,15 +1,18 @@
-/*globals Wish, When */
+/*globals Wish, When, WithAll */
 
 module.exports = function() {
   When` {someone} wishes {paper} has illumination {ill} `(({ paper }) => {
     Wish`${paper} has canvas with name ${'illumination'}`;
   });
 
-  When` {paper} has canvas {canvas} with name ${'illumination'},
-        {someone} wishes {paper} has illumination {ill}`(({ canvas, ill }) => {
-    const ctx = canvas.getContext('2d');
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ill.draw(ctx);
+  When` {paper} has canvas {canvas} with name ${'illumination'}`(({ paper, canvas }) => {
+    WithAll`{someone} wishes ${paper} has illumination {ill}`(matches => {
+      const ctx = canvas.getContext('2d');
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      matches.forEach(({ ill }) => {
+        ill.draw(ctx);
+      });
+    });
   });
 };
 
