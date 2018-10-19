@@ -14,7 +14,6 @@ module.exports = function () {
       ill.draw(ctx);
 
     });
-
 };
 
 window.Illumination = function () {

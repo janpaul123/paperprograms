@@ -193,7 +193,6 @@ function evaluateClaimsAndWhens() {
           },
         ])
       );
-      db.addClaim(baseClaim('@ has center point @', [program.number, program.points.center]));
     }
   });
 
@@ -208,15 +207,19 @@ function evaluateClaimsAndWhens() {
 
   // evaluate whens
 
-  currentWhens.forEach(({ claims, callback, groupMatches }) => {
+  currentWhens.forEach(({ source, claims, callback, groupMatches }) => {
     const matches = db.query(claims);
 
-    if (groupMatches) {
-      callback(matches);
-      return;
-    }
+    try {
+      if (groupMatches) {
+        callback(matches);
+        return;
+      }
 
-    matches.forEach(match => callback(match));
+      matches.forEach(match => callback(match));
+    } catch (error) {
+      reportError({ source, isDynamic: true, error });
+    }
   });
 }
 

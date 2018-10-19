@@ -46,7 +46,7 @@ export default async function evaluateProgram() {
   When = this.getWhenTagFunction({
     source: you,
     isDynamic: true,
-    groupMatches: true,
+    groupMatches: false,
   });
   WithAll = this.getWhenTagFunction({
     source: you,
