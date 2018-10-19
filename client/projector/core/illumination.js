@@ -86,6 +86,20 @@ window.Illumination = function() {
     return this;
   };
 
+  this.polygon = ({ points, stroke, fill }) => {
+    this.addMethod('beginPath', []);
+    points.forEach(point => {
+      this.addMethod('lineTo', point);
+    });
+    this.addMethod('closePath', []);
+    stroke && this.addAssert('strokeStyle', stroke);
+    fill && this.addAssert('fillStyle', fill);
+    this.addMethod('fill', []);
+    this.addMethod('stroke', []);
+    this.addMethod('restore', []);
+    return this;
+  };
+
   this.line = ({ from, to, overlay = true, stroke }) => {
     this.addMethod('save', []);
     overlay && this.addMethod('beginPath', []);
