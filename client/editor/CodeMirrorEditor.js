@@ -1,6 +1,7 @@
 import React from 'react';
 import CodeMirror from 'codemirror';
 import 'codemirror/mode/javascript/javascript';
+import isEqual from 'lodash/isEqual';
 
 import 'codemirror/lib/codemirror.css';
 import styles from './CodeMirrorEditor.css';
@@ -9,8 +10,7 @@ export default class CodeMirrorEditor extends React.Component {
   constructor() {
     super();
 
-    this._errorWidgets = [];
-    this._lineClasses = [];
+    this._widgets = [];
   }
 
   componentDidMount() {
@@ -38,57 +38,66 @@ export default class CodeMirrorEditor extends React.Component {
       this._codeMirror.setValue(this.props.value);
     }
 
-    this._errorWidgets.forEach(widget => {
-      this._codeMirror.removeLineWidget(widget);
-    });
+    // update widgets if errors logs or matches changed
+    if (
+      !isEqual(this.props.errors, prevProps.errors) ||
+      !isEqual(this.props.logs, prevProps.logs) ||
+      !isEqual(this.props.matches, prevProps.matches)
+    ) {
+      // remove widgets
+      this._widgets.forEach(widget => {
+        this._codeMirror.removeLineWidget(widget);
+      });
 
-    this._lineClasses.forEach(({ lineNumber, className }) => {
-      this._codeMirror.removeLineClass(lineNumber, 'text', className);
-    });
+      // readd if not dirty
+      if (!this.props.isDirty) {
+        const errorWidgets = this.props.errors.map(({ message, lineNumber }) => {
+          const el = document.createElement('div');
+          el.innerText = message;
+          el.className = styles.errorMessage;
 
-    if (!this.props.isDirty) {
-      this._errorWidgets = this.props.errors.map(error => {
-        const message = document.createElement('div');
-        message.innerText = error.message;
-        message.className = styles.errorMessage;
-
-        return this._codeMirror.addLineWidget(error.lineNumber - 1, message, {
-          coverGutter: false,
-          noHScroll: true,
+          return this._codeMirror.addLineWidget(lineNumber - 1, el, {
+            coverGutter: false,
+            noHScroll: true,
+          });
         });
-      });
 
-      this._lineClasses = this.props.matches.map(({ count, lineNumber }) => {
-        const className = `${styles.matchesIndicator} has-${count}-matches`;
-        this._codeMirror.addLineClass(lineNumber, 'text', className);
-        return { className, lineNumber };
-      });
+        const logWidgets = this.props.logs.map(({ lineNumber, values }) => {
+          const el = document.createElement('div');
+          el.innerText = values.map(v => JSON.stringify(v)).join(', ');
+          el.className = styles.logMessage;
+
+          return this._codeMirror.addLineWidget(lineNumber - 1, el, {
+            coverGutter: false,
+            noHScroll: true,
+          });
+        });
+
+        const matchWidgets = this.props.matches.map(({ lineNumber, count }) => {
+          const message = document.createElement('div');
+          message.innerText = `${count} ${count === 1 ? 'match' : 'matches'}`;
+          message.className = styles.matchMessage;
+
+          return this._codeMirror.addLineWidget(lineNumber - 1, message, {
+            coverGutter: false,
+            noHScroll: true,
+            above: true,
+          });
+        });
+
+        this._widgets = errorWidgets.concat(logWidgets).concat(matchWidgets);
+      }
     }
-  }
-
-  getHelperClasses() {
-    const __html = this.props.matches
-      .map(({ count }) => {
-        return `.has-${count}-matches:after { content: '${count} ${
-          count === 1 ? 'match' : 'matches'
-        }' }`;
-      })
-      .join('\n');
-
-    return { __html };
   }
 
   render() {
     return (
-      <div className={styles.container}>
-        <style dangerouslySetInnerHTML={this.getHelperClasses()} />
-        <div
-          className={styles.container}
-          ref={ref => {
-            this._editor = ref;
-          }}
-        />
-      </div>
+      <div
+        className={styles.container}
+        ref={ref => {
+          this._editor = ref;
+        }}
+      />
     );
   }
 }

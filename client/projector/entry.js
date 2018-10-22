@@ -13,6 +13,7 @@ const state = (window.$state = {
   whens: [],
   errors: [],
   matches: [],
+  logs: [],
 });
 
 const ghostPages = [
@@ -87,6 +88,17 @@ const programHelperFunctions = {
 
       state.whens.push(when);
     };
+  },
+
+  getLogFunction: ({ source, isDynamic }) => (...values) => {
+    const stackFrame = errorStackParser.parse(new Error());
+    const originalCall = stackFrame.find(({ fileName }) => fileName.endsWith(`${source}.js`));
+
+    if (!originalCall) {
+      return;
+    }
+
+    state.logs.push({ source, values, lineNumber: originalCall.lineNumber, isDynamic });
   },
   reportError,
   reportErrorMessage,
@@ -213,6 +225,7 @@ function evaluateClaimsAndWhens() {
   state.whens = state.whens.filter(({ isDynamic }) => !isDynamic);
   state.claims = state.claims.filter(({ isDynamic }) => !isDynamic);
   state.errors = state.errors.filter(({ isDynamic }) => !isDynamic);
+  state.logs = state.logs.filter(({ isDynamic }) => !isDynamic);
   state.matches = [];
 
   // evaluate whens
@@ -246,8 +259,11 @@ setInterval(() => {
       const debugData = {
         matches: state.matches.filter(({ source }) => source === program.number),
         errors: state.errors.filter(({ source }) => source === program.number),
+        logs: state.logs.filter(({ source }) => source === program.number),
       };
 
       xhr.put(program.debugUrl, { json: debugData }, () => {});
     });
+
+
 }, 300);

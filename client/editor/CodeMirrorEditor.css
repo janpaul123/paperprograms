@@ -6,12 +6,16 @@
     background-repeat: no-repeat;
 }
 
-.CodeMirror, :local(.container) {
-    height: 100%;
+:local(.matchMessage) {
+    padding: 3px;
+    color: darkgray;
 }
 
-
-:local(.matchesIndicator:after) {
-    padding-left: 5px;
+:local(.logMessage) {
+    padding: 3px;
     color: darkgray;
+}
+
+.CodeMirror, :local(.container) {
+    height: 100%;
 }

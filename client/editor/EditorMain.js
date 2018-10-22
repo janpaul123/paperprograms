@@ -147,6 +147,7 @@ export default class EditorMain extends React.Component {
     const inlineErrors = errors.filter(({ isInFile }) => isInFile);
     const externalErrors = errors.filter(({ isInFile }) => !isInFile);
     const matches = this.state.debugInfo.matches || [];
+    const logs = this.state.debugInfo.logs || [];
 
     return (
       <div className={styles.root}>
@@ -160,6 +161,7 @@ export default class EditorMain extends React.Component {
               value={this.state.code}
               errors={inlineErrors}
               matches={matches}
+              logs={logs}
               onSave={this._save}
               onChange={code => this.setState({ code, isDirty: true })}
             />

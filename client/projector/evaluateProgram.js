@@ -14,6 +14,7 @@ export default async function evaluateProgram() {
     isDynamic: false,
     groupMatches: true,
   });
+  let log = this.getLogFunction({ source: you, isDynamic: false });
   /* eslint-enable no-unused-vars*/
 
   const userCode =
@@ -53,4 +54,5 @@ export default async function evaluateProgram() {
     isDynamic: true,
     groupMatches: true,
   });
+  log = this.getLogFunction({ source: you, isDynamic: true });
 }
