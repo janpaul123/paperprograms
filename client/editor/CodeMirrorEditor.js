@@ -38,6 +38,13 @@ export default class CodeMirrorEditor extends React.Component {
       this._codeMirror.setValue(this.props.value);
     }
 
+    if (this.props.isDirty && !prevProps.isDirty) {
+      // remove widgets
+      this._widgets.forEach(widget => {
+        this._codeMirror.removeLineWidget(widget);
+      });
+    }
+
     // update widgets if errors logs or matches changed
     if (
       !isEqual(this.props.errors, prevProps.errors) ||
