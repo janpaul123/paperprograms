@@ -1,113 +1,150 @@
-/*globals When, Wish */
+/*globals Wish, When, WithAll */
 
 module.exports = function() {
   When` {someone} wishes {paper} has illumination {ill} `(({ paper }) => {
     Wish`${paper} has canvas with name ${'illumination'}`;
   });
 
-  When` {paper} has canvas {canvas} with name ${'illumination'},
-        {someone} wishes {paper} has illumination {ill}`(({ canvas, ill }) => {
-    const ctx = canvas.getContext('2d');
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ill.draw(ctx);
+  When` {paper} has canvas {canvas} with name ${'illumination'}`(({ paper, canvas }) => {
+    WithAll`{someone} wishes ${paper} has illumination {ill}`(matches => {
+      const ctx = canvas.getContext('2d');
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      matches.forEach(({ ill }) => {
+        ill.draw(ctx);
+      });
+    });
   });
 };
 
-window.Illumination = function() {
-  this.commands = [];
+/*eslint no-shadow: 0*/
+const rect = ({ x, y, width, height, fill, stroke }) => ({
+  x,
+  y,
+  width,
+  height,
+  fill,
+  stroke,
+  render(ctx) {
+    ctx.save();
+    ctx.beginPath();
+    if (this.stroke) ctx.strokeStyle = this.stroke;
+    if (this.fill) ctx.fillStyle = this.fill;
+    ctx.rect(this.x, this.y, this.width, this.height);
+    ctx.fill();
+    ctx.stroke();
+    ctx.restore();
+  },
+});
 
-  this.addMethod = (name, args) => {
-    this.commands.push({
-      type: 'method',
-      name,
-      args,
+const ellipse = ({ x, y, width, height, fill, stroke }) => ({
+  x,
+  y,
+  width,
+  height,
+  fill,
+  stroke,
+  render(ctx) {
+    ctx.save();
+    ctx.beginPath();
+    if (this.stroke) ctx.strokeStyle = this.stroke;
+    if (this.fill) ctx.fillStyle = this.fill;
+    ctx.ellipse(x, y, width / 2, height / 2, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+    ctx.restore();
+  },
+});
+
+const polygon = ({ points, stroke, fill }) => ({
+  points,
+  stroke,
+  fill,
+  render(ctx) {
+    ctx.beginPath();
+    points.forEach(({ x, y }) => {
+      ctx.lineTo(x, y);
     });
-  };
+    ctx.closePath();
+    if (this.stroke) ctx.strokeStyle = this.stroke;
+    if (this.fill) ctx.fillStyle = this.fill;
+    ctx.fill();
+    ctx.stroke();
+    ctx.restore();
+  },
+});
 
-  this.addAssert = (name, value) => {
-    this.commands.push({
-      type: 'assert',
-      name,
-      value,
-    });
-  };
+const fill = color => ({
+  color,
+  render(ctx) {
+    ctx.fillStyle = color;
+  },
+});
 
-  this.save = () => {
-    this.addMethod('save', []);
-    return this;
-  };
-  this.restore = () => {
-    this.addMethod('restore', []);
-    return this;
-  };
-  this.translate = translation => {
-    this.addMethod('translate', translation);
-    return this;
-  };
-  this.fill = color => {
-    this.addAssert('fillStyle', color);
-    return this;
-  };
-  this.stroke = color => {
-    this.addAssert('strokeStyle', color);
-    return this;
-  };
+const stroke = color => ({
+  color,
+  render(ctx) {
+    ctx.strokeStyle = color;
+  },
+});
 
-  this.rect = ({ x, y, width, height, overlay = true, stroke, fill }) => {
-    this.addMethod('save', []);
-    overlay && this.addMethod('beginPath', []);
-    stroke && this.addAssert('strokeStyle', stroke);
-    fill && this.addAssert('fillStyle', fill);
-    this.addMethod('rect', [x, y, width, height]);
-    this.addMethod('fill', []);
-    this.addMethod('stroke', []);
-    this.addMethod('restore', []);
-    return this;
-  };
+const text = ({ x, y, text, fill, size, fit = false }) => ({
+  x,
+  y,
+  text,
+  fill,
+  size,
+  fit,
+  render(ctx) {
+    ctx.save();
+    ctx.font = `${this.size}px sans-serif`;
+    if (this.fill) ctx.fillStyle = this.fill;
+    if (this.fit) {
+      const width = ctx.canvas.clientWidth;
+      let textWidth = ctx.measureText(this.text).width;
+      while (textWidth > width - 2) {
+        this.size--;
+        ctx.font = `${this.size}px sans-serif`;
+        textWidth = ctx.measureText(this.text).width;
+      }
+    }
+    ctx.fillText(this.text, this.x, this.y);
+    ctx.restore;
+  },
+});
 
-  this.text = ({ x, y, text, font = '32px sans-serif', fill }) => {
-    this.addMethod('save', []);
-    this.addAssert('font', font);
-    fill && this.addAssert('fill', fill);
-    this.addMethod('fillText', [text, x, y]);
-    this.addMethod('restore', []);
-    return this;
-  };
+const line = ({ from, to, stroke }) => ({
+  from,
+  to,
+  stroke,
+  render(ctx) {
+    ctx.save();
+    if (this.stroke) ctx.strokeStyle = this.stroke;
+    ctx.moveTo(from.x, from.y);
+    ctx.lineTo(to.x, to.y);
+    ctx.stroke();
+    ctx.restore();
+  },
+});
 
-  this.ellipse = ({ x, y, width, height, overlay = true, stroke, fill }) => {
-    this.addMethod('save', []);
-    overlay && this.addMethod('beginPath', []);
-    stroke && this.addAssert('strokeStyle', stroke);
-    fill && this.addAssert('fillStyle', fill);
-    this.addMethod('ellipse', [x, y, width / 2, height / 2, 0, 0, 2 * Math.PI]);
-    this.addMethod('fill', []);
-    this.addMethod('stroke', []);
-    this.addMethod('restore', []);
-    return this;
-  };
+window.Shapes = {
+  line,
+  rect,
+  ellipse,
+  polygon,
+  fill,
+  stroke,
+  text,
+};
 
-  this.line = ({ from, to, overlay = true, stroke }) => {
-    this.addMethod('save', []);
-    overlay && this.addMethod('beginPath', []);
-    stroke && this.addAssert('strokeStyle', stroke);
-    this.addMethod('moveTo', from);
-    this.addMethod('lineTo', to);
-    this.addMethod('stroke', []);
-    this.addMethod('restore', []);
-    return this;
-  };
+window.Illumination = function(...args) {
+  this.shapes = args;
 
   this.draw = ctx => {
-    ctx.fillStyle = '#fff';
-    ctx.strokeStyle = 'dodgerblue';
+    ctx.fillStyle = 'crimson';
+    ctx.strokeStyle = 'crimson';
     ctx.lineWidth = 2;
-
-    this.commands.forEach(command => {
-      if (command.type === 'method') {
-        ctx[command.name](...command.args);
-      } else if (command.type === 'assert') {
-        ctx[command.name] = command.value;
-      }
+    this.shapes.forEach(shape => {
+      shape.render(ctx);
     });
   };
 };

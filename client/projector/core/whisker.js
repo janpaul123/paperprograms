@@ -1,4 +1,4 @@
-/*globals you, WithAll, When, Claim, Wish */
+/*globals WithAll, When, Claim, Wish */
 
 module.exports = function() {
   When` {supporter} is a ${'supporter'}`(({ supporter }) => {
@@ -10,8 +10,8 @@ module.exports = function() {
     const { supporter, canvas } = data;
 
     WithAll` {someone} wishes {whiskerPaper} has whisker that points {direction},
-               {whiskerPaper} is on supporter ${supporter},
-               {whiskerPaper} has corner points {points}`(matches => {
+             {whiskerPaper} is on supporter ${supporter},
+             {whiskerPaper} has corner points {points}`(matches => {
       const ctx = canvas.getContext('2d');
 
       ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -28,13 +28,13 @@ module.exports = function() {
                 ? drawWhisker(bottomRight, bottomLeft, ctx)
                 : direction === 'left' ? drawWhisker(bottomLeft, topLeft, ctx) : {};
 
-        WithAll` {paper} has corner points {points},
-                     {paper} is a ${'program'}`(matches => {
-          matches.forEach(({ paper, points }) => {
+        WithAll` {paper} has corner points {paperPoints},
+                 {paper} is a ${'program'}`(paperMatches => {
+          paperMatches.forEach(({ paper, paperPoints }) => {
             if (paper === whiskerPaper) {
               return;
             }
-            if (intersectsPaper(whiskerStart, whiskerEnd, points)) {
+            if (intersectsPaper(whiskerStart, whiskerEnd, paperPoints)) {
               Claim`${whiskerPaper} points at ${paper}`;
             }
           });
