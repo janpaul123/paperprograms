@@ -1,5 +1,9 @@
 require('dotenv').config();
 
+if (!process.env.DATABASE_URL) {
+  throw new Error('please set DATABASE_URL');
+}
+
 module.exports = {
   development: {
     client: 'pg',
