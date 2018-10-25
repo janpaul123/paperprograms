@@ -125,7 +125,7 @@ function getProgramsToRun() {
 }
 
 function updatePrograms(programsToRun) {
-  const { runningProgramsByNumber, claims, whens, errors } = state;
+  const { runningProgramsByNumber, claims, whens, errors, matches, logs } = state;
 
   const programsToRunByNumber = {};
   const programsToClearByNumber = {};
@@ -164,6 +164,9 @@ function updatePrograms(programsToRun) {
   state.whens = whens.filter(({ source }) => !programsToClearByNumber[source]);
   state.claims = claims.filter(({ source }) => !programsToClearByNumber[source]);
   state.errors = errors.filter(({ source }) => !programsToClearByNumber[source]);
+  state.matches = matches.filter(({ source }) => !programsToClearByNumber[source]);
+  state.logs = logs.filter(({ source }) => !programsToClearByNumber[source]);
+
   state.runningProgramsByNumber = nextRunningProgramsByNumber;
 }
 
@@ -264,6 +267,4 @@ setInterval(() => {
 
       xhr.put(program.debugUrl, { json: debugData }, () => {});
     });
-
-
 }, 300);
