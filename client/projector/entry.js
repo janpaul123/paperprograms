@@ -5,6 +5,7 @@ import parser from '../factLog/factLogDslParser';
 import ast from '../factLog/factLogAst';
 import evaluateProgram from './evaluateProgram';
 import FactLogDb from '../factLog/FactLogDb';
+import once from 'lodash/once';
 const acorn = require('acorn');
 
 const state = (window.$state = {
@@ -23,6 +24,7 @@ const ghostPages = [
   getGhostPage('illumination', require('./core/illumination.js')),
   getGhostPage('labeller', require('./core/labeller.js')),
   getGhostPage('outline', require('./core/outline.js')),
+  getGhostPage('persistentState', require('./core/persistentState.js')),
 ];
 
 function getGhostPage(name, fn) {
@@ -33,8 +35,42 @@ function getGhostPage(name, fn) {
   };
 }
 
+const currentHashesByProgram = {};
+
+setInterval(() => {
+  xhr.get(`/api/spaces/${window.__SPACE_HASH__}`, { json: true }, (error, response) => {
+    if (error) {
+      console.error(error); // eslint-disable-line no-console
+    } else {
+      response.body.programs.forEach(({ number, currentCodeHash }) => {
+        currentHashesByProgram[number] = currentCodeHash;
+      });
+    }
+  });
+}, 500);
+
+function getGhostPages(programs) {
+  if (!window.__GHOST_PAGES__) {
+    return ghostPages;
+  }
+
+  return window.__GHOST_PAGES__
+    .map(number => {
+      return {
+        number,
+        currentCodeUrl: `program.${window.__SPACE_HASH__}.${number}.js`,
+        currentCodeHash: currentHashesByProgram[number],
+        debugUrl: `/api/spaces/${window.__SPACE_HASH__}/programs/${number}/debugInfo`,
+      };
+    })
+    .filter(({ number }) => !programs.some(p => p.number === number));
+}
+
 function reportError({ source, isDynamic, error }) {
   const stackFrame = errorStackParser.parse(error);
+
+  // eslint-disable-next-line no-console
+  console.error(`error from ${source}: ${error}`);
 
   state.errors.push({
     source,
@@ -54,6 +90,9 @@ function reportErrorMessage({
   lineNumber,
   columnNumber,
 }) {
+  // eslint-disable-next-line no-console
+  console.error(`error from ${source}: ${message}`);
+
   state.errors.push({
     source,
     isDynamic,
@@ -122,8 +161,8 @@ main();
 
 function getProgramsToRun() {
   const programs = JSON.parse(localStorage.paperProgramsProgramsToRender || '[]');
-
-  return ghostPages.concat(programs);
+  const result = getGhostPages(programs).concat(programs);
+  return result;
 }
 
 function updatePrograms(programsToRun) {
@@ -141,6 +180,7 @@ function updatePrograms(programsToRun) {
     // start program if new
     if (!runningProgramsByNumber[program.number]) {
       nextRunningProgramsByNumber[program.number] = program;
+
       evaluateProgram.apply({ ...programHelperFunctions, program }, program);
 
       // restart program if code has changed
@@ -203,6 +243,10 @@ function evaluateClaimsAndWhens() {
 
   Object.values(state.runningProgramsByNumber).forEach(program => {
     // base paper claims
+
+    if (program.codeHasChanged) {
+      db.addClaim(baseClaim('@ has changed code', [program.number]));
+    }
 
     db.addClaim(baseClaim('@ is a @', [program.number, 'program']));
     db.addClaim(baseClaim('@ is on supporter @', [program.number, 'table']));

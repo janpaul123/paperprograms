@@ -1,8 +1,6 @@
-/*globals When, Wish, Shapes */
+/*globals When, Wish, Shapes, Illumination */
 
-const { Illumination } = window;
-
-module.exports = function() {
+module.exports = () => {
   When` {paper} has width {width},
         {paper} has height {height},
         {someone} wishes {paper} has outline with color {color}`(
@@ -25,5 +23,11 @@ module.exports = function() {
   {paper} has height {height},
   {someone} wishes {paper} has outline`(({ paper }) => {
     Wish`${paper} has outline with color ${'red'}`;
+  });
+
+  When` {paper} has changed code, 
+        current time is {t} `(({ paper, t }) => {
+    const color = `rgba(255, 0, 0, ${Math.sin(Math.abs(t / 500))})`;
+    Wish`${paper} has outline with color ${color}`;
   });
 };

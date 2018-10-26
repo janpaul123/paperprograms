@@ -50,6 +50,7 @@ module.exports = function() {
     canvas.style.position = 'absolute';
     canvas.style.top = '0';
     canvas.style.left = '0';
+    canvas.style.transformOrigin = '0 0 0';
     document.body.appendChild(canvas);
     canvasElements[key] = canvas;
 
