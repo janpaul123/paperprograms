@@ -63,7 +63,8 @@ function getGhostPages(programs) {
         debugUrl: `/api/spaces/${window.__SPACE_HASH__}/programs/${number}/debugInfo`,
       };
     })
-    .filter(({ number }) => !programs.some(p => p.number === number));
+    .filter(({ number }) => !programs.some(p => p.number === number))
+    .concat(getGhostPage('canvas', require('./core/canvas.js')));
 }
 
 function reportError({ source, isDynamic, error }) {
