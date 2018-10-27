@@ -5,7 +5,6 @@ import parser from '../factLog/factLogDslParser';
 import ast from '../factLog/factLogAst';
 import evaluateProgram from './evaluateProgram';
 import FactLogDb from '../factLog/FactLogDb';
-import once from 'lodash/once';
 const acorn = require('acorn');
 
 const state = (window.$state = {
@@ -149,7 +148,7 @@ const programHelperFunctions = {
 
 function main() {
   const programsToRun = getProgramsToRun();
-  //const markers = JSON.parse(localStorage.paperProgramsMarkers || '[]')
+  state.markers = JSON.parse(localStorage.paperProgramsMarkers || '[]');
 
   updatePrograms(programsToRun);
 
@@ -224,7 +223,7 @@ function evaluateClaimsAndWhens() {
     db.addClaim(claim);
   });
 
-  // base claims
+  // base claims;
 
   db.addClaim(baseClaim('current time is @', [Date.now()]));
   db.addClaim(baseClaim('@ is a @', ['table', 'supporter']));
@@ -242,6 +241,46 @@ function evaluateClaimsAndWhens() {
 
   const multPoint = { x: document.body.clientWidth, y: document.body.clientHeight };
 
+  // markers
+
+  const markersByPaper = {};
+  const sizeByPaper = {};
+
+  state.markers.forEach(({ positionOnPaper, paperNumber, colorName }) => {
+    if (!paperNumber) {
+      return;
+    }
+
+    if (!markersByPaper[paperNumber]) {
+      markersByPaper[paperNumber] = [];
+    }
+
+    if (!sizeByPaper[paperNumber]) {
+      const { points } = state.runningProgramsByNumber[paperNumber];
+
+      const topLeft = mult(points[0], multPoint);
+      const topRight = mult(points[1], multPoint);
+      const bottomRight = mult(points[2], multPoint);
+      const bottomLeft = mult(points[3], multPoint);
+
+      sizeByPaper[paperNumber] = {
+        x: (distance(topLeft, topRight) + distance(bottomLeft, bottomRight)) / 2,
+        y: (distance(topRight, bottomRight) + distance(topLeft, bottomLeft)) / 2,
+      };
+    }
+
+    markersByPaper[paperNumber].push({
+      color: colorName,
+      position: mult(positionOnPaper, sizeByPaper[paperNumber]),
+    });
+  });
+
+  const globalMarkers = state.markers.map(({ colorName, position }) => ({
+    color: colorName,
+    position: mult(position, multPoint),
+  }));
+  db.addClaim(baseClaim('@ has markers @', ['table', globalMarkers]));
+
   Object.values(state.runningProgramsByNumber).forEach(program => {
     // base paper claims
 
@@ -251,6 +290,9 @@ function evaluateClaimsAndWhens() {
 
     db.addClaim(baseClaim('@ is a @', [program.number, 'program']));
     db.addClaim(baseClaim('@ is on supporter @', [program.number, 'table']));
+    db.addClaim(
+      baseClaim('@ has markers @', [program.number, markersByPaper[program.number] || []])
+    );
 
     if (program.points) {
       db.addClaim(
@@ -315,3 +357,7 @@ setInterval(() => {
       xhr.put(program.debugUrl, { json: debugData }, () => {});
     });
 }, 300);
+
+function distance(point1, point2) {
+  return Math.sqrt(Math.pow(point1.x - point2.x, 2) + Math.pow(point1.y - point2.y, 2));
+}

@@ -69,9 +69,15 @@ export default class CodeMirrorEditor extends React.Component {
           });
         });
 
-        const logWidgets = this.props.logs.map(({ lineNumber, values }) => {
+        const collapsedLogs = {};
+
+        this.props.logs.forEach(({ lineNumber, values }) => {
+          collapsedLogs[lineNumber] = { lineNumber, values };
+        });
+
+        const logWidgets = Object.values(collapsedLogs).map(({ lineNumber, values }) => {
           const el = document.createElement('div');
-          el.innerText = values.map(v => JSON.stringify(v)).join(', ');
+          el.innerText = values.map(v => JSON.stringify(v).substr(0, 200)).join(', ');
           el.className = styles.logMessage;
 
           return this._codeMirror.addLineWidget(lineNumber - 1, el, {

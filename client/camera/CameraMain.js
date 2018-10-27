@@ -290,15 +290,21 @@ export default class CameraMain extends React.Component {
                             {program.printed ? '[show]' : '[hide]'}
                           </span>
                         </span>
-                        <button onClick={(evt) => {
-                          evt.stopPropagation();
+                        <button
+                          onClick={evt => {
+                            evt.stopPropagation();
 
-                          if(!confirm(`Are you sure you want to delete paper ${program.number}`)) {
-                            return
-                          }
+                            if (
+                              !confirm(`Are you sure you want to delete paper ${program.number}`)
+                            ) {
+                              return;
+                            }
 
-                          this._deletePaper(program.number)
-                        }}>delete</button>
+                            this._deletePaper(program.number);
+                          }}
+                        >
+                          delete
+                        </button>
 
                         {this.state.debugPrograms.find(p => p.number === program.number) ===
                         undefined ? (
