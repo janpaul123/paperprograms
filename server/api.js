@@ -130,6 +130,17 @@ router.put('/api/spaces/:spaceName/programs/:number', (req, res) => {
     });
 });
 
+router.delete('/api/spaces/:spaceName/programs/:number', (req, res) => {
+  const { spaceName, number } = req.params;
+
+  knex('programs')
+    .where({ spaceName, number })
+    .del()
+    .then(() => {
+      res.status(200).send('deleted successfully');
+    });
+});
+
 router.post('/api/spaces/:spaceName/programs/:number/markPrinted', (req, res) => {
   const { spaceName, number } = req.params;
   const { printed } = req.body;

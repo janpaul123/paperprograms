@@ -82,6 +82,17 @@ export default class CameraMain extends React.Component {
     );
   };
 
+  _deletePaper = number => {
+    xhr.del(getApiUrl(this.state.spaceData.spaceName, `/programs/${number}/`), {}, error => {
+      if (error) {
+        console.error(error); // eslint-disable-line no-console
+      } else {
+        // eslint-disable-next-line no-console
+        console.log('deleted  ', number);
+      }
+    });
+  };
+
   _autoPrint = () => {
     const toPrint = this.state.spaceData.programs.filter(
       program => !program.printed && !this.state.autoPrintedNumbers.includes(program.number)
@@ -279,6 +290,16 @@ export default class CameraMain extends React.Component {
                             {program.printed ? '[show]' : '[hide]'}
                           </span>
                         </span>
+                        <button onClick={(evt) => {
+                          evt.stopPropagation();
+
+                          if(!confirm(`Are you sure you want to delete paper ${program.number}`)) {
+                            return
+                          }
+
+                          this._deletePaper(program.number)
+                        }}>delete</button>
+
                         {this.state.debugPrograms.find(p => p.number === program.number) ===
                         undefined ? (
                           <span
