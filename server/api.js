@@ -21,6 +21,36 @@ router.get('/program.:spaceName.:number.js', (req, res) => {
     });
 });
 
+router.get('/ghostpages.:spaceName.js', (req, res) => {
+  const { spaceName } = req.params;
+
+
+  knex
+    .select('currentCode')
+    .from('programs')
+    .where({ spaceName })
+    .then(programs => {
+      const ghostPagesProgram = programs.find(({ currentCode }) => {
+        const firstLine = currentCode.split('\n')[0];
+
+        if (!firstLine) {
+          return;
+        }
+
+        console.log(firstLine, firstLine == '// GHOST_PAGES');
+
+        return firstLine === '// GHOST_PAGES';
+      });
+
+      const source = ghostPagesProgram
+        ? ghostPagesProgram.currentCode
+        : `console.warn('no ghost pages defined')`;
+
+      res.set('Content-Type', 'text/javascript;charset=UTF-8');
+      res.send(source);
+    });
+});
+
 function getSpaceData(req, callback) {
   const { spaceName } = req.params;
   knex('programs')
@@ -93,10 +123,21 @@ router.put('/api/spaces/:spaceName/programs/:number', (req, res) => {
   if (!code) return res.status(400).send('Missing "code"');
 
   knex('programs')
-    .update({ currentCode: code })
+    .update({ currentCode: code, debugInfo: {} })
     .where({ spaceName, number })
     .then(() => {
       res.json({});
+    });
+});
+
+router.delete('/api/spaces/:spaceName/programs/:number', (req, res) => {
+  const { spaceName, number } = req.params;
+
+  knex('programs')
+    .where({ spaceName, number })
+    .del()
+    .then(() => {
+      res.status(200).send('deleted successfully');
     });
 });
 

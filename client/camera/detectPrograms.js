@@ -173,12 +173,14 @@ export default function detectPrograms({
 
   const knobPointMatrix = forwardProjectionMatrixForPoints(config.knobPoints);
   const mapToKnobPointMatrix = point => {
-    return mult(projectPoint(point, knobPointMatrix), { x: videoMat.cols, y: videoMat.rows })
+    return mult(projectPoint(point, knobPointMatrix), { x: videoMat.cols, y: videoMat.rows });
   };
 
   if (displayMat) {
     videoMat.copyTo(displayMat);
-    const knobPoints = [{ x: 0, y: 0 }, { x: 1, y: 0 }, { x: 1, y: 1 }, { x: 0, y: 1 }].map(mapToKnobPointMatrix);
+    const knobPoints = [{ x: 0, y: 0 }, { x: 1, y: 0 }, { x: 1, y: 1 }, { x: 0, y: 1 }].map(
+      mapToKnobPointMatrix
+    );
 
     for (let i = 0; i < 4; i++) {
       cv.line(displayMat, knobPoints[i], knobPoints[(i + 1) % 4], [255, 0, 0, 255]);

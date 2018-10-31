@@ -4,8 +4,7 @@ module.exports = {
   entry: {
     camera: ['./client/camera/entry.js'],
     projector: ['./client/projector/entry.js'],
-    editor: ['./client/editor/entry.js'],
-    paper: ['./client/paper/entry.js'],
+    editor: ['./client/editor/entry.js']
   },
   output: {
     path: path.join(__dirname, 'www'),
@@ -24,7 +23,7 @@ module.exports = {
       },
       {
         test: /\.css$/,
-        exclude: [/node_modules/],
+        exclude: [],
         use: [
           { loader: 'style-loader' },
           {

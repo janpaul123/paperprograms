@@ -42,7 +42,7 @@ function drawPagePatterns({ doc, patterns, width, height, circleRadius, circleDi
     doc,
     pattern: patterns[2],
     x: width - m,
-    y: height - m,
+    y: height - m - 50,
     angle: 180,
     circleRadius,
     circleDistance,
@@ -51,7 +51,7 @@ function drawPagePatterns({ doc, patterns, width, height, circleRadius, circleDi
     doc,
     pattern: patterns[3],
     x: m,
-    y: height - m,
+    y: height - m - 50,
     angle: 270,
     circleRadius,
     circleDistance,
@@ -62,8 +62,8 @@ function drawPage({ patterns, title, code, metadata, paperSize }) {
   const doc = new PDFDocument({ size: paperSize, margin: 0 });
   const { width, height } = doc.page;
 
-  const circleRadius = 20;
-  const circleDistance = 20;
+  const circleRadius = 17;
+  const circleDistance = 15;
   const margin = 10;
   drawPagePatterns({ doc, patterns, circleRadius, circleDistance, margin, width, height });
 

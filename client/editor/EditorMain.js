@@ -1,11 +1,12 @@
-import MonacoEditor from 'react-monaco-editor';
 import React from 'react';
 import randomColor from 'randomcolor';
 import sortBy from 'lodash/sortBy';
 import xhr from 'xhr';
+import PulseLoader from 'react-spinners/PulseLoader';
 
 import { codeToName, getApiUrl } from '../utils';
 import styles from './EditorMain.css';
+import CodeMirrorEditor from './CodeMirrorEditor';
 
 export default class EditorMain extends React.Component {
   constructor(props) {
@@ -79,6 +80,7 @@ export default class EditorMain extends React.Component {
 
   _save = () => {
     const { code, selectedProgramNumber } = this.state;
+    this.setState({ debugInfo: {} });
     xhr.put(
       getApiUrl(this.props.spaceName, `/programs/${selectedProgramNumber}`),
       {
@@ -86,6 +88,7 @@ export default class EditorMain extends React.Component {
       },
       error => {
         if (error) console.error(error); // eslint-disable-line no-console
+        this.setState({ isDirty: false });
       }
     );
   };
@@ -126,11 +129,6 @@ export default class EditorMain extends React.Component {
     }
   };
 
-  _onEditorDidMount = (editor, monaco) => {
-    editor.focus();
-    editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KEY_S, this._save);
-  };
-
   _selectedProgram = selectedProgramNumber => {
     return this.state.spaceData.programs.find(
       program => program.number.toString() === selectedProgramNumber.toString()
@@ -143,8 +141,12 @@ export default class EditorMain extends React.Component {
 
   render() {
     const selectedProgram = this._selectedProgram(this.state.selectedProgramNumber);
-    const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
+    // TODO: readd support for cmd
+    const isMac = false; // navigator.platform.toUpperCase().indexOf('MAC') >= 0;
     const errors = this.state.debugInfo.errors || [];
+    const inlineErrors = errors.filter(({ isInFile }) => isInFile);
+    const externalErrors = errors.filter(({ isInFile }) => !isInFile);
+    const matches = this.state.debugInfo.matches || [];
     const logs = this.state.debugInfo.logs || [];
 
     return (
@@ -154,30 +156,23 @@ export default class EditorMain extends React.Component {
         )}
         {selectedProgram && (
           <div className={styles.editor}>
-            <MonacoEditor
-              language="javascript"
-              theme="vs-dark"
+            <CodeMirrorEditor
+              isDirty={this.state.isDirty}
               value={this.state.code}
-              onChange={code => this.setState({ code })}
-              editorDidMount={this._onEditorDidMount}
-              options={{ tabSize: 2 }}
+              errors={inlineErrors}
+              matches={matches}
+              logs={logs}
+              onSave={this._save}
+              onChange={code => this.setState({ code, isDirty: true })}
             />
           </div>
         )}
         <div className={styles.sidebar}>
+          <PulseLoader sizeUnit={'px'} size={10} color={'white'} loading={false} />
+
           <div className={styles.sidebarSection}>
             editor color{' '}
             <div className={styles.editorColor} style={{ background: this._editorColor() }} />
-          </div>
-
-          <div className={styles.sidebarSection}>
-            <a
-              href="https://github.com/janpaul123/paperprograms/blob/master/docs/api.md"
-              target="_blank"
-              className={styles.link}
-            >
-              API reference
-            </a>
           </div>
 
           <div className={styles.sidebarSection}>
@@ -228,29 +223,15 @@ export default class EditorMain extends React.Component {
           )}
 
           {selectedProgram &&
-            errors.length > 0 && (
+            externalErrors.length > 0 && (
               <div className={styles.sidebarSection}>
-                errors:{' '}
-                {errors.map((error, index) => (
+                Errors:{' '}
+                {externalErrors.map((error, index) => (
                   <div key={index} className={styles.logline}>
                     <strong>
-                      error[{error.filename}:{error.lineNumber}:{error.columnNumber}]:
+                      error[{error.fileName}:{error.lineNumber}:{error.columnNumber}]:
                     </strong>{' '}
                     {error.message}
-                  </div>
-                ))}
-              </div>
-            )}
-
-          {selectedProgram &&
-            logs.length > 0 && (
-              <div className={styles.sidebarSection}>
-                {logs.map((logLine, index) => (
-                  <div key={index} className={styles.logline}>
-                    <strong>
-                      {logLine.name}[{logLine.filename}:{logLine.lineNumber}:{logLine.columnNumber}]:
-                    </strong>{' '}
-                    {logLine.args.join(', ')}
                   </div>
                 ))}
               </div>
