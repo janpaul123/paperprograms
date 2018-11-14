@@ -53,8 +53,8 @@ module.exports = function() {
       y: (y1 + y2) / 2,
     };
     const whiskerEnd = {
-      x: whiskerStart.x + (y2 - y1) / 4,
-      y: whiskerStart.y - (x2 - x1) / 4,
+      x: whiskerStart.x + (y2 - y1) / 4 * 2,
+      y: whiskerStart.y - (x2 - x1) / 4 * 2,
     };
     ctx.beginPath();
     ctx.moveTo(whiskerStart.x, whiskerStart.y);

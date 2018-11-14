@@ -16,6 +16,7 @@ const defaultConfig = {
   showOverlayComponentLines: true,
   showOverlayShapeId: true,
   showOverlayProgram: true,
+  showOverlayAlignmentHelper: true,
   spaceUrl: new URL(`api/spaces/${uuidv4().slice(0, 8)}`, window.location.origin).toString(),
   autoPrintEnabled: false,
   freezeDetection: false,
@@ -63,6 +64,11 @@ function render() {
       }}
       onMarkersChange={markers => {
         localStorage.paperProgramsMarkers = JSON.stringify(markers);
+        render();
+      }}
+      onCornersChange={(corners, cornerWidth) => {
+        localStorage.corners = JSON.stringify(corners);
+        localStorage.cornerWidth = cornerWidth;
         render();
       }}
       onProgramsChange={programs => {

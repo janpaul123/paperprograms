@@ -5,6 +5,7 @@ import parser from '../factLog/factLogDslParser';
 import ast from '../factLog/factLogAst';
 import evaluateProgram from './evaluateProgram';
 import FactLogDb from '../factLog/FactLogDb';
+import { updateCameraSnapshot } from './cameraSnapshot';
 const acorn = require('acorn');
 
 const state = (window.$state = {
@@ -24,6 +25,11 @@ const ghostPages = [
   getGhostPage('labeller', require('./core/labeller.js')),
   getGhostPage('outline', require('./core/outline.js')),
   getGhostPage('persistentState', require('./core/persistentState.js')),
+  getGhostPage('cornerShadows', require('./core/cornerShadows.js')),
+  getGhostPage('textInput', require('./core/textInput.js')),
+  getGhostPage('jsLibrary', require('./core/jsLibrary.js')),
+  getGhostPage('envParams', require('./core/envParams.js')),
+  getGhostPage('cameraSnapshot', require('./core/cameraSnapshot.js')),
 ];
 
 function getGhostPage(name, fn) {
@@ -146,9 +152,28 @@ const programHelperFunctions = {
   acorn,
 };
 
+let alignmentHelper;
+let showAlignmentHelper = null;
+function updateAlignmentHelper() {
+  const show = state.paperProgramsConfig.showOverlayAlignmentHelper;
+  if (!alignmentHelper) {
+    alignmentHelper = document.getElementById('alignmentHelper');
+  }
+  if (showAlignmentHelper !== show) {
+    alignmentHelper.style.display = show ? '' : 'none';
+  }
+  showAlignmentHelper = show;
+}
+
 function main() {
   const programsToRun = getProgramsToRun();
   state.markers = JSON.parse(localStorage.paperProgramsMarkers || '[]');
+  state.corners = JSON.parse(localStorage.corners || '[]');
+  state.cornerWidth = localStorage.cornerWidth || 1;
+  state.paperProgramsConfig = JSON.parse(localStorage.paperProgramsConfig || '{}');
+  state.cameraSnapshot = updateCameraSnapshot(state.paperProgramsConfig.knobPoints);
+
+  updateAlignmentHelper();
 
   updatePrograms(programsToRun);
 
@@ -223,7 +248,7 @@ function evaluateClaimsAndWhens() {
     db.addClaim(claim);
   });
 
-  // base claims;
+  // base claims
 
   db.addClaim(baseClaim('current time is @', [Date.now()]));
   db.addClaim(baseClaim('@ is a @', ['table', 'supporter']));
@@ -232,9 +257,9 @@ function evaluateClaimsAndWhens() {
       'table',
       {
         topLeft: { x: 0, y: 0 },
-        topRight: { x: document.body.clientWidth, y: 0 },
-        bottomRight: { x: document.body.clientWidth, y: document.body.clientHeight },
-        bottomLeft: { x: 0, y: document.body.clientHeight },
+        topRight: { x: document.body.clientWidth - 1, y: 0 },
+        bottomRight: { x: document.body.clientWidth - 1, y: document.body.clientHeight - 1 },
+        bottomLeft: { x: 0, y: document.body.clientHeight - 1 },
       },
     ])
   );
@@ -246,7 +271,7 @@ function evaluateClaimsAndWhens() {
   const markersByPaper = {};
   const sizeByPaper = {};
 
-  state.markers.forEach(({ positionOnPaper, paperNumber, colorName }) => {
+  state.markers.forEach(({ positionOnPaper, paperNumber, colorName, color }) => {
     if (!paperNumber) {
       return;
     }
@@ -256,6 +281,10 @@ function evaluateClaimsAndWhens() {
     }
 
     if (!sizeByPaper[paperNumber]) {
+      if (!state.runningProgramsByNumber[paperNumber]) {
+        return;
+      }
+
       const { points } = state.runningProgramsByNumber[paperNumber];
 
       const topLeft = mult(points[0], multPoint);
@@ -271,12 +300,14 @@ function evaluateClaimsAndWhens() {
 
     markersByPaper[paperNumber].push({
       color: colorName,
+      colorRGB: color,
       position: mult(positionOnPaper, sizeByPaper[paperNumber]),
     });
   });
 
-  const globalMarkers = state.markers.map(({ colorName, position }) => ({
+  const globalMarkers = state.markers.map(({ colorName, position, color }) => ({
     color: colorName,
+    colorRGB: color,
     position: mult(position, multPoint),
   }));
   db.addClaim(baseClaim('@ has markers @', ['table', globalMarkers]));
@@ -310,6 +341,16 @@ function evaluateClaimsAndWhens() {
   });
 
   // custom claims
+
+  const cornerShapes = {
+    points: state.corners.map((points) => points.map(point => mult(point, multPoint))),
+    width: state.cornerWidth * multPoint.x
+  };
+  db.addClaim(baseClaim('@ has corner shapes @', ['table', cornerShapes]));
+
+  if (state.cameraSnapshot) {
+    db.addClaim(baseClaim('@ has camera snapshot @', ['table', state.cameraSnapshot]));
+  }
 
   // reset dynamic claims, whens and errors
 

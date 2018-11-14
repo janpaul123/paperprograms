@@ -20,22 +20,30 @@ import { code8400 } from '../dotCodes';
 import { colorNames, cornerNames } from '../constants';
 import simpleBlobDetector from './simpleBlobDetector';
 
-function keyPointToAvgColor(keyPoint, videoMat) {
-  const x = Math.floor(keyPoint.pt.x - keyPoint.size / 2);
-  const y = Math.floor(keyPoint.pt.y - keyPoint.size / 2);
+function keyPointToAvgColor(keyPoint, videoMat, scaleFactor) {
+  const reduceSizeBy = 4;
 
+  // Reduce size to remove brighter pixels at the edge of the circle
+  const size = keyPoint.size - reduceSizeBy / scaleFactor;
+  const radius = size / 2;
+
+  // The top left corner of the ROI
+  const x = Math.floor(keyPoint.pt.x - radius);
+  const y = Math.floor(keyPoint.pt.y - radius);
+
+  // Bounding box around the key point
   const circleROI = videoMat.roi({
     x,
     y,
-    width: keyPoint.size,
-    height: keyPoint.size,
+    width: size,
+    height: size,
   });
 
-  const circleMask = cv.Mat.zeros(keyPoint.size, keyPoint.size, cv.CV_8UC1);
+  const circleMask = cv.Mat.zeros(size, size, cv.CV_8UC1);
   cv.circle(
     circleMask,
-    { x: Math.floor(keyPoint.size / 2), y: Math.floor(keyPoint.size / 2) },
-    keyPoint.size / 2 - 1,
+    { x: Math.floor(radius), y: Math.floor(radius) },
+    radius - 1,
     [255, 255, 255, 0],
     -1
   );
@@ -135,9 +143,9 @@ function findShape(shapeToFill, neighborIndexes, lengthLeft) {
   return false;
 }
 
-function colorIndexesForShape(shape, keyPoints, videoMat, colorsRGB) {
+function colorIndexesForShape(shape, keyPoints, videoMat, colorsRGB, scaleFactor) {
   const shapeColors = shape.map(
-    keyPointIndex => keyPointToAvgColor(keyPoints[keyPointIndex], videoMat),
+    keyPointIndex => keyPointToAvgColor(keyPoints[keyPointIndex], videoMat, scaleFactor),
     colorsRGB
   );
 
@@ -185,6 +193,16 @@ export default function detectPrograms({
     for (let i = 0; i < 4; i++) {
       cv.line(displayMat, knobPoints[i], knobPoints[(i + 1) % 4], [255, 0, 0, 255]);
     }
+
+    if (config.showOverlayAlignmentHelper) {
+      const knobPointHelpers = [{ x: 0.25, y: 0.25 }, { x: 0.75, y: 0.25 }, { x: 0.75, y: 0.75 }, { x: 0.25, y: 0.75 }].map(
+        mapToKnobPointMatrix
+      );
+
+      for (let i = 0; i < 4; i++) {
+        cv.line(displayMat, knobPointHelpers[i], knobPointHelpers[(i + 1) % 4], [255, 0, 0, 255]);
+      }
+    }
   }
 
   const videoROI = knobPointsToROI(config.knobPoints, videoMat);
@@ -205,7 +223,7 @@ export default function detectPrograms({
     keyPoint.pt.y += videoROI.y;
 
     // Give each `keyPoint` an `avgColor` and `colorIndex`.
-    keyPoint.avgColor = keyPointToAvgColor(keyPoint, videoMat);
+    keyPoint.avgColor = keyPointToAvgColor(keyPoint, videoMat, scaleFactor);
     keyPoint.colorIndex =
       keyPoint.colorIndex || colorIndexForColor(keyPoint.avgColor, config.colorsRGB);
   });
@@ -249,6 +267,7 @@ export default function detectPrograms({
   const keyPointSizes = [];
   const pointsById = {};
   const directionVectorsById = {};
+  const corners = [];
   for (let i = 0; i < keyPoints.length; i++) {
     if (neighborIndexes[i].length == 1 && !seenIndexes.has(i)) {
       const shape = [i]; // Initialise with the first index, then run findShape with 7-1.
@@ -265,11 +284,17 @@ export default function detectPrograms({
           shape.reverse();
         }
 
-        const colorIndexes = colorIndexesForShape(shape, keyPoints, videoMat, config.colorsRGB);
+        const colorIndexes = colorIndexesForShape(shape, keyPoints, videoMat, config.colorsRGB, scaleFactor);
         const id = shapeToId(colorIndexes);
         const cornerNum = shapeToCornerNum(colorIndexes);
 
         if (cornerNum > -1) {
+          const cornerPoints =
+            [0, 3, 6]
+            .map(index => keyPoints[shape[index]].pt)
+            .map(point => projectPointToUnitSquare(point, videoMat, config.knobPoints));
+          corners.push(cornerPoints);
+
           // Store the colorIndexes so we can render them later for debugging.
           colorIndexes.forEach((colorIndex, shapePointIndex) => {
             keyPoints[shape[shapePointIndex]].colorIndex = colorIndex;
@@ -284,6 +309,8 @@ export default function detectPrograms({
           );
 
           shape.forEach(index => keyPointSizes.push(keyPoints[index].size));
+
+          shape.forEach(index => keyPoints[index].matchedShape = true);
 
           if (displayMat && config.showOverlayShapeId) {
             // Draw id and corner name.
@@ -303,12 +330,26 @@ export default function detectPrograms({
   const avgKeyPointSize =
     keyPointSizes.reduce((sum, value) => sum + value, 0) / keyPointSizes.length;
 
+  const cornerShadowScale = 1;
+  const cornerWidth = norm(diff(
+    projectPointToUnitSquare({ x: 0, y: 0}, videoMat, config.knobPoints),
+    projectPointToUnitSquare({ x: avgKeyPointSize * cornerShadowScale, y: 0}, videoMat, config.knobPoints)
+  ));
+
+  // Make every key point that is not a corner point a marker
+  for (let i = 0; i < keyPoints.length; i++) {
+    if (!seenIndexes.has(i)) {
+      markers.push(keyPoints[i])
+    }
+  }
+
   allPoints.forEach(keyPoint => {
     if (displayMat) {
       if (config.showOverlayKeyPointCircles) {
         // Draw circles around `keyPoints`.
         const color = config.colorsRGB[keyPoint.colorIndex];
-        cv.circle(displayMat, keyPoint.pt, keyPoint.size / 2 + 3, color, 2);
+        const isMarker = markers.indexOf(keyPoint) > -1
+        cv.circle(displayMat, keyPoint.pt, keyPoint.size / 2 + 3, color, isMarker ? 4 : 2);
       }
 
       if (config.showOverlayKeyPointText) {
@@ -487,6 +528,8 @@ export default function detectPrograms({
 
   return {
     keyPoints,
+    corners,
+    cornerWidth,
     programsToRender,
     markers,
     dataToRemember: { vectorsBetweenCorners },

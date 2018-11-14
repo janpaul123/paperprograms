@@ -83,7 +83,7 @@ export function getApiUrl(spaceName, suffix) {
   return new URL(`api/spaces/${spaceName}${suffix}`, window.location.origin).toString();
 }
 
-const commentRegex = /\s*\/\/\s*(.+)/;
+const commentRegex = /^\s*\/\/\s*(.+)/;
 export function codeToName(code) {
   const firstLine = code.split('\n')[0];
   const match = firstLine.match(commentRegex);
@@ -91,6 +91,7 @@ export function codeToName(code) {
   else return '???';
 }
 
+// Skip the first comment block and any blank lines, return the rest
 export function codeToPrint(code) {
   let lines = code.split('\n');
   let i = 0;

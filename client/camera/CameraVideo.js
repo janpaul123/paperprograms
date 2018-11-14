@@ -81,7 +81,7 @@ export default class CameraVideo extends React.Component {
     );
 
     try {
-      const { programsToRender, markers, keyPoints, dataToRemember, framerate } = detectPrograms({
+      const { programsToRender, markers, keyPoints, corners, cornerWidth, dataToRemember, framerate } = detectPrograms({
         config: this.props.config,
         videoCapture: this._videoCapture,
         dataToRemember: this._dataToRemember,
@@ -92,7 +92,7 @@ export default class CameraVideo extends React.Component {
       });
       this._dataToRemember = dataToRemember;
       this.setState({ keyPoints });
-      this.props.onProcessVideo({ programsToRender, markers, framerate });
+      this.props.onProcessVideo({ programsToRender, markers, framerate, corners, cornerWidth });
     } catch (error) {
       console.log(error); // eslint-disable-line no-console
     }

@@ -55,6 +55,33 @@ const ellipse = ({ x, y, width, height, fill, stroke }) => ({
   },
 });
 
+const arc = ({ x, y, radius, startAngle, endAngle, anticlockwise, fill, stroke, lineWidth, lineCap, lineJoin }) => ({
+  x,
+  y,
+  radius,
+  startAngle,
+  endAngle,
+  anticlockwise,
+  fill,
+  stroke,
+  lineWidth,
+  lineCap,
+  lineJoin,
+  render(ctx) {
+    ctx.save();
+    ctx.beginPath();
+    if (this.stroke) ctx.strokeStyle = this.stroke;
+    if (this.fill) ctx.fillStyle = this.fill;
+    if (this.lineWidth) ctx.lineWidth = this.lineWidth;
+    if (this.linecap) ctx.lineCap = this.lineCap;
+    if (this.lineJoin) ctx.lineJoin = this.lineJoin;
+    ctx.arc(x, y, radius, startAngle, endAngle, anticlockwise);
+    ctx.fill();
+    ctx.stroke();
+    ctx.restore();
+  },
+});
+
 const polygon = ({ points, stroke, fill }) => ({
   points,
   stroke,
@@ -84,6 +111,17 @@ const stroke = color => ({
   color,
   render(ctx) {
     ctx.strokeStyle = color;
+  },
+});
+
+const lineStyle = (width, cap, join) => ({
+  width,
+  cap,
+  join,
+  render(ctx) {
+    ctx.lineWidth = width;
+    ctx.lineCap = cap;
+    ctx.lineJoin = join;
   },
 });
 
@@ -134,6 +172,8 @@ window.Shapes = {
   fill,
   stroke,
   text,
+  arc,
+  lineStyle,
 };
 
 window.Illumination = function(...args) {

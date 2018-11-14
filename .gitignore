@@ -1,2 +1,4 @@
 .babel-cache/
 node_modules/
+.env.*
+!.env.example

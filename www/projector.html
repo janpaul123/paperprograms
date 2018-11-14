@@ -3,18 +3,20 @@
 <head>
   <meta charset="utf-8">
   <title>Paper Programs Projector</title>
+  <script src="glfx.js"></script>
 </head>
 <body style="background: black; height: 100%; overflow: hidden; margin: 0; box-shadow: 0 0 0 1px #777 inset;">
+  <div id="alignmentHelper" style="background: transparent; position: absolute; left: 25%; top: 25%; width: 50%; height: 50%; overflow: hidden; margin: 0; box-shadow: 0 0 0 1px #777 inset;">
+  <video id="videoInput" style="display: none"></video>
+  <script>
+    const spaceUrl = JSON.parse(localStorage.paperProgramsConfig).spaceUrl.split('/');
+    const spaceHash = spaceUrl[spaceUrl.length - 1];
 
-<script>
-  const spaceUrl = JSON.parse(localStorage.paperProgramsConfig).spaceUrl.split('/');
-  const spaceHash = spaceUrl[spaceUrl.length - 1];
+    __SPACE_HASH__ = spaceHash;
 
-  __SPACE_HASH__ = spaceHash;
-
-  document.write(
-    '<script src="ghostpages.' + spaceHash + '.js"></' + 'script>' +
-    '<script src="projector.js"></' + 'script>');
-</script>
+    document.write(
+      '<script src="ghostpages.' + spaceHash + '.js"></' + 'script>' +
+      '<script src="projector.js"></' + 'script>');
+  </script>
 </body>
 </html>
