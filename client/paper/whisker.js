@@ -115,8 +115,6 @@ export default class Whisker extends EventEmitter {
       this._lastWhiskerEnd = whiskerEnd;
       this.emit('whiskerMoved', { x: Math.round(whiskerEnd.x), y: Math.round(whiskerEnd.y) });
     }
-
-    this._ctx.commit();
   }
 
   _intersectsPaper(whiskerStart, whiskerEnd, paper) {
@@ -134,7 +132,6 @@ export default class Whisker extends EventEmitter {
 
     if (this._ctx) {
       this._ctx.clearRect(0, 0, this._canvas.width, this._canvas.height);
-      this._ctx.commit();
       this._ctx = null;
     }
 

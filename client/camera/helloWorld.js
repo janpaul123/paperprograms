@@ -14,7 +14,6 @@ importScripts('paper.js');
   ctx.fillText('Hello', canvas.width / 2, canvas.height / 2 - 10);
   ctx.fillStyle = 'rgb(0,255,0)';
   ctx.fillText('world', canvas.width / 2, canvas.height / 2 + 20);
-  ctx.commit();
 
   // Get a "supporter canvas", which is a canvas for the entire
   // projection surface.
@@ -51,9 +50,6 @@ importScripts('paper.js');
         supporterCtx.stroke();
       }
     });
-
-    // Finally, commit to the canvas, which actually renders.
-    supporterCtx.commit();
   }, 100);
 })();
 `;
