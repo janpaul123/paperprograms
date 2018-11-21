@@ -159,6 +159,10 @@ export default class CameraMain extends React.Component {
     );
   };
 
+  _cornersChange = (corners, cornerWidth) => {
+    this.props.onCornersChange(corners, cornerWidth);
+  };
+
   render() {
     const padding = parseInt(styles.cameraMainPadding);
     const sidebarWidth = parseInt(styles.cameraMainSidebarWidth);
@@ -181,9 +185,10 @@ export default class CameraMain extends React.Component {
               width={this.state.pageWidth - padding * 3 - sidebarWidth}
               config={this.props.config}
               onConfigChange={this.props.onConfigChange}
-              onProcessVideo={({ programsToRender, markers, framerate }) => {
+              onProcessVideo={({ programsToRender, markers, framerate, corners, cornerWidth }) => {
                 this.setState({ framerate });
                 this._programsChange(programsToRender);
+                this._cornersChange(corners, cornerWidth);
                 this.props.onMarkersChange(markers);
               }}
               allowSelectingDetectedPoints={this.state.selectedColorIndex !== -1}
@@ -476,6 +481,20 @@ export default class CameraMain extends React.Component {
                   }
                 />{' '}
                 programs
+              </div>
+
+              <div className={styles.sidebarSubSection}>
+                <input
+                  type="checkbox"
+                  checked={this.props.config.showOverlayAlignmentHelper}
+                  onChange={() =>
+                    this.props.onConfigChange({
+                      ...this.props.config,
+                      showOverlayAlignmentHelper: !this.props.config.showOverlayAlignmentHelper,
+                    })
+                  }
+                />{' '}
+                alignment helper
               </div>
             </div>
             <div className={styles.sidebarSection}>

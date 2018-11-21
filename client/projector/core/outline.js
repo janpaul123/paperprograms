@@ -27,7 +27,8 @@ module.exports = () => {
 
   When` {paper} has changed code, 
         current time is {t} `(({ paper, t }) => {
-    const color = `rgba(255, 0, 0, ${Math.sin(Math.abs(t / 500))})`;
+    const alpha = (Math.sin(t / 500) + 1) / 2;
+    const color = `rgba(255, 0, 0, ${alpha})`;
     Wish`${paper} has outline with color ${color}`;
   });
 };

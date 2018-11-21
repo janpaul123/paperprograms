@@ -19,7 +19,7 @@ module.exports = () => {
     }
   );
 
-  When`{_} wishes {someone} sets persisten state {key} to {valu}`(({ someone, key, value }) => {
+  When`{_} wishes {someone} sets persistent state {key} to {value}`(({ someone, key, value }) => {
     if (!store[someone]) {
       store[someone] = {};
     }

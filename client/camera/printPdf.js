@@ -93,13 +93,19 @@ function drawPage({ patterns, title, code, metadata, paperSize }) {
     .font('Courier')
     .fontSize(11)
     .fillColor('#888888')
-    .text(code, codeMarginTotal, codeMarginTotal, {
+    .text(replaceTabs(code), codeMarginTotal, codeMarginTotal, {
       width: width - codeMarginTotal * 2,
       height: height - codeMarginTotal * 2,
     });
 
   doc.end();
   return doc;
+}
+
+// Replace tabs with spaces because pdfkit has broken tabs
+// re: https://github.com/foliojs/pdfkit/issues/617
+function replaceTabs(text) {
+  return text.replace(/\t/g, '  ');
 }
 
 function drawCalibrationPage({ allColors, paperSize }) {
