@@ -204,4 +204,7 @@ import Whisker from './whisker';
       whisker.on('whiskerMoved', whiskerPointCallback);
     }
   };
+
+  // makes ctx.commit a no-op
+  workerContext.OffscreenCanvasRenderingContext2D.prototype.commit = () => {};
 })(self);
