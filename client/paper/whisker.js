@@ -61,9 +61,9 @@ export default class Whisker extends EventEmitter {
 
     if (
       !this._pointAtData ||
-      !papers[this._pointAtData.paperNumber] ||
+      (this._pointAtData && !papers[this._pointAtData.paperNumber]) ||
       // Try keeping `pointAtData` stable if possible.
-      !this._intersectsPaper(whiskerStart, whiskerEnd, papers[this._pointAtData.paperNumber])
+      (this._pointAtData && (!this._intersectsPaper(whiskerStart, whiskerEnd, papers[this._pointAtData.paperNumber])))
     ) {
       let newPointAtData = null;
       Object.keys(papers).forEach(otherPaperNumber => {
@@ -78,7 +78,11 @@ export default class Whisker extends EventEmitter {
       }
 
       if (newPointAtData) {
-        this.emit('paperAdded', newPointAtData);
+        // hack alert!! Whisker listeners fire before the other paper program has fired. That causes problems.
+        // Wait a bit for the paper to proceed its execution, then run this.
+        setTimeout( () => {
+          this.emit('paperAdded', newPointAtData);
+        }, 500 );
       }
 
       this._pointAtData = newPointAtData;

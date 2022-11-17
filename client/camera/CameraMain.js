@@ -57,7 +57,7 @@ export default class CameraMain extends React.Component {
   _print = program => {
     printPage(
       program.number,
-      codeToName(program.originalCode),
+      codeToName(program.currentCode),
       codeToPrint(program.originalCode),
       this.props.config.paperSize
     );
