@@ -6,6 +6,7 @@ module.exports = {
     projector: ['./client/projector/entry.js'],
     editor: ['./client/editor/entry.js'],
     paper: ['./client/paper/entry.js'],
+    board: ['./client/board/entry.js']
   },
   output: {
     path: path.join(__dirname, 'www'),
