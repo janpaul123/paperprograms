@@ -18,7 +18,7 @@ module.exports = {
         test: /\.js$/,
         exclude: [/node_modules/],
         loader: 'babel-loader',
-        query: {
+        options: {
           cacheDirectory: '.babel-cache',
           sourceMap: false,
         },
@@ -39,7 +39,11 @@ module.exports = {
       // Per https://github.com/devongovett/pdfkit/issues/659#issuecomment-321452649
       {
         test: /node_modules\/(pdfkit|fontkit|png-js|linebreak|unicode-properties|brotli)\//,
-        loader: 'transform-loader?brfs',
+        use: [
+          {
+            loader: 'transform-loader?brfs'
+          }
+        ],
       },
       {
         test: /node_modules\/unicode-properties.*\.json$/,
