@@ -5,28 +5,23 @@
 import React from 'react';
 import { useEffect } from 'react';
 
-const SceneryDisplay = () => {
+const SceneryDisplay = ( props ) => {
 
   // This useEffect hook runs once after the component is rendered.  Effectively, this creates a Scenery display and
   // adds it to the div that was created when this element was initially rendered.
   useEffect( () => {
-    console.log( 'Hey, I ran!' );
     const sceneryDisplayDomElement = document.getElementById( 'scenery-display' );
-    console.log( `sceneryDisplayDomElement = ${sceneryDisplayDomElement}` );
-    const scene = new scenery.Node();
-    const sceneryDisplay = new scenery.Display( scene, {
-      backgroundColor: 'black',
+    const sceneryDisplay = new scenery.Display( props.scene, {
+      backgroundColor: 'rgb(254, 252, 231)',
       container: sceneryDisplayDomElement
     } );
-    const testRectangle = new scenery.Rectangle( 10, 10, 100, 100, { fill: 'green' } );
-    scene.addChild( testRectangle );
+    sceneryDisplay.initializeEvents();
+    const testRectangle = new scenery.Rectangle( 0, 0, 100, 100, { fill: 'green' } );
+    props.scene.addChild( testRectangle );
     sceneryDisplay.updateDisplay();
 
-    let left = 0;
     window.setInterval( () => {
-      left += 5;
-      console.log( `left = ${left}` );
-      testRectangle.left = left;
+      testRectangle.left = Math.min( 200, testRectangle.left + 5 );
       sceneryDisplay.updateDisplay();
     }, 1000 );
   }, [] );
