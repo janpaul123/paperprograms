@@ -46,6 +46,14 @@ const button = new sun.TextPushButton( 'Don\`t get pushy.', {
   top: 190
 } );
 
+const imageElement = document.createElement( 'img' );
+imageElement.setAttribute( 'src', 'media/images/girlInAir.png' );
+const image = new scenery.Image( imageElement, {
+  left: 25,
+  top: 25,
+  maxWidth: 50
+} );
+
 const mapOfProgramsToComponents = new Map();
 
 // Add or remove UI components based on the presence or absence of certain paper programs.
@@ -56,12 +64,9 @@ const updateUIComponents = presentPaperProgramInfo => {
   // Add components for paper programs that have appeared since the list time through this function.
   presentPaperProgramInfo.forEach( paperProgramInstanceInfo => {
     const paperProgramNumber = Number( paperProgramInstanceInfo.number );
-    if ( !mapOfProgramsToComponents.has( paperProgramNumber ) ) {
+    const programSpecificData = dataByProgramNumber[ paperProgramNumber ];
 
-      // There is no entry for this paper program in our map, so add one and add it to the scene.
-      const programSpecificData = dataByProgramNumber[ paperProgramNumber ];
-
-      assert && assert( programSpecificData, `no program-specific data found for paper program ${paperProgramNumber}` );
+    if ( programSpecificData && !mapOfProgramsToComponents.has( paperProgramNumber ) ) {
 
       // Add the specified component.
       if ( programSpecificData.phetComponent === 'slider' ) {
@@ -73,15 +78,21 @@ const updateUIComponents = presentPaperProgramInfo => {
       else if ( programSpecificData.phetComponent === 'button' ) {
         mapOfProgramsToComponents.set( paperProgramNumber, button );
       }
+      else if ( programSpecificData.phetComponent === 'image' ) {
+        mapOfProgramsToComponents.set( paperProgramNumber, image );
+      }
       scene.addChild( mapOfProgramsToComponents.get( paperProgramNumber ) );
     }
 
     // Position the component based on the position of the paper program.
     const uiComponent = mapOfProgramsToComponents.get( paperProgramNumber );
-    const normalizedCenterX = ( paperProgramInstanceInfo.points[ 0 ].x + paperProgramInstanceInfo.points[ 2 ].x ) / 2;
-    const normalizedCenterY = ( paperProgramInstanceInfo.points[ 0 ].y + paperProgramInstanceInfo.points[ 2 ].y ) / 2;
-    uiComponent.centerX = normalizedCenterX * DISPLAY_WIDTH;
-    uiComponent.centerY = normalizedCenterY * DISPLAY_HEIGHT;
+
+    if ( uiComponent ) {
+      const normalizedCenterX = ( paperProgramInstanceInfo.points[ 0 ].x + paperProgramInstanceInfo.points[ 2 ].x ) / 2;
+      const normalizedCenterY = ( paperProgramInstanceInfo.points[ 0 ].y + paperProgramInstanceInfo.points[ 2 ].y ) / 2;
+      uiComponent.centerX = normalizedCenterX * DISPLAY_WIDTH;
+      uiComponent.centerY = normalizedCenterY * DISPLAY_HEIGHT;
+    }
   } );
 
   // Remove components for paper programs that have disappeared since the last time this function was run.
