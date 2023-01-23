@@ -27,33 +27,6 @@ ReactDOM.render(
   element
 );
 
-// Create UI components that will be added and removed from the scene graph based on the state of the paper programs.
-const valueProperty = new axon.Property( 0 );
-const range = new dot.Range( 0, 100 );
-const slider = new sun.HSlider( valueProperty, range, {
-  left: 100,
-  top: 100
-} );
-const booleanProperty = new axon.Property( false );
-const checkboxLabel = new scenery.Text( 'Check this out!' );
-const checkbox = new sun.Checkbox( booleanProperty, checkboxLabel, {
-  left: 100,
-  top: 150
-} );
-const button = new sun.TextPushButton( 'Don\`t get pushy.', {
-  font: new scenery.Font( { size: '16px' } ),
-  left: 100,
-  top: 190
-} );
-
-const imageElement = document.createElement( 'img' );
-imageElement.setAttribute( 'src', 'media/images/girlInAir.png' );
-const image = new scenery.Image( imageElement, {
-  left: 25,
-  top: 25,
-  maxWidth: 100
-} );
-
 const mapOfProgramsToComponents = new Map();
 
 // Add or remove UI components based on the presence or absence of certain paper programs.
@@ -69,19 +42,38 @@ const updateUIComponents = presentPaperProgramInfo => {
     if ( programSpecificData && !mapOfProgramsToComponents.has( paperProgramNumber ) ) {
 
       // Add the specified component.
-      if ( programSpecificData.phetComponent === 'slider' ) {
-        mapOfProgramsToComponents.set( paperProgramNumber, slider );
+      if ( programSpecificData.phetComponent ) {
+        const labelString = programSpecificData.phetComponent.labelString;
+
+        if ( programSpecificData.phetComponent.type === 'slider' ) {
+          const valueProperty = new axon.Property( 0 );
+          const range = new dot.Range( 0, 100 );
+          const slider = new sun.HSlider( valueProperty, range );
+          mapOfProgramsToComponents.set( paperProgramNumber, slider );
+        }
+        else if ( programSpecificData.phetComponent.type === 'checkbox' ) {
+          const booleanProperty = new axon.Property( false );
+          const checkboxLabel = new scenery.Text( labelString );
+          const checkbox = new sun.Checkbox( booleanProperty, checkboxLabel );
+          mapOfProgramsToComponents.set( paperProgramNumber, checkbox );
+        }
+        else if ( programSpecificData.phetComponent.type === 'button' ) {
+          const button = new sun.TextPushButton( labelString, {
+            font: new scenery.Font( { size: '16px' } )
+          } );
+          mapOfProgramsToComponents.set( paperProgramNumber, button );
+        }
+        else if ( programSpecificData.phetComponent.type === 'image' ) {
+          const imageElement = document.createElement( 'img' );
+          imageElement.setAttribute( 'src', 'media/images/girlInAir.png' );
+          const image = new scenery.Image( imageElement, {
+            maxWidth: 100
+          } );
+          mapOfProgramsToComponents.set( paperProgramNumber, image );
+        }
+
+        scene.addChild( mapOfProgramsToComponents.get( paperProgramNumber ) );
       }
-      else if ( programSpecificData.phetComponent === 'checkbox' ) {
-        mapOfProgramsToComponents.set( paperProgramNumber, checkbox );
-      }
-      else if ( programSpecificData.phetComponent === 'button' ) {
-        mapOfProgramsToComponents.set( paperProgramNumber, button );
-      }
-      else if ( programSpecificData.phetComponent === 'image' ) {
-        mapOfProgramsToComponents.set( paperProgramNumber, image );
-      }
-      scene.addChild( mapOfProgramsToComponents.get( paperProgramNumber ) );
     }
 
     // Position the component based on the position of the paper program.
