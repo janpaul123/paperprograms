@@ -44,7 +44,7 @@ const updateUIComponents = paperProgramsPresent => {
   const dataByProgramNumber = JSON.parse( localStorage.paperProgramsDataByProgramNumber || '{}' );
   Object.keys( dataByProgramNumber ).forEach( programNumber => {
     const programSpecificData = dataByProgramNumber[ programNumber ];
-    if ( paperProgramsPresent.find( program => program.number === programNumber ) && programSpecificData.phetComponent ) {
+    if ( paperProgramsPresent.find( program => program.number === Number( programNumber ) ) && programSpecificData.phetComponent ) {
       if ( programSpecificData.phetComponent === 'slider' ){
         shouldHaveSlider = true;
       }
