@@ -35,12 +35,18 @@ const checkbox = new sun.Checkbox( booleanProperty, checkboxLabel, {
   left: 100,
   top: 150
 } );
+const button = new sun.TextPushButton( 'Don\`t get pushy.', {
+  font: new scenery.Font( { size: '16px' } ),
+  left: 100,
+  top: 190
+} );
 
 // Add or remove UI components based on the presence or absence of certain paper programs.
 const updateUIComponents = paperProgramsPresent => {
 
   let shouldHaveSlider = false;
   let shouldHaveCheckbox = false;
+  let shouldHaveButton = false;
   const dataByProgramNumber = JSON.parse( localStorage.paperProgramsDataByProgramNumber || '{}' );
   Object.keys( dataByProgramNumber ).forEach( programNumber => {
     const programSpecificData = dataByProgramNumber[ programNumber ];
@@ -50,11 +56,14 @@ const updateUIComponents = paperProgramsPresent => {
     // the local storage data when testing on various systems, hence all the `Number` constructors.
     const paperProgramIsPresent = paperProgramsPresent.find( program => Number( program.number ) === Number( programNumber ) );
     if ( paperProgramIsPresent && programSpecificData.phetComponent ) {
-      if ( programSpecificData.phetComponent === 'slider' ){
+      if ( programSpecificData.phetComponent === 'slider' ) {
         shouldHaveSlider = true;
       }
-      else if (programSpecificData.phetComponent === 'checkbox' ){
+      else if ( programSpecificData.phetComponent === 'checkbox' ) {
         shouldHaveCheckbox = true;
+      }
+      else if (programSpecificData.phetComponent === 'button' ){
+        shouldHaveButton = true;
       }
     }
   } );
@@ -73,6 +82,14 @@ const updateUIComponents = paperProgramsPresent => {
   }
   else if ( !shouldHaveCheckbox && scene.hasChild( checkbox ) ) {
     scene.removeChild( checkbox );
+  }
+
+  // Add or remove the button.
+  if ( shouldHaveButton && !scene.hasChild( button ) ) {
+    scene.addChild( button );
+  }
+  else if ( !shouldHaveButton && scene.hasChild( button ) ) {
+    scene.removeChild( button );
   }
 }
 
