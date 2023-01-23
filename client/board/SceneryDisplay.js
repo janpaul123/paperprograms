@@ -10,18 +10,28 @@ const SceneryDisplay = ( props ) => {
   // This useEffect hook runs once after the component is rendered.  Effectively, this creates a Scenery display and
   // adds it to the div that was created when this element was initially rendered.
   useEffect( () => {
+
+    // Create the scenery display.
     const sceneryDisplayDomElement = document.getElementById( 'scenery-display' );
     const sceneryDisplay = new scenery.Display( props.scene, {
       backgroundColor: 'rgb(254, 252, 231)',
       container: sceneryDisplayDomElement
     } );
+
+    // Make the scenery display interactive.
     sceneryDisplay.initializeEvents();
-    const testRectangle = new scenery.Rectangle( 0, 0, 100, 100, { fill: 'green' } );
-    props.scene.addChild( testRectangle );
+
+    // Add some text.  This helps indicate that things started successfully.
+    const titleText = new scenery.Text( 'Scenery Display - Use paper programs to add components.', {
+      font: new scenery.Font( { size: '20px' } ),
+      left: 10,
+      top: 10
+    } )
+    props.scene.addChild( titleText );
     sceneryDisplay.updateDisplay();
 
+    // Update the display at a regular interval.
     window.setInterval( () => {
-      testRectangle.left = Math.min( 200, testRectangle.left + 5 );
       sceneryDisplay.updateDisplay();
     }, 1000 );
   }, [] );
