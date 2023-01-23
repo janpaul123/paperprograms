@@ -1,6 +1,7 @@
 const path = require('path');
 
 module.exports = {
+  mode: 'development',
   entry: {
     camera: ['./client/camera/entry.js'],
     projector: ['./client/projector/entry.js'],
