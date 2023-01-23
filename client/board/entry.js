@@ -41,32 +41,45 @@ const updateUIComponents = paperProgramsPresent => {
 
   // Add or remove the slider.
   const shouldHaveSlider = paperProgramsPresent && paperProgramsPresent.find( program => program.number === '839' );
-  if ( shouldHaveSlider && !scene.hasChild( slider ) ){
+  if ( shouldHaveSlider && !scene.hasChild( slider ) ) {
     scene.addChild( slider );
   }
-  else if (!shouldHaveSlider && scene.hasChild( slider )){
+  else if ( !shouldHaveSlider && scene.hasChild( slider ) ) {
     scene.removeChild( slider );
   }
 
   // Add or remove the checkbox.
   const shouldHaveCheckbox = paperProgramsPresent && paperProgramsPresent.find( program => program.number === '1933' );
-  if ( shouldHaveCheckbox && !scene.hasChild( checkbox ) ){
+  if ( shouldHaveCheckbox && !scene.hasChild( checkbox ) ) {
     scene.addChild( checkbox );
   }
-  else if (!shouldHaveCheckbox && scene.hasChild( checkbox )){
+  else if ( !shouldHaveCheckbox && scene.hasChild( checkbox ) ) {
     scene.removeChild( checkbox );
   }
 }
 
 // Make updates when the local storage is updated (this is how the processes communicate).
+let paperProgramsData = [];
 addEventListener( 'storage', () => {
-  const paperProgramsPresent = JSON.parse( localStorage.paperProgramsProgramsToRender );
-  updateUIComponents(paperProgramsPresent);
+  const currentPaperProgramsData = JSON.parse( localStorage.paperProgramsProgramsToRender );
 
-  // Debug - Log the programs that are currently present.
-  if ( paperProgramsPresent ) {
-    paperProgramsPresent.forEach( program => {
-      console.log( `program.number = ${program.number}` );
-    } );
-  }
+  // Log information about changes to the available data.
+  const currentProgramNumbers = currentPaperProgramsData.map( entry => entry.number );
+  const previousProgramNumbers = paperProgramsData.map( entry => entry.number );
+  currentProgramNumbers.forEach( currentProgramNumber => {
+    if ( !previousProgramNumbers.includes( currentProgramNumber ) ) {
+      console.log( `New program detected: ${currentProgramNumber}` );
+    }
+  } );
+  previousProgramNumbers.forEach( previousProgramNumber => {
+    if ( !currentProgramNumbers.includes( previousProgramNumber ) ) {
+      console.log( `Program disappeared: ${previousProgramNumber}` );
+    }
+  } );
+
+  // Update our copy of the data entries.
+  paperProgramsData = currentPaperProgramsData;
+
+  // Update the UI components on the screen.
+  updateUIComponents( paperProgramsData );
 } );
