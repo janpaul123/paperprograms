@@ -44,7 +44,12 @@ const updateUIComponents = paperProgramsPresent => {
   const dataByProgramNumber = JSON.parse( localStorage.paperProgramsDataByProgramNumber || '{}' );
   Object.keys( dataByProgramNumber ).forEach( programNumber => {
     const programSpecificData = dataByProgramNumber[ programNumber ];
-    if ( paperProgramsPresent.find( program => program.number === Number( programNumber ) ) && programSpecificData.phetComponent ) {
+
+    // Test whether the paper program is currently present.  This is necessary because the program data seems to persist
+    // even after the programs are removed from the detection window.  Also, there were some type differences found in
+    // the local storage data when testing on various systems, hence all the `Number` constructors.
+    const paperProgramIsPresent = paperProgramsPresent.find( program => Number( program.number ) === Number( programNumber ) );
+    if ( paperProgramIsPresent && programSpecificData.phetComponent ) {
       if ( programSpecificData.phetComponent === 'slider' ){
         shouldHaveSlider = true;
       }
