@@ -10,6 +10,11 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import SceneryDisplay from './SceneryDisplay.js';
 
+// constants
+const assert = window.assert;
+const DISPLAY_WIDTH = 640;
+const DISPLAY_HEIGHT = 480;
+
 // Create the root element for React.
 const element = document.createElement( 'div' );
 document.body.appendChild( element );
@@ -18,7 +23,7 @@ document.body.appendChild( element );
 const scene = new scenery.Node();
 
 ReactDOM.render(
-  <SceneryDisplay scene={scene}/>,
+  <SceneryDisplay scene={scene} width={DISPLAY_WIDTH} height={DISPLAY_HEIGHT}/>,
   element
 );
 
@@ -41,66 +46,64 @@ const button = new sun.TextPushButton( 'Don\`t get pushy.', {
   top: 190
 } );
 
+const mapOfProgramsToComponents = new Map();
+
 // Add or remove UI components based on the presence or absence of certain paper programs.
-const updateUIComponents = paperProgramsPresent => {
+const updateUIComponents = presentPaperProgramInfo => {
 
-  let shouldHaveSlider = false;
-  let shouldHaveCheckbox = false;
-  let shouldHaveButton = false;
   const dataByProgramNumber = JSON.parse( localStorage.paperProgramsDataByProgramNumber || '{}' );
-  Object.keys( dataByProgramNumber ).forEach( programNumber => {
-    const programSpecificData = dataByProgramNumber[ programNumber ];
 
-    // Test whether the paper program is currently present.  This is necessary because the program data seems to persist
-    // even after the programs are removed from the detection window.  Also, there were some type differences found in
-    // the local storage data when testing on various systems, hence all the `Number` constructors.
-    const paperProgramIsPresent = paperProgramsPresent.find( program => Number( program.number ) === Number( programNumber ) );
-    if ( paperProgramIsPresent && programSpecificData.phetComponent ) {
+  // Add components for paper programs that have appeared since the list time through this function.
+  presentPaperProgramInfo.forEach( paperProgramInstanceInfo => {
+    const paperProgramNumber = Number( paperProgramInstanceInfo.number );
+    if ( !mapOfProgramsToComponents.has( paperProgramNumber ) ) {
+
+      // There is no entry for this paper program in our map, so add one and add it to the scene.
+      const programSpecificData = dataByProgramNumber[ paperProgramNumber ];
+
+      assert && assert( programSpecificData, `no program-specific data found for paper program ${paperProgramNumber}` );
+
+      // Add the specified component.
       if ( programSpecificData.phetComponent === 'slider' ) {
-        shouldHaveSlider = true;
+        mapOfProgramsToComponents.set( paperProgramNumber, slider );
       }
       else if ( programSpecificData.phetComponent === 'checkbox' ) {
-        shouldHaveCheckbox = true;
+        mapOfProgramsToComponents.set( paperProgramNumber, checkbox );
       }
-      else if (programSpecificData.phetComponent === 'button' ){
-        shouldHaveButton = true;
+      else if ( programSpecificData.phetComponent === 'button' ) {
+        mapOfProgramsToComponents.set( paperProgramNumber, button );
       }
+      scene.addChild( mapOfProgramsToComponents.get( paperProgramNumber ) );
     }
+
+    // Position the component based on the position of the paper program.
+    const uiComponent = mapOfProgramsToComponents.get( paperProgramNumber );
+    const normalizedCenterX = ( paperProgramInstanceInfo.points[ 0 ].x + paperProgramInstanceInfo.points[ 2 ].x ) / 2;
+    const normalizedCenterY = ( paperProgramInstanceInfo.points[ 0 ].y + paperProgramInstanceInfo.points[ 2 ].y ) / 2;
+    uiComponent.centerX = normalizedCenterX * DISPLAY_WIDTH;
+    uiComponent.centerY = normalizedCenterY * DISPLAY_HEIGHT;
   } );
 
-  // Add or remove the slider.
-  if ( shouldHaveSlider && !scene.hasChild( slider ) ) {
-    scene.addChild( slider );
-  }
-  else if ( !shouldHaveSlider && scene.hasChild( slider ) ) {
-    scene.removeChild( slider );
-  }
-
-  // Add or remove the checkbox.
-  if ( shouldHaveCheckbox && !scene.hasChild( checkbox ) ) {
-    scene.addChild( checkbox );
-  }
-  else if ( !shouldHaveCheckbox && scene.hasChild( checkbox ) ) {
-    scene.removeChild( checkbox );
-  }
-
-  // Add or remove the button.
-  if ( shouldHaveButton && !scene.hasChild( button ) ) {
-    scene.addChild( button );
-  }
-  else if ( !shouldHaveButton && scene.hasChild( button ) ) {
-    scene.removeChild( button );
+  // Remove components for paper programs that have disappeared since the last time this function was run.
+  const presentPaperProgramNumbers = presentPaperProgramInfo.map( info => Number( info.number ) );
+  for ( let [ key, val ] of mapOfProgramsToComponents ) {
+    if ( !presentPaperProgramNumbers.includes( key ) ) {
+      scene.removeChild( val );
+      mapOfProgramsToComponents.delete( key );
+    }
   }
 }
 
-// Make updates when the local storage is updated (this is how the processes communicate).
-let paperProgramsData = [];
+// Make updates when the local storage is updated. This is how the processes communicate.  Through experimentation, we
+// (PhET devs) found that this is called every second even if nothing changes as long as there is at least one paper
+// program in the detection window.
+let paperProgramsInfo = [];
 addEventListener( 'storage', () => {
-  const currentPaperProgramsData = JSON.parse( localStorage.paperProgramsProgramsToRender );
+  const currentPaperProgramsInfo = JSON.parse( localStorage.paperProgramsProgramsToRender );
 
   // Log information about changes to the available data.
-  const currentProgramNumbers = currentPaperProgramsData.map( entry => entry.number );
-  const previousProgramNumbers = paperProgramsData.map( entry => entry.number );
+  const currentProgramNumbers = currentPaperProgramsInfo.map( entry => Number( entry.number ) );
+  const previousProgramNumbers = paperProgramsInfo.map( entry => Number( entry.number ) );
   currentProgramNumbers.forEach( currentProgramNumber => {
     if ( !previousProgramNumbers.includes( currentProgramNumber ) ) {
       console.log( `New program detected: ${currentProgramNumber}` );
@@ -112,9 +115,9 @@ addEventListener( 'storage', () => {
     }
   } );
 
-  // Update our copy of the data entries.
-  paperProgramsData = currentPaperProgramsData;
+  // Update our copy of the into entries.
+  paperProgramsInfo = currentPaperProgramsInfo;
 
   // Update the UI components on the screen.
-  updateUIComponents( paperProgramsData );
+  updateUIComponents( currentPaperProgramsInfo );
 } );

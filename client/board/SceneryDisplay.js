@@ -14,6 +14,8 @@ const SceneryDisplay = ( props ) => {
     // Create the scenery display.
     const sceneryDisplayDomElement = document.getElementById( 'scenery-display' );
     const sceneryDisplay = new scenery.Display( props.scene, {
+      width: props.width,
+      height: props.height,
       backgroundColor: 'rgb(254, 252, 231)',
       container: sceneryDisplayDomElement
     } );
