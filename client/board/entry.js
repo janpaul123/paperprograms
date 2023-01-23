@@ -39,8 +39,22 @@ const checkbox = new sun.Checkbox( booleanProperty, checkboxLabel, {
 // Add or remove UI components based on the presence or absence of certain paper programs.
 const updateUIComponents = paperProgramsPresent => {
 
+  let shouldHaveSlider = false;
+  let shouldHaveCheckbox = false;
+  const dataByProgramNumber = JSON.parse( localStorage.paperProgramsDataByProgramNumber || '{}' );
+  Object.keys( dataByProgramNumber ).forEach( programNumber => {
+    const programSpecificData = dataByProgramNumber[ programNumber ];
+    if ( paperProgramsPresent.find( program => program.number === programNumber ) && programSpecificData.phetComponent ) {
+      if ( programSpecificData.phetComponent === 'slider' ){
+        shouldHaveSlider = true;
+      }
+      else if (programSpecificData.phetComponent === 'checkbox' ){
+        shouldHaveCheckbox = true;
+      }
+    }
+  } );
+
   // Add or remove the slider.
-  const shouldHaveSlider = paperProgramsPresent && paperProgramsPresent.find( program => program.number === '839' );
   if ( shouldHaveSlider && !scene.hasChild( slider ) ) {
     scene.addChild( slider );
   }
@@ -49,7 +63,6 @@ const updateUIComponents = paperProgramsPresent => {
   }
 
   // Add or remove the checkbox.
-  const shouldHaveCheckbox = paperProgramsPresent && paperProgramsPresent.find( program => program.number === '1933' );
   if ( shouldHaveCheckbox && !scene.hasChild( checkbox ) ) {
     scene.addChild( checkbox );
   }
