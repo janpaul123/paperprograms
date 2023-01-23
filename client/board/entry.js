@@ -51,7 +51,7 @@ imageElement.setAttribute( 'src', 'media/images/girlInAir.png' );
 const image = new scenery.Image( imageElement, {
   left: 25,
   top: 25,
-  maxWidth: 50
+  maxWidth: 100
 } );
 
 const mapOfProgramsToComponents = new Map();
