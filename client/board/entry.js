@@ -11,7 +11,6 @@ import ReactDOM from 'react-dom';
 import SceneryDisplay from './SceneryDisplay.js';
 
 // constants
-const assert = window.assert;
 const DISPLAY_WIDTH = 640;
 const DISPLAY_HEIGHT = 480;
 
@@ -65,7 +64,7 @@ const updateUIComponents = presentPaperProgramInfo => {
         }
         else if ( programSpecificData.phetComponent.type === 'image' ) {
           const imageElement = document.createElement( 'img' );
-          imageElement.setAttribute( 'src', 'media/images/girlInAir.png' );
+          imageElement.setAttribute( 'src', 'media/images/lunarLander.png' );
           const image = new scenery.Image( imageElement, {
             maxWidth: 100
           } );
