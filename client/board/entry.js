@@ -28,8 +28,16 @@ ReactDOM.render(
 
 const mapOfProgramsToComponents = new Map();
 
-// Add or remove UI components based on the presence or absence of certain paper programs.
-const updateUIComponents = presentPaperProgramInfo => {
+// The model of our board, with all model Properties from programs. It is observable so that view elements and
+// controller can update/reconstruct themselves when the model changes.
+const modelProperty = new axon.Property( {} );
+
+// If the model changes from programs, a timestamp is saved and we compare it to this saved timestamp to only
+// reconstruct the model when needed
+let lastUpdateTime = 0;
+
+// Update the model and add or remove UI components based on the presence or absence of certain paper programs.
+const updateBoard = presentPaperProgramInfo => {
 
   const dataByProgramNumber = JSON.parse( localStorage.paperProgramsDataByProgramNumber || '{}' );
 
@@ -38,11 +46,30 @@ const updateUIComponents = presentPaperProgramInfo => {
     const paperProgramNumber = Number( paperProgramInstanceInfo.number );
     const programSpecificData = dataByProgramNumber[ paperProgramNumber ];
 
-    if ( programSpecificData && !mapOfProgramsToComponents.has( paperProgramNumber ) ) {
+    if ( programSpecificData && programSpecificData.model ) {
+      if ( programSpecificData.model.updateTime > lastUpdateTime ) {
+        lastUpdateTime = programSpecificData.model.updateTime;
+
+        const newModelValue = {};
+        for ( const field in programSpecificData.model ) {
+          console.log( field );
+
+          const modelObject = programSpecificData.model[ field ];
+          const modelPropertyString = modelObject.type;
+          const modelPropertyArgs = modelObject.args;
+
+          const namespaceAndConstructor = modelPropertyString.split( '.' );
+          newModelValue[ field ] = new window[ namespaceAndConstructor[ 0 ] ][ namespaceAndConstructor[ 1 ] ]( ...modelPropertyArgs );
+        }
+
+        modelProperty.value = newModelValue;
+      }
+    }
+
+    if ( programSpecificData && programSpecificData.phetComponent && !mapOfProgramsToComponents.has( paperProgramNumber ) ) {
 
       // Add the specified component.
-      if ( programSpecificData.phetComponent ) {
-        const labelString = programSpecificData.phetComponent.labelString;
+      const labelString = programSpecificData.phetComponent.labelString;
 
         if ( programSpecificData.phetComponent.type === 'slider' ) {
           const valueProperty = new axon.Property( 0 );
@@ -71,8 +98,7 @@ const updateUIComponents = presentPaperProgramInfo => {
           mapOfProgramsToComponents.set( paperProgramNumber, image );
         }
 
-        scene.addChild( mapOfProgramsToComponents.get( paperProgramNumber ) );
-      }
+      scene.addChild( mapOfProgramsToComponents.get( paperProgramNumber ) );
     }
 
     // Position the component based on the position of the paper program.
@@ -121,5 +147,5 @@ addEventListener( 'storage', () => {
   paperProgramsInfo = currentPaperProgramsInfo;
 
   // Update the UI components on the screen.
-  updateUIComponents( currentPaperProgramsInfo );
+  updateBoard( currentPaperProgramsInfo );
 } );
