@@ -48,18 +48,21 @@ const updateBoard = presentPaperProgramInfo => {
 
     if ( programSpecificData && programSpecificData.model ) {
       if ( programSpecificData.model.updateTime > lastUpdateTime ) {
+        console.log( 'Updating model' );
         lastUpdateTime = programSpecificData.model.updateTime;
 
         const newModelValue = {};
         for ( const field in programSpecificData.model ) {
-          console.log( field );
 
-          const modelObject = programSpecificData.model[ field ];
-          const modelPropertyString = modelObject.type;
-          const modelPropertyArgs = modelObject.args;
+          if ( field !== 'updateTime' ) {
+            const modelObject = programSpecificData.model[ field ];
 
-          const namespaceAndConstructor = modelPropertyString.split( '.' );
-          newModelValue[ field ] = new window[ namespaceAndConstructor[ 0 ] ][ namespaceAndConstructor[ 1 ] ]( ...modelPropertyArgs );
+            const modelPropertyString = modelObject.type;
+            const modelPropertyArgs = modelObject.args;
+
+            const namespaceAndConstructor = modelPropertyString.split( '.' );
+            newModelValue[ field ] = new window[ namespaceAndConstructor[ 0 ] ][ namespaceAndConstructor[ 1 ] ]( ...modelPropertyArgs );
+          }
         }
 
         modelProperty.value = newModelValue;
@@ -71,32 +74,32 @@ const updateBoard = presentPaperProgramInfo => {
       // Add the specified component.
       const labelString = programSpecificData.phetComponent.labelString;
 
-        if ( programSpecificData.phetComponent.type === 'slider' ) {
-          const valueProperty = new axon.Property( 0 );
-          const range = new dot.Range( 0, 100 );
-          const slider = new sun.HSlider( valueProperty, range );
-          mapOfProgramsToComponents.set( paperProgramNumber, slider );
-        }
-        else if ( programSpecificData.phetComponent.type === 'checkbox' ) {
-          const booleanProperty = new axon.Property( false );
-          const checkboxLabel = new scenery.Text( labelString );
-          const checkbox = new sun.Checkbox( booleanProperty, checkboxLabel );
-          mapOfProgramsToComponents.set( paperProgramNumber, checkbox );
-        }
-        else if ( programSpecificData.phetComponent.type === 'button' ) {
-          const button = new sun.TextPushButton( labelString, {
-            font: new scenery.Font( { size: '16px' } )
-          } );
-          mapOfProgramsToComponents.set( paperProgramNumber, button );
-        }
-        else if ( programSpecificData.phetComponent.type === 'image' ) {
-          const imageElement = document.createElement( 'img' );
-          imageElement.setAttribute( 'src', 'media/images/lunarLander.png' );
-          const image = new scenery.Image( imageElement, {
-            maxWidth: 100
-          } );
-          mapOfProgramsToComponents.set( paperProgramNumber, image );
-        }
+      if ( programSpecificData.phetComponent.type === 'slider' ) {
+        const valueProperty = new axon.Property( 0 );
+        const range = new dot.Range( 0, 100 );
+        const slider = new sun.HSlider( valueProperty, range );
+        mapOfProgramsToComponents.set( paperProgramNumber, slider );
+      }
+      else if ( programSpecificData.phetComponent.type === 'checkbox' ) {
+        const booleanProperty = new axon.Property( false );
+        const checkboxLabel = new scenery.Text( labelString );
+        const checkbox = new sun.Checkbox( booleanProperty, checkboxLabel );
+        mapOfProgramsToComponents.set( paperProgramNumber, checkbox );
+      }
+      else if ( programSpecificData.phetComponent.type === 'button' ) {
+        const button = new sun.TextPushButton( labelString, {
+          font: new scenery.Font( { size: '16px' } )
+        } );
+        mapOfProgramsToComponents.set( paperProgramNumber, button );
+      }
+      else if ( programSpecificData.phetComponent.type === 'image' ) {
+        const imageElement = document.createElement( 'img' );
+        imageElement.setAttribute( 'src', 'media/images/lunarLander.png' );
+        const image = new scenery.Image( imageElement, {
+          maxWidth: 100
+        } );
+        mapOfProgramsToComponents.set( paperProgramNumber, image );
+      }
 
       scene.addChild( mapOfProgramsToComponents.get( paperProgramNumber ) );
     }
