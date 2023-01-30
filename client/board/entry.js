@@ -41,14 +41,14 @@ const updateBoard = presentPaperProgramInfo => {
 
   const dataByProgramNumber = JSON.parse( localStorage.paperProgramsDataByProgramNumber || '{}' );
 
-  // Add components for paper programs that have appeared since the list time through this function.
+  // Add elements (model and view) for paper programs that have appeared since the last time through this function.
   presentPaperProgramInfo.forEach( paperProgramInstanceInfo => {
     const paperProgramNumber = Number( paperProgramInstanceInfo.number );
     const programSpecificData = dataByProgramNumber[ paperProgramNumber ];
 
     if ( programSpecificData && programSpecificData.model ) {
       if ( programSpecificData.model.updateTime > lastUpdateTime ) {
-        console.log( 'Updating model' );
+
         lastUpdateTime = programSpecificData.model.updateTime;
 
         const newModelValue = {};
@@ -64,8 +64,11 @@ const updateBoard = presentPaperProgramInfo => {
             newModelValue[ field ] = new window[ namespaceAndConstructor[ 0 ] ][ namespaceAndConstructor[ 1 ] ]( ...modelPropertyArgs );
           }
         }
-
         modelProperty.value = newModelValue;
+        console.log( 'Model updated, value:' );
+        for (const key in modelProperty.value) {
+          console.log( `  ${key}: ${modelProperty.value[key].toString()}` );
+        }
       }
     }
 
