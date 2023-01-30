@@ -36,6 +36,52 @@ const modelProperty = new axon.Property( {} );
 // reconstruct the model when needed
 let lastUpdateTime = 0;
 
+/**
+ * Helper function to fill in string-based references to elements in a model with the actual value in the model.  If
+ * no matching reference is found, an assertion is thrown.
+ */
+const resolveModelReferences = ( objectWithPotentialModelReferences, model ) => {
+
+  // Make a clone of the object so that we don't need to change it.
+  const objectWithResolvedReferences = _.cloneDeep( objectWithPotentialModelReferences );
+
+  for ( const key in objectWithResolvedReferences ) {
+
+    const value = objectWithResolvedReferences[ key ];
+
+    // Model references are strings that start with 'model.', e.g. 'model.heightProperty'.
+    if ( typeof value === 'string' && value.indexOf( 'model.' ) === 0 ) {
+
+      const valueStringElements = value.split( '.' );
+      const modelElementName = valueStringElements[ 1 ];
+
+      // Note to future maintainers: The following code does not support nested model properties, so it will need to be
+      // revised if and when that is needed.
+
+      // Check that the decoded information looks correct and that the reference exists in the model.
+      assert && assert(
+        valueStringElements.length === 2,
+        `unexpected number of keys in model reference: ${value}`
+      );
+      assert && assert(
+        typeof modelElementName === 'string',
+        `unexpected model element name value: ${modelElementName}`
+      );
+      assert && assert(
+        model[ modelElementName ] !== undefined,
+        `model element name not found in model: ${modelElementName}`
+      );
+
+      // Replace the reference to the model element with the element value.
+      if ( model[ modelElementName ] !== undefined ) {
+        objectWithResolvedReferences[ key ] = model[ modelElementName ];
+      }
+    }
+  }
+
+  return objectWithResolvedReferences;
+};
+
 // Update the model and add or remove UI components based on the presence or absence of certain paper programs.
 const updateBoard = presentPaperProgramInfo => {
 
@@ -46,29 +92,57 @@ const updateBoard = presentPaperProgramInfo => {
     const paperProgramNumber = Number( paperProgramInstanceInfo.number );
     const programSpecificData = dataByProgramNumber[ paperProgramNumber ];
 
-    if ( programSpecificData && programSpecificData.model ) {
-      if ( programSpecificData.model.updateTime > lastUpdateTime ) {
+    // If this paper program contains model data, and that data has changed since the last time through this function,
+    // update the local model Property.
+    if ( programSpecificData && programSpecificData.model && programSpecificData.model.updateTime > lastUpdateTime ) {
 
-        lastUpdateTime = programSpecificData.model.updateTime;
+      lastUpdateTime = programSpecificData.model.updateTime;
 
-        const newModelValue = {};
-        for ( const field in programSpecificData.model ) {
+      const newModelValue = {};
+      for ( const field in programSpecificData.model ) {
 
-          if ( field !== 'updateTime' ) {
-            const modelObject = programSpecificData.model[ field ];
+        if ( field !== 'updateTime' ) {
 
-            const modelPropertyString = modelObject.type;
-            const modelPropertyArgs = modelObject.args;
+          const modelObjectDescriptor = programSpecificData.model[ field ];
 
-            const namespaceAndConstructor = modelPropertyString.split( '.' );
-            newModelValue[ field ] = new window[ namespaceAndConstructor[ 0 ] ][ namespaceAndConstructor[ 1 ] ]( ...modelPropertyArgs );
-          }
+          // Extract and verify the namespace and type for this model element.
+          const modelPropertyType = modelObjectDescriptor.type;
+          assert && assert( typeof modelPropertyType === 'string', `unexpected model property type: ${modelPropertyType}` );
+          const namespaceAndConstructor = modelPropertyType.split( '.' );
+          const nameSpace = namespaceAndConstructor[ 0 ];
+          assert && assert( window[ nameSpace ], `namespace not found on window: ${nameSpace}` );
+          const className = namespaceAndConstructor[ 1 ];
+          assert && assert( window[ nameSpace ][ className ], `class name not found on window.namespace: ${className}` );
+
+          // Extract the arguments for constructing the model element.
+          //
+          // Note to future maintainers: This code assumes that there are always arguments when constructing a model
+          // element.  Long term, that may or may not be a valid assumption, but as of this writing (Jan 2023), we don't
+          // know, and are keeping it simple.  Feel free to add support for no-arg model elements if and when it is
+          // needed.
+          const modelPropertyArgs = resolveModelReferences( modelObjectDescriptor.args, newModelValue );
+
+          // Extract and resolve the options if present.
+          const modelPropertyOptions = modelObjectDescriptor.options === undefined ? {} :
+                                       resolveModelReferences( modelObjectDescriptor.options, newModelValue );
+
+          // Construct the model property using the namespace, class name, arguments, and options extracted from the
+          // program-specific data.
+          newModelValue[ field ] = new window[ namespaceAndConstructor[ 0 ] ][ namespaceAndConstructor[ 1 ] ](
+            ...modelPropertyArgs,
+            modelPropertyOptions
+          );
         }
-        modelProperty.value = newModelValue;
-        console.log( 'Model updated, value:' );
-        for (const key in modelProperty.value) {
-          console.log( `  ${key}: ${modelProperty.value[key].toString()}` );
-        }
+      }
+
+      // Update the model Property.  There is an implicit assumption here that there is only one paper program that
+      // defines the model.  If that ever changes, this will need to be a merge instead of an overwrite.
+      modelProperty.value = newModelValue;
+
+      // Log the model info (for debug purposes).
+      console.log( 'Model updated, value:' );
+      for ( const key in modelProperty.value ) {
+        console.log( `  ${key}: ${modelProperty.value[ key ].toString()}` );
       }
     }
 
