@@ -1,3 +1,4 @@
 .babel-cache/
 node_modules/
 .idea/
+.env
