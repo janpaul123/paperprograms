@@ -6,19 +6,6 @@
   flex-direction: column;
 }
 
-:local(.dynamicland) {
-  font: 20px/1.2 Helvetica;
-  background: yellow;
-  color: black;
-  padding: 10px;
-}
-
-:local(.dynamicland) a,
-:local(.dynamicland) a:hover,
-:local(.dynamicland) a:visited {
-  color: blue;
-}
-
 :local(.appRoot) {
   display: flex;
   padding: 10px;

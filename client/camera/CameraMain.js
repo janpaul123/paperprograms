@@ -158,12 +158,6 @@ export default class CameraMain extends React.Component {
 
     return (
       <div className={styles.root}>
-        <div className={styles.dynamicland}>
-          Thanks for using Paper Programs. It’s just a thin slice of what is possible at{' '}
-          <a href={'http://dynamicland.org'}>Dynamicland</a>, which this project only means to be a
-          taste of. If you like this, then please support Dynamicland by visiting, collaborating,
-          and donating. Thanks! 🙂
-        </div>
         <div className={styles.appRoot}>
           <div className={styles.video}>
             <CameraVideo
