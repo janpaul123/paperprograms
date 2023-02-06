@@ -171,7 +171,7 @@ const updateBoard = presentPaperProgramInfo => {
       }
       else if ( programSpecificData.phetComponent.type === 'image' ) {
         const imageElement = document.createElement( 'img' );
-        imageElement.setAttribute( 'src', 'media/images/lunarLander.png' );
+        imageElement.setAttribute( 'src', `media/images/${programSpecificData.phetComponent.imageSource}` );
         const image = new scenery.Image( imageElement, {
           maxWidth: 100
         } );
