@@ -10,6 +10,13 @@ import styles from './CameraMain.css';
 
 import CameraVideo from './CameraVideo';
 
+// constants
+const preexistingSpaces = [
+  'shared-experiments',
+  'new-cool-space',
+  'fbad8f5b'
+];
+
 export default class CameraMain extends React.Component {
   constructor(props) {
     super(props);
@@ -447,41 +454,37 @@ export default class CameraMain extends React.Component {
             </div>
             <div className={styles.sidebarSection}>
               <h3 className={styles.sidebarSubSection}>Space</h3>
-              {!this.state.isEditingSpaceUrl ? (
+              <div>
                 <div>
-                  <div>
-                    <a className={styles.spaceUrl} href={this.props.config.spaceUrl}>
-                      {this.props.config.spaceUrl}
-                    </a>
-                  </div>
-                  <div>
-                    <button onClick={() => this.setState({ isEditingSpaceUrl: true })}>
-                      Change Space
-                    </button>
-                  </div>
+                  <a className={styles.spaceUrl} href={this.props.config.spaceUrl}>
+                    {this.props.config.spaceUrl.match( /\/([^/]+$)/ )[ 1 ]}
+                  </a>
                 </div>
-              ) : (
                 <div>
-                  <input
-                    className={styles.spaceNameInput}
-                    value={this.state.spaceUrlSwitcherValue}
-                    onChange={event => this.setState({ spaceUrlSwitcherValue: event.target.value })}
-                  />
-                  <div>
-                    <button
-                      onClick={() => {
-                        this.props.onConfigChange({
-                          ...this.props.config,
-                          spaceUrl: this.state.spaceUrlSwitcherValue,
-                        });
-                        this.setState({ isEditingSpaceUrl: false });
-                      }}
-                    >
-                      switch to new url
-                    </button>
-                  </div>
+                  <label htmlFor="spaces">Select a Space:</label>
+                  <select
+                    name="spaces"
+                    id="spaces"
+                    value={this.state.spaceUrlSwitcherValue.match( /\/([^/]+$)/ )[ 1 ]}
+                    onChange={event => {
+
+                      // TODO: This code leverages what was here by default, and should be improved such that the
+                      //       intermediate value (spaceUrlSwitcherValue) is not needed.  -jbphet, 2/6/2023
+                      this.setState( { spaceUrlSwitcherValue: getApiUrl( event.target.value, '' ) } );
+                      this.props.onConfigChange( {
+                        ...this.props.config,
+                        spaceUrl: getApiUrl( event.target.value, '' )
+                      } );
+                    }}
+                  >
+                    {preexistingSpaces.map( ( option, index ) => {
+                      return <option key={index}>
+                        {option}
+                      </option>
+                    } )}
+                  </select>
                 </div>
-              )}
+              </div>
             </div>
           </div>
         </div>
