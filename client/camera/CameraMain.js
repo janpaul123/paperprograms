@@ -16,6 +16,7 @@ const preexistingSpaces = [
   'new-cool-space',
   'fbad8f5b'
 ];
+const SPACE_DATA_POLLING_PERIOD = 0.5; // in seconds
 
 export default class CameraMain extends React.Component {
   constructor( props ) {
@@ -30,6 +31,9 @@ export default class CameraMain extends React.Component {
       spaceUrlSwitcherValue: props.config.spaceUrl,
       debugPrograms: [],
     };
+
+    // @private {number|null} - id of current timeout, null when no timeout set
+    this._timeout = null;
   }
 
   componentDidMount() {
@@ -38,9 +42,15 @@ export default class CameraMain extends React.Component {
     this._pollSpaceUrl();
   }
 
-  _pollSpaceUrl = () => {
-    const targetTimeMs = 500;
+  /**
+   * Update the data about the "space" that is currently in use by requesting the latest data from the server and
+   * updating the local state with the response.  Also, set a timeout to poll again at the next time period.
+   * @private
+   */
+  _pollSpaceUrl() {
     const beginTimeMs = Date.now();
+
+    // Request the space data from the server.
     xhr.get( this.props.config.spaceUrl, { json: true }, ( error, response ) => {
       if ( error ) {
         console.error( error ); // eslint-disable-line no-console
@@ -53,18 +63,24 @@ export default class CameraMain extends React.Component {
           this._programsChange( this.props.paperProgramsProgramsToRender );
         } );
       }
-
-      const elapsedTimeMs = Date.now() - beginTimeMs;
-      clearTimeout( this._timeout );
-      this._timeout = setTimeout( this._pollSpaceUrl, Math.max( 0, targetTimeMs - elapsedTimeMs ) );
     } );
+
+    // Set a timeout to call this function again
+    const elapsedTimeMs = Date.now() - beginTimeMs;
+    if ( this._timeout !== null ) {
+      clearTimeout( this._timeout );
+    }
+    this._timeout = setTimeout(
+      this._pollSpaceUrl.bind( this ),
+      Math.max( 0, SPACE_DATA_POLLING_PERIOD * 1000 - elapsedTimeMs )
+    );
   };
 
-  _updatePageWidth = () => {
+  _updatePageWidth() {
     this.setState( { pageWidth: document.body.clientWidth } );
   };
 
-  _print = program => {
+  _print( program ) {
     printPage(
       program.number,
       codeToName( program.currentCode ),
@@ -74,11 +90,11 @@ export default class CameraMain extends React.Component {
     this._markPrinted( program, true );
   };
 
-  _printCalibration = () => {
+  _printCalibration() {
     printCalibrationPage( this.props.config.paperSize );
   };
 
-  _markPrinted = ( program, printed ) => {
+  _markPrinted( program, printed ) {
     xhr.post(
       getApiUrl( this.state.spaceData.spaceName, `/programs/${program.number}/markPrinted` ),
       { json: { printed } },
@@ -93,7 +109,7 @@ export default class CameraMain extends React.Component {
     );
   };
 
-  _autoPrint = () => {
+  _autoPrint() {
     const toPrint = this.state.spaceData.programs.filter(
       program => !program.printed && !this.state.autoPrintedNumbers.includes( program.number )
     );
@@ -105,7 +121,7 @@ export default class CameraMain extends React.Component {
     }
   };
 
-  _createHelloWorld = () => {
+  _createHelloWorld() {
     xhr.post(
       getApiUrl( this.state.spaceData.spaceName, '/programs' ),
       { json: { code: helloWorld } },
@@ -117,7 +133,7 @@ export default class CameraMain extends React.Component {
     );
   };
 
-  _createDebugProgram = number => {
+  _createDebugProgram( number ) {
     const paperSize = paperSizes[ this.props.config.paperSize ];
     const widthToHeightRatio = paperSize[ 0 ] / paperSize[ 1 ];
     const height = 0.2;
@@ -137,7 +153,7 @@ export default class CameraMain extends React.Component {
     this.setState( { debugPrograms } );
   };
 
-  _programsChange = programsToRender => {
+  _programsChange( programsToRender ) {
     this.props.onProgramsChange(
       programsToRender
         .map( program => {
