@@ -18,8 +18,8 @@ const preexistingSpaces = [
 ];
 
 export default class CameraMain extends React.Component {
-  constructor(props) {
-    super(props);
+  constructor( props ) {
+    super( props );
     this.state = {
       pageWidth: 1,
       framerate: 0,
@@ -33,7 +33,7 @@ export default class CameraMain extends React.Component {
   }
 
   componentDidMount() {
-    window.addEventListener('resize', this._updatePageWidth);
+    window.addEventListener( 'resize', this._updatePageWidth );
     this._updatePageWidth();
     this._pollSpaceUrl();
   }
@@ -41,49 +41,53 @@ export default class CameraMain extends React.Component {
   _pollSpaceUrl = () => {
     const targetTimeMs = 500;
     const beginTimeMs = Date.now();
-    xhr.get(this.props.config.spaceUrl, { json: true }, (error, response) => {
-      if (error) {
-        console.error(error); // eslint-disable-line no-console
-      } else {
-        this.setState({ spaceData: response.body }, () => {
-          if (this.props.config.autoPrintEnabled) this._autoPrint();
-          this._programsChange(this.props.paperProgramsProgramsToRender);
-        });
+    xhr.get( this.props.config.spaceUrl, { json: true }, ( error, response ) => {
+      if ( error ) {
+        console.error( error ); // eslint-disable-line no-console
+      }
+      else {
+        this.setState( { spaceData: response.body }, () => {
+          if ( this.props.config.autoPrintEnabled ) {
+            this._autoPrint();
+          }
+          this._programsChange( this.props.paperProgramsProgramsToRender );
+        } );
       }
 
       const elapsedTimeMs = Date.now() - beginTimeMs;
-      clearTimeout(this._timeout);
-      this._timeout = setTimeout(this._pollSpaceUrl, Math.max(0, targetTimeMs - elapsedTimeMs));
-    });
+      clearTimeout( this._timeout );
+      this._timeout = setTimeout( this._pollSpaceUrl, Math.max( 0, targetTimeMs - elapsedTimeMs ) );
+    } );
   };
 
   _updatePageWidth = () => {
-    this.setState({ pageWidth: document.body.clientWidth });
+    this.setState( { pageWidth: document.body.clientWidth } );
   };
 
   _print = program => {
     printPage(
       program.number,
-      codeToName(program.currentCode),
-      codeToPrint(program.originalCode),
+      codeToName( program.currentCode ),
+      codeToPrint( program.originalCode ),
       this.props.config.paperSize
     );
-    this._markPrinted(program, true);
+    this._markPrinted( program, true );
   };
 
   _printCalibration = () => {
-    printCalibrationPage(this.props.config.paperSize);
+    printCalibrationPage( this.props.config.paperSize );
   };
 
-  _markPrinted = (program, printed) => {
+  _markPrinted = ( program, printed ) => {
     xhr.post(
-      getApiUrl(this.state.spaceData.spaceName, `/programs/${program.number}/markPrinted`),
+      getApiUrl( this.state.spaceData.spaceName, `/programs/${program.number}/markPrinted` ),
       { json: { printed } },
-      (error, response) => {
-        if (error) {
-          console.error(error); // eslint-disable-line no-console
-        } else {
-          this.setState({ spaceData: response.body });
+      ( error, response ) => {
+        if ( error ) {
+          console.error( error ); // eslint-disable-line no-console
+        }
+        else {
+          this.setState( { spaceData: response.body } );
         }
       }
     );
@@ -91,31 +95,31 @@ export default class CameraMain extends React.Component {
 
   _autoPrint = () => {
     const toPrint = this.state.spaceData.programs.filter(
-      program => !program.printed && !this.state.autoPrintedNumbers.includes(program.number)
+      program => !program.printed && !this.state.autoPrintedNumbers.includes( program.number )
     );
-    if (toPrint.length > 0) {
+    if ( toPrint.length > 0 ) {
       this.setState(
-        { autoPrintedNumbers: this.state.autoPrintedNumbers.concat([toPrint[0].number]) },
-        () => this._print(toPrint[0])
+        { autoPrintedNumbers: this.state.autoPrintedNumbers.concat( [ toPrint[ 0 ].number ] ) },
+        () => this._print( toPrint[ 0 ] )
       );
     }
   };
 
   _createHelloWorld = () => {
     xhr.post(
-      getApiUrl(this.state.spaceData.spaceName, '/programs'),
+      getApiUrl( this.state.spaceData.spaceName, '/programs' ),
       { json: { code: helloWorld } },
       error => {
-        if (error) {
-          console.error(error); // eslint-disable-line no-console
+        if ( error ) {
+          console.error( error ); // eslint-disable-line no-console
         }
       }
     );
   };
 
   _createDebugProgram = number => {
-    const paperSize = paperSizes[this.props.config.paperSize];
-    const widthToHeightRatio = paperSize[0] / paperSize[1];
+    const paperSize = paperSizes[ this.props.config.paperSize ];
+    const widthToHeightRatio = paperSize[ 0 ] / paperSize[ 1 ];
     const height = 0.2;
     const width = height * widthToHeightRatio;
 
@@ -129,18 +133,20 @@ export default class CameraMain extends React.Component {
         { x: 0.0, y: height },
       ],
     };
-    debugPrograms.push(newProgram);
-    this.setState({ debugPrograms });
+    debugPrograms.push( newProgram );
+    this.setState( { debugPrograms } );
   };
 
   _programsChange = programsToRender => {
     this.props.onProgramsChange(
       programsToRender
-        .map(program => {
+        .map( program => {
           const programWithData = this.state.spaceData.programs.find(
             program2 => program2.number.toString() === program.number.toString()
           );
-          if (!programWithData) return;
+          if ( !programWithData ) {
+            return;
+          }
           return {
             ...program,
             currentCodeUrl: programWithData.currentCodeUrl,
@@ -150,14 +156,14 @@ export default class CameraMain extends React.Component {
             editorInfo: programWithData.editorInfo,
             codeHasChanged: programWithData.codeHasChanged,
           };
-        })
-        .filter(Boolean)
+        } )
+        .filter( Boolean )
     );
   };
 
   render() {
-    const padding = parseInt(styles.cameraMainPadding);
-    const sidebarWidth = parseInt(styles.cameraMainSidebarWidth);
+    const padding = parseInt( styles.cameraMainPadding );
+    const sidebarWidth = parseInt( styles.cameraMainSidebarWidth );
     const editorUrl = new URL(
       `editor.html?${this.state.spaceData.spaceName}`,
       window.location.origin
@@ -171,28 +177,30 @@ export default class CameraMain extends React.Component {
               width={this.state.pageWidth - padding * 3 - sidebarWidth}
               config={this.props.config}
               onConfigChange={this.props.onConfigChange}
-              onProcessVideo={({ programsToRender, markers, framerate }) => {
-                this.setState({ framerate });
-                this._programsChange(programsToRender);
-                this.props.onMarkersChange(markers);
+              onProcessVideo={( { programsToRender, markers, framerate } ) => {
+                this.setState( { framerate } );
+                this._programsChange( programsToRender );
+                this.props.onMarkersChange( markers );
               }}
               allowSelectingDetectedPoints={this.state.selectedColorIndex !== -1}
-              onSelectPoint={({ color, size }) => {
-                if (this.state.selectedColorIndex === -1) return;
+              onSelectPoint={( { color, size } ) => {
+                if ( this.state.selectedColorIndex === -1 ) {
+                  return;
+                }
 
                 const colorsRGB = this.props.config.colorsRGB.slice();
-                colorsRGB[this.state.selectedColorIndex] = color.map(value => Math.round(value));
+                colorsRGB[ this.state.selectedColorIndex ] = color.map( value => Math.round( value ) );
 
                 const paperDotSizes = this.props.config.paperDotSizes.slice();
-                paperDotSizes[this.state.selectedColorIndex] = size;
+                paperDotSizes[ this.state.selectedColorIndex ] = size;
 
-                this.props.onConfigChange({ ...this.props.config, colorsRGB, paperDotSizes });
-                this.setState({ selectedColorIndex: -1 });
+                this.props.onConfigChange( { ...this.props.config, colorsRGB, paperDotSizes } );
+                this.setState( { selectedColorIndex: -1 } );
               }}
               debugPrograms={this.state.debugPrograms}
               removeDebugProgram={program => {
-                const debugPrograms = this.state.debugPrograms.filter(p => p !== program);
-                this.setState({ debugPrograms });
+                const debugPrograms = this.state.debugPrograms.filter( p => p !== program );
+                this.setState( { debugPrograms } );
               }}
             />
           </div>
@@ -211,26 +219,26 @@ export default class CameraMain extends React.Component {
                   value={this.props.config.paperSize}
                   onChange={event => {
                     const paperSize = event.target.value;
-                    this.props.onConfigChange({ ...this.props.config, paperSize });
+                    this.props.onConfigChange( { ...this.props.config, paperSize } );
                   }}
                 >
                   <optgroup label="Common">
-                    {commonPaperSizeNames.map(name => {
+                    {commonPaperSizeNames.map( name => {
                       return (
                         <option key={name} value={name}>
                           {name}
                         </option>
                       );
-                    })}
+                    } )}
                   </optgroup>
                   <optgroup label="Other">
-                    {otherPaperSizeNames.map(name => {
+                    {otherPaperSizeNames.map( name => {
                       return (
                         <option key={name} value={name}>
                           {name}
                         </option>
                       );
-                    })}
+                    } )}
                   </optgroup>
                 </select>
               </div>
@@ -243,10 +251,10 @@ export default class CameraMain extends React.Component {
                     name="show-printed"
                     checked={this.props.config.showPrintedInQueue}
                     onChange={() =>
-                      this.props.onConfigChange({
+                      this.props.onConfigChange( {
                         ...this.props.config,
                         showPrintedInQueue: !this.props.config.showPrintedInQueue,
-                      })
+                      } )
                     }
                   />
                 </div>
@@ -254,52 +262,53 @@ export default class CameraMain extends React.Component {
               <div className={`${styles.sidebarSubSection} ${styles.printQueue}`}>
                 <div>
                   {this.state.spaceData.programs
-                    .filter(program => !program.printed || this.props.config.showPrintedInQueue)
-                    .map(program => (
+                    .filter( program => !program.printed || this.props.config.showPrintedInQueue )
+                    .map( program => (
                       <div
                         key={program.number}
                         className={[
                           styles.printQueueItem,
                           program.printed
-                            ? styles.printQueueItemPrinted
-                            : styles.printQueueItemNotPrinted,
-                        ].join(' ')}
-                        onClick={() => this._print(program)}
+                          ? styles.printQueueItemPrinted
+                          : styles.printQueueItemNotPrinted,
+                        ].join( ' ' )}
+                        onClick={() => this._print( program )}
                       >
                         <span className={styles.printQueueItemContent}>
                           <span className={styles.printQueueItemName}>
-                            <strong>#{program.number}</strong> {codeToName(program.currentCode)}{' '}
+                            <strong>#{program.number}</strong> {codeToName( program.currentCode )}{' '}
                           </span>
                           <span
                             className={styles.printQueueItemToggle}
                             onClick={event => {
                               event.stopPropagation();
-                              this._markPrinted(program, !program.printed);
+                              this._markPrinted( program, !program.printed );
                             }}
                           >
                             {program.printed ? '[show]' : '[hide]'}
                           </span>
                         </span>
-                        {this.state.debugPrograms.find(p => p.number === program.number) ===
-                        undefined ? (
-                          <span
-                            className={styles.printQueueDebug}
-                            onClick={event => {
-                              event.stopPropagation();
-                              this._createDebugProgram(program.number);
-                            }}
-                          >
+                        {this.state.debugPrograms.find( p => p.number === program.number ) ===
+                         undefined ? (
+                           <span
+                             className={styles.printQueueDebug}
+                             onClick={event => {
+                               event.stopPropagation();
+                               this._createDebugProgram( program.number );
+                             }}
+                           >
                             [Preview]
                           </span>
-                        ) : (
-                          ''
-                        )}
+                         ) : (
+                           ''
+                         )}
                       </div>
-                    ))}
+                    ) )}
                 </div>
               </div>
               <div>
-                <button onClick={this._printCalibration}>Print Calibration Page</button>{' '}
+                <button onClick={this._printCalibration}>Print Calibration Page</button>
+                {' '}
               </div>
               <div>
                 <input
@@ -307,10 +316,10 @@ export default class CameraMain extends React.Component {
                   name="autoPrint"
                   checked={this.props.config.autoPrintEnabled}
                   onChange={() =>
-                    this.props.onConfigChange({
+                    this.props.onConfigChange( {
                       ...this.props.config,
                       autoPrintEnabled: !this.props.config.autoPrintEnabled,
-                    })
+                    } )
                   }
                 />
                 <label htmlFor="autoPrint">auto-print</label>
@@ -321,24 +330,24 @@ export default class CameraMain extends React.Component {
             <div className={styles.sidebarSection}>
               <h3>Calibration</h3>
               <div className={styles.sidebarSubSection}>
-                {this.props.config.colorsRGB.map((color, colorIndex) => (
+                {this.props.config.colorsRGB.map( ( color, colorIndex ) => (
                   <div
                     key={colorIndex}
                     className={[
                       styles.colorListItem,
                       this.state.selectedColorIndex === colorIndex && styles.colorListItemSelected,
-                    ].join(' ')}
-                    style={{ background: `rgb(${color.slice(0, 3).join(',')})` }}
+                    ].join( ' ' )}
+                    style={{ background: `rgb(${color.slice( 0, 3 ).join( ',' )})` }}
                     onClick={() =>
-                      this.setState(state => ({
+                      this.setState( state => ( {
                         selectedColorIndex:
                           state.selectedColorIndex === colorIndex ? -1 : colorIndex,
-                      }))
+                      } ) )
                     }
                   >
-                    <strong>{colorNames[colorIndex]}</strong>
+                    <strong>{colorNames[ colorIndex ]}</strong>
                   </div>
-                ))}
+                ) )}
               </div>
             </div>
 
@@ -350,10 +359,10 @@ export default class CameraMain extends React.Component {
                   name="freezeDetection"
                   checked={this.props.config.freezeDetection}
                   onChange={() =>
-                    this.props.onConfigChange({
+                    this.props.onConfigChange( {
                       ...this.props.config,
                       freezeDetection: !this.props.config.freezeDetection,
-                    })
+                    } )
                   }
                 />
                 <label htmlFor="freezeDetection">pause</label>
@@ -369,10 +378,10 @@ export default class CameraMain extends React.Component {
                   step="1"
                   value={this.props.config.scaleFactor}
                   onChange={event => {
-                    this.props.onConfigChange({
+                    this.props.onConfigChange( {
                       ...this.props.config,
                       scaleFactor: event.target.valueAsNumber,
-                    });
+                    } );
                   }}
                 />
                 <span>Performance</span>
@@ -387,10 +396,10 @@ export default class CameraMain extends React.Component {
                   type="checkbox"
                   checked={this.props.config.showOverlayKeyPointCircles}
                   onChange={() =>
-                    this.props.onConfigChange({
+                    this.props.onConfigChange( {
                       ...this.props.config,
                       showOverlayKeyPointCircles: !this.props.config.showOverlayKeyPointCircles,
-                    })
+                    } )
                   }
                 />{' '}
                 keypoint circles
@@ -401,10 +410,10 @@ export default class CameraMain extends React.Component {
                   type="checkbox"
                   checked={this.props.config.showOverlayKeyPointText}
                   onChange={() =>
-                    this.props.onConfigChange({
+                    this.props.onConfigChange( {
                       ...this.props.config,
                       showOverlayKeyPointText: !this.props.config.showOverlayKeyPointText,
-                    })
+                    } )
                   }
                 />{' '}
                 keypoint text
@@ -415,10 +424,10 @@ export default class CameraMain extends React.Component {
                   type="checkbox"
                   checked={this.props.config.showOverlayComponentLines}
                   onChange={() =>
-                    this.props.onConfigChange({
+                    this.props.onConfigChange( {
                       ...this.props.config,
                       showOverlayComponentLines: !this.props.config.showOverlayComponentLines,
-                    })
+                    } )
                   }
                 />{' '}
                 component lines
@@ -429,10 +438,10 @@ export default class CameraMain extends React.Component {
                   type="checkbox"
                   checked={this.props.config.showOverlayShapeId}
                   onChange={() =>
-                    this.props.onConfigChange({
+                    this.props.onConfigChange( {
                       ...this.props.config,
                       showOverlayShapeId: !this.props.config.showOverlayShapeId,
-                    })
+                    } )
                   }
                 />{' '}
                 shape ids
@@ -443,10 +452,10 @@ export default class CameraMain extends React.Component {
                   type="checkbox"
                   checked={this.props.config.showOverlayProgram}
                   onChange={() =>
-                    this.props.onConfigChange({
+                    this.props.onConfigChange( {
                       ...this.props.config,
                       showOverlayProgram: !this.props.config.showOverlayProgram,
-                    })
+                    } )
                   }
                 />{' '}
                 programs
