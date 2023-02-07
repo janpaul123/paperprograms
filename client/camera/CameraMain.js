@@ -465,11 +465,6 @@ export default class CameraMain extends React.Component {
               <h3 className={styles.sidebarSubSection}>Space</h3>
               <div>
                 <div>
-                  <a className={styles.spaceUrl} href={this.props.config.spaceUrl}>
-                    {this.props.config.spaceUrl.match( /\/([^/]+$)/ )[ 1 ]}
-                  </a>
-                </div>
-                <div>
                   <label htmlFor="spaces">Select a Space:</label>
                   <select
                     name="spaces"
