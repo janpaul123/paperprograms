@@ -39,7 +39,22 @@ export default class CameraMain extends React.Component {
   componentDidMount() {
     window.addEventListener( 'resize', this._updatePageWidth );
     this._updatePageWidth();
+    this._updateSpacesList();
     this._pollSpaceUrl();
+  }
+
+  _updateSpacesList(){
+    const spacesListUrl = new URL('api/spaces-list', window.location.origin).toString();
+    console.log( `testUrl = ${spacesListUrl}` );
+    xhr.get( spacesListUrl, { json: true }, ( error, response ) => {
+      if ( error ) {
+        console.error( error ); // eslint-disable-line no-console
+      }
+      else {
+        console.log( `JSON.stringify(response.body) = ${JSON.stringify( response.body )}` );
+        // TODO: Set some portion of the state to have the list of spaces.
+      }
+    } );
   }
 
   /**
@@ -65,7 +80,7 @@ export default class CameraMain extends React.Component {
       }
     } );
 
-    // Set a timeout to call this function again
+    // Set a timeout to call this function again at the appropriate time.
     const elapsedTimeMs = Date.now() - beginTimeMs;
     if ( this._timeout !== null ) {
       clearTimeout( this._timeout );
