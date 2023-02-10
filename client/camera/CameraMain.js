@@ -11,11 +11,6 @@ import styles from './CameraMain.css';
 import CameraVideo from './CameraVideo';
 
 // constants
-const preexistingSpaces = [
-  'shared-experiments',
-  'new-cool-space',
-  'fbad8f5b'
-];
 const SPACE_DATA_POLLING_PERIOD = 0.5; // in seconds
 
 export default class CameraMain extends React.Component {
@@ -29,6 +24,7 @@ export default class CameraMain extends React.Component {
       autoPrintedNumbers: [],
       isEditingSpaceUrl: false,
       spaceUrlSwitcherValue: props.config.spaceUrl,
+      availableSpaces: [],
       debugPrograms: [],
     };
 
@@ -37,14 +33,14 @@ export default class CameraMain extends React.Component {
   }
 
   componentDidMount() {
-    window.addEventListener( 'resize', this._updatePageWidth );
+    window.addEventListener( 'resize', this._updatePageWidth.bind( this ) );
     this._updatePageWidth();
     this._updateSpacesList();
     this._pollSpaceUrl();
   }
 
-  _updateSpacesList(){
-    const spacesListUrl = new URL('api/spaces-list', window.location.origin).toString();
+  _updateSpacesList() {
+    const spacesListUrl = new URL( 'api/spaces-list', window.location.origin ).toString();
     console.log( `testUrl = ${spacesListUrl}` );
     xhr.get( spacesListUrl, { json: true }, ( error, response ) => {
       if ( error ) {
@@ -52,7 +48,9 @@ export default class CameraMain extends React.Component {
       }
       else {
         console.log( `JSON.stringify(response.body) = ${JSON.stringify( response.body )}` );
-        // TODO: Set some portion of the state to have the list of spaces.
+        if ( Array.isArray( response.body ) ) {
+          this.setState( { availableSpaces: response.body } );
+        }
       }
     } );
   }
@@ -512,7 +510,7 @@ export default class CameraMain extends React.Component {
                       } );
                     }}
                   >
-                    {preexistingSpaces.map( ( option, index ) => {
+                    {this.state.availableSpaces.map( ( option, index ) => {
                       return <option key={index}>
                         {option}
                       </option>
