@@ -79,7 +79,7 @@ export function projectPoint(point, projectionMatrix) {
   };
 }
 
-export function getApiUrl(spaceName, suffix) {
+export function getApiUrl(spaceName, suffix = '') {
   return new URL(`api/spaces/${spaceName}${suffix}`, window.location.origin).toString();
 }
 

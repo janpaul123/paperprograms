@@ -23,7 +23,7 @@ export default class CameraMain extends React.Component {
       spaceData: { programs: [] },
       autoPrintedNumbers: [],
       isEditingSpaceUrl: false,
-      spaceUrlSwitcherValue: props.config.spaceUrl,
+      selectedSpaceName: props.config.selectedSpaceName,
       availableSpaces: [],
       debugPrograms: [],
     };
@@ -39,17 +39,28 @@ export default class CameraMain extends React.Component {
     this._pollSpaceUrl();
   }
 
+  /**
+   * Update the list of spaces that are available by getting them from the server.
+   * @private
+   */
   _updateSpacesList() {
     const spacesListUrl = new URL( 'api/spaces-list', window.location.origin ).toString();
-    console.log( `testUrl = ${spacesListUrl}` );
     xhr.get( spacesListUrl, { json: true }, ( error, response ) => {
       if ( error ) {
         console.error( error ); // eslint-disable-line no-console
       }
       else {
-        console.log( `JSON.stringify(response.body) = ${JSON.stringify( response.body )}` );
         if ( Array.isArray( response.body ) ) {
           this.setState( { availableSpaces: response.body } );
+
+          // If the currently selected space name is not on the list of available spaces, use the first available space.
+          if ( this.state.availableSpaces.length > 0 &&
+               !this.state.availableSpaces.includes( this.state.selectedSpaceName ) ) {
+            this.setState( { selectedSpaceName: this.state.availableSpaces[ 0 ] } );
+
+            // Since the space was changed, we need to update the information associated with it.
+            this._pollSpaceUrl();
+          }
         }
       }
     } );
@@ -64,7 +75,8 @@ export default class CameraMain extends React.Component {
     const beginTimeMs = Date.now();
 
     // Request the space data from the server.
-    xhr.get( this.props.config.spaceUrl, { json: true }, ( error, response ) => {
+    const spaceUrl = getApiUrl( this.props.config.selectedSpaceName );
+    xhr.get( spaceUrl, { json: true }, ( error, response ) => {
       if ( error ) {
         console.error( error ); // eslint-disable-line no-console
       }
@@ -498,15 +510,12 @@ export default class CameraMain extends React.Component {
                   <select
                     name="spaces"
                     id="spaces"
-                    value={this.state.spaceUrlSwitcherValue.match( /\/([^/]+$)/ )[ 1 ]}
+                    value={this.state.selectedSpaceName}
                     onChange={event => {
-
-                      // TODO: This code leverages what was here by default, and should be improved such that the
-                      //       intermediate value (spaceUrlSwitcherValue) is not needed.  -jbphet, 2/6/2023
-                      this.setState( { spaceUrlSwitcherValue: getApiUrl( event.target.value, '' ) } );
+                      this.setState( { selectedSpaceName: event.target.value } );
                       this.props.onConfigChange( {
                         ...this.props.config,
-                        spaceUrl: getApiUrl( event.target.value, '' )
+                        selectedSpaceName: event.target.value
                       } );
                     }}
                   >
