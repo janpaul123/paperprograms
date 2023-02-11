@@ -25,6 +25,8 @@ export default class CameraMain extends React.Component {
       isEditingSpaceUrl: false,
       selectedSpaceName: props.config.selectedSpaceName,
       availableSpaces: [],
+      isAddingNewSpace: false,
+      newSpaceName: '',
       debugPrograms: [],
     };
 
@@ -100,6 +102,10 @@ export default class CameraMain extends React.Component {
       Math.max( 0, SPACE_DATA_POLLING_PERIOD * 1000 - elapsedTimeMs )
     );
   };
+
+  _addNewSpace( spaceName ) {
+    console.log( `stubbed - add new space: spaceName = ${spaceName}` );
+  }
 
   _updatePageWidth() {
     this.setState( { pageWidth: document.body.clientWidth } );
@@ -201,6 +207,58 @@ export default class CameraMain extends React.Component {
         .filter( Boolean )
     );
   };
+
+  _handleNewSpaceNameChange( event ) {
+    this.setState( { newSpaceName: event.target.value } );
+  }
+
+  /**
+   * Validate a potential space name.  This optionally puts up alert dialogs for invalid values.
+   * @param {string} spaceName
+   * @param {boolean} [showErrors]
+   * @returns {boolean}
+   * @private
+   */
+  _isValidSpaceName( spaceName, showErrors = false ) {
+    let isValid = true;
+    let errorMessage = '';
+    if ( isValid && spaceName.length === 0 ) {
+      isValid = false;
+      errorMessage = 'Space name too short.';
+    }
+    if ( isValid && spaceName.match( /[^A-Za-z0-9\-_]+/ ) !== null ) {
+      isValid = false;
+      errorMessage = 'Invalid characters in space name.';
+      errorMessage += '\n\nNames can contain upper- and lower-case letters, numbers, dashes, and/or underscores.'
+    }
+    if ( isValid && this.state.availableSpaces.includes( spaceName ) ) {
+      isValid = false;
+      errorMessage = `Space ${spaceName} already exists.`;
+    }
+
+    if ( showErrors && errorMessage.length ) {
+      window.alert( `Error: ${errorMessage}` );
+    }
+
+    return isValid;
+  }
+
+  /**
+   * Handler for when the user submits a new space name.
+   * @param {Event} event
+   * @returns boolean - true if name is valid and space creation request was successfully submitted
+   * @private
+   */
+  _handleNewSpaceNameSubmit( event ) {
+    let succeeded = false;
+    const newSpaceName = this.state.newSpaceName;
+    if ( this._isValidSpaceName( newSpaceName, true ) ) {
+      this._addNewSpace( newSpaceName );
+      succeeded = true;
+    }
+    event.preventDefault();
+    return succeeded;
+  }
 
   render() {
     const padding = parseInt( styles.cameraMainPadding );
@@ -525,6 +583,41 @@ export default class CameraMain extends React.Component {
                       </option>
                     } )}
                   </select>
+                </div>
+                <div>
+                  {this.state.isAddingNewSpace ? (
+                    <div>
+                      <form onSubmit={event => {
+                        if ( this._handleNewSpaceNameSubmit( event ) ) {
+                          this.setState( { isAddingNewSpace: false } );
+                        }
+                      }}>
+                        <label>
+                          Name:&nbsp;
+                          <input
+                            type="text"
+                            onChange={this._handleNewSpaceNameChange.bind( this )}
+                          />
+                        </label>
+                        <br/>
+                        <button type="submit">
+                          Confirm
+                        </button>
+                        <button type="button" onClick={() => this.setState( { isAddingNewSpace: false } )}>
+                          Cancel
+                        </button>
+                      </form>
+                    </div>
+                  ) : (
+                     <div>
+                       <button onClick={() => {
+                         this.setState( { isAddingNewSpace: true } );
+                         this.setState( { newSpaceName: '' } );
+                       }}>
+                         Add New Space
+                       </button>
+                     </div>
+                   )}
                 </div>
               </div>
             </div>
