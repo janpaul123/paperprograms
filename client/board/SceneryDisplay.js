@@ -2,8 +2,7 @@
  * SceneryDisplay is a React component that returns a div that contains a Scenery display.
  */
 
-import React from 'react';
-import { useEffect } from 'react';
+import React, { useEffect } from 'react';
 
 const SceneryDisplay = ( props ) => {
 
@@ -32,10 +31,24 @@ const SceneryDisplay = ( props ) => {
     props.scene.addChild( titleText );
     sceneryDisplay.updateDisplay();
 
-    // Update the display at a regular interval.
-    window.setInterval( () => {
-      sceneryDisplay.updateDisplay();
-    }, 1000 );
+    // scenery workaround for consistent requestAnimationFrame
+    scenery.Utils.polyfillRequestAnimationFrame();
+
+    // set up animation
+    sceneryDisplay.updateOnRequestAnimationFrame( dt => {
+      // on startup, scenery updates with a dt of zero?
+      if ( dt > 0 ) {
+
+        // cap the largest animation frame (like when the tab is in the background) - in seconds
+        dt = Math.min( dt, 0.05 );
+
+        // step axon's timer (used by many phet-libs)
+        axon.stepTimer.emit( dt );
+
+        // steps model then view
+        sceneryDisplay.updateDisplay();
+      }
+    } );
   }, [] );
 
   return <div id='scenery-display'></div>;
