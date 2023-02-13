@@ -94,58 +94,70 @@ const updateBoard = presentPaperProgramInfo => {
 
     // If this paper program contains model data, and that data has changed since the last time through this function,
     // update the local model Property.
-    if ( programSpecificData && programSpecificData.model && programSpecificData.model.updateTime > lastUpdateTime ) {
+    if ( programSpecificData && programSpecificData.updateTime > lastUpdateTime ) {
 
-      lastUpdateTime = programSpecificData.model.updateTime;
+      lastUpdateTime = programSpecificData.updateTime;
 
-      const newModelValue = {};
-      for ( const field in programSpecificData.model ) {
+      if ( programSpecificData.model ) {
 
-        if ( field !== 'updateTime' ) {
+        const newModelValue = {};
+        for ( const field in programSpecificData.model ) {
 
-          const modelObjectDescriptor = programSpecificData.model[ field ];
+          if ( field !== 'updateTime' ) {
 
-          // Extract and verify the namespace and type for this model element.
-          const modelPropertyType = modelObjectDescriptor.type;
-          assert && assert( typeof modelPropertyType === 'string', `unexpected model property type: ${modelPropertyType}` );
-          const namespaceAndConstructor = modelPropertyType.split( '.' );
-          const nameSpace = namespaceAndConstructor[ 0 ];
-          assert && assert( window[ nameSpace ], `namespace not found on window: ${nameSpace}` );
-          const className = namespaceAndConstructor[ 1 ];
-          assert && assert( window[ nameSpace ][ className ], `class name not found on window.namespace: ${className}` );
+            const modelObjectDescriptor = programSpecificData.model[ field ];
 
-          // Extract the arguments for constructing the model element.
-          //
-          // Note to future maintainers: This code assumes that there are always arguments when constructing a model
-          // element.  Long term, that may or may not be a valid assumption, but as of this writing (Jan 2023), we don't
-          // know, and are keeping it simple.  Feel free to add support for no-arg model elements if and when it is
-          // needed.
-          const modelPropertyArgs = resolveModelReferences( modelObjectDescriptor.args, newModelValue );
+            // Extract and verify the namespace and type for this model element.
+            const modelPropertyType = modelObjectDescriptor.type;
+            assert && assert( typeof modelPropertyType === 'string', `unexpected model property type: ${modelPropertyType}` );
+            const namespaceAndConstructor = modelPropertyType.split( '.' );
+            const nameSpace = namespaceAndConstructor[ 0 ];
+            assert && assert( window[ nameSpace ], `namespace not found on window: ${nameSpace}` );
+            const className = namespaceAndConstructor[ 1 ];
+            assert && assert( window[ nameSpace ][ className ], `class name not found on window.namespace: ${className}` );
 
-          // Extract and resolve the options if present.
-          const modelPropertyOptions = modelObjectDescriptor.options === undefined ? {} :
-                                       resolveModelReferences( modelObjectDescriptor.options, newModelValue );
+            // Extract the arguments for constructing the model element.
+            //
+            // Note to future maintainers: This code assumes that there are always arguments when constructing a model
+            // element.  Long term, that may or may not be a valid assumption, but as of this writing (Jan 2023), we don't
+            // know, and are keeping it simple.  Feel free to add support for no-arg model elements if and when it is
+            // needed.
+            const modelPropertyArgs = resolveModelReferences( modelObjectDescriptor.args, newModelValue );
 
-          // Construct the model property using the namespace, class name, arguments, and options extracted from the
-          // program-specific data.
-          newModelValue[ field ] = new window[ namespaceAndConstructor[ 0 ] ][ namespaceAndConstructor[ 1 ] ](
-            ...modelPropertyArgs,
-            modelPropertyOptions
-          );
+            // Extract and resolve the options if present.
+            const modelPropertyOptions = modelObjectDescriptor.options === undefined ? {} :
+                                         resolveModelReferences( modelObjectDescriptor.options, newModelValue );
+
+            // Construct the model property using the namespace, class name, arguments, and options extracted from the
+            // program-specific data.
+            newModelValue[ field ] = new window[ namespaceAndConstructor[ 0 ] ][ namespaceAndConstructor[ 1 ] ](
+              ...modelPropertyArgs,
+              modelPropertyOptions
+            );
+          }
+        }
+
+        // Update the model Property.  There is an implicit assumption here that there is only one paper program that
+        // defines the model.  If that ever changes, this will need to be a merge instead of an overwrite.
+        modelProperty.value = newModelValue;
+
+        // Log the model info (for debug purposes).
+        console.log( 'Model updated, value:' );
+        for ( const key in modelProperty.value ) {
+          console.log( `  ${key}: ${modelProperty.value[ key ].toString()}` );
         }
       }
+      if ( programSpecificData.program ) {
 
-      // Update the model Property.  There is an implicit assumption here that there is only one paper program that
-      // defines the model.  If that ever changes, this will need to be a merge instead of an overwrite.
-      modelProperty.value = newModelValue;
+        // Run the javascript code provided by the program
+        eval( programSpecificData.program )();
 
-      // Log the model info (for debug purposes).
-      console.log( 'Model updated, value:' );
-      for ( const key in modelProperty.value ) {
-        console.log( `  ${key}: ${modelProperty.value[ key ].toString()}` );
+        // the model may have changed in the eval, call listeners
+        modelProperty.notifyListenersStatic();
       }
     }
 
+    // TODO: If we keep this, consider moving into the updateTime block above.
     if ( programSpecificData && programSpecificData.phetComponent && !mapOfProgramsToComponents.has( paperProgramNumber ) ) {
 
       // Add the specified component.

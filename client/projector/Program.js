@@ -3,7 +3,6 @@ import throttle from 'lodash/throttle';
 import randomColor from 'randomcolor';
 import React from 'react';
 import xhr from 'xhr';
-import Whisker from '../paper/whisker.js';
 
 import { forwardProjectionMatrixForPoints, mult } from '../utils';
 import AudioGraphElement from './model/AudioGraphElement.js';
@@ -94,7 +93,7 @@ export default class Program extends React.Component {
       } );
 
       // remove it from the root
-      if ( !releasedElement.parent && audioMixerModel.hasChild( releasedElement )) {
+      if ( !releasedElement.parent && audioMixerModel.hasChild( releasedElement ) ) {
         audioMixerModel.removeRootLevelElement( releasedElement );
       }
 
@@ -257,7 +256,7 @@ export default class Program extends React.Component {
               childElement.playableAudio.updateConnections( childElement.collectedAudioNodeTypes );
             }
             return false;
-           } );
+          } );
         }
 
         this._worker.postMessage( { messageId } );
