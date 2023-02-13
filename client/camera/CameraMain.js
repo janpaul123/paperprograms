@@ -77,7 +77,7 @@ export default class CameraMain extends React.Component {
     const beginTimeMs = Date.now();
 
     // Request the space data from the server.
-    const spaceUrl = getApiUrl( this.props.config.selectedSpaceName );
+    const spaceUrl = getApiUrl( this.state.selectedSpaceName );
     xhr.get( spaceUrl, { json: true }, ( error, response ) => {
       if ( error ) {
         console.error( error ); // eslint-disable-line no-console
@@ -103,8 +103,50 @@ export default class CameraMain extends React.Component {
     );
   };
 
+  /**
+   * Add a new space to the DB.  Since the DB doesn't REALLY have separate spaces, this is done be adding an initial
+   * program with this new space name as the space value.
+   * @param {string} spaceName
+   * @private
+   */
   _addNewSpace( spaceName ) {
-    console.log( `stubbed - add new space: spaceName = ${spaceName}` );
+    console.log( `request to add new space: spaceName = ${spaceName}` );
+
+    xhr.post(
+      getApiUrl( spaceName, '/programs' ),
+      { json: { code: helloWorld } },
+      error => {
+        if ( error ) {
+          console.error( error ); // eslint-disable-line no-console
+        }
+        else {
+
+          // The request to add a new space succeeded, so add this to the list of available spaces.
+          this.setState( { availableSpaces: [ ...this.state.availableSpaces, spaceName ] } );
+
+          // Select this space.
+          this.setState( { selectedSpaceName: spaceName } );
+        }
+      }
+    );
+
+    const addSpaceUrl = new URL( 'api/add-space', window.location.origin ).toString();
+    const addRequestedSpaceUrl = `${addSpaceUrl}/${spaceName}`;
+    xhr.get( addRequestedSpaceUrl, { json: true }, ( error, response ) => {
+      if ( error ) {
+        console.error( `error adding space: ${error}` ); // eslint-disable-line no-console
+      }
+      else {
+        // this.setState( { spaceData: response.body }, () => {
+        //   if ( this.props.config.autoPrintEnabled ) {
+        //     this._autoPrint();
+        //   }
+        //   this._programsChange( this.props.paperProgramsProgramsToRender );
+        // } );
+        console.log( `JSON.stringify(response.body) = ${JSON.stringify( response.body )}` );
+      }
+    } );
+
   }
 
   _updatePageWidth() {

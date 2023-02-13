@@ -21,7 +21,7 @@ router.get('/program.:spaceName.:number.js', (req, res) => {
     });
 });
 
-// route to get a list of all the spaces available in the DB
+// Get a list of all the spaces available in the DB.
 router.get('/api/spaces-list', (req, res) => {
   knex
     .distinct()
@@ -30,6 +30,19 @@ router.get('/api/spaces-list', (req, res) => {
     .then(spaceNames => {
       res.json(spaceNames);
     });
+});
+
+// Add a new space to the DB.
+router.get('/api/add-space/:newSpaceName', (req, res) => {
+  console.log( `req.params.newSpaceName = ${req.params.newSpaceName}` );
+  res.json(req.params);
+  // knex
+  //   .distinct()
+  //   .from('programs')
+  //   .pluck('spaceName')
+  //   .then(spaceNames => {
+  //     res.json(spaceNames);
+  //   });
 });
 
 function getSpaceData(req, callback) {
