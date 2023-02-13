@@ -36,6 +36,7 @@ const SceneryDisplay = ( props ) => {
 
     // set up animation
     sceneryDisplay.updateOnRequestAnimationFrame( dt => {
+
       // on startup, scenery updates with a dt of zero?
       if ( dt > 0 ) {
 
@@ -49,6 +50,23 @@ const SceneryDisplay = ( props ) => {
         sceneryDisplay.updateDisplay();
       }
     } );
+
+    // a property that indicates if the browser tab is visible
+    const browserTabVisibleProperty = new axon.Property( true );
+    document.addEventListener( 'visibilitychange', () => {
+      browserTabVisibleProperty.set( document.visibilityState === 'visible' );
+      console.log( browserTabVisibleProperty.value );
+    }, false );
+
+    // initialize Voicing
+    scenery.voicingManager.initialize( scenery.Display.userGestureEmitter, {
+
+      // Voicing is only allowed when this tab is visible
+      speechAllowedProperty: browserTabVisibleProperty
+    } );
+    scenery.voicingUtteranceQueue.enabled = true;
+    scenery.voicingManager.enabledProperty.value = true; // TODO: Why can't this use a setter?
+
   }, [] );
 
   return <div id='scenery-display'></div>;
