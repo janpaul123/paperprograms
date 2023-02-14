@@ -5,8 +5,10 @@ import * as d3 from 'd3';
 
 import CameraMain from './CameraMain';
 
+const storedConfig = JSON.parse( localStorage.paperProgramsConfig || '{}' );
+
 // Check to see if there is an existing, previously selected space in local storage.  If not, create a default.
-const selectedSpaceName = localStorage.paperProgramsConfig.selectedSpaceName || uuidv4().slice( 0, 8 );
+const selectedSpaceName = storedConfig.selectedSpaceName || uuidv4().slice( 0, 8 );
 
 // Define a default
 const defaultConfig = {
@@ -42,7 +44,7 @@ function sanitizeConfig( config ) {
 localStorage.paperProgramsConfig = JSON.stringify(
   sanitizeConfig( {
     ...defaultConfig,
-    ...JSON.parse( localStorage.paperProgramsConfig || '{}' ),
+    ...storedConfig
   } )
 );
 
