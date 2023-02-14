@@ -34,28 +34,13 @@ const SceneryDisplay = ( props ) => {
     // scenery workaround for consistent requestAnimationFrame
     scenery.Utils.polyfillRequestAnimationFrame();
 
-    // set up animation
-    sceneryDisplay.updateOnRequestAnimationFrame( dt => {
-
-      // on startup, scenery updates with a dt of zero?
-      if ( dt > 0 ) {
-
-        // cap the largest animation frame (like when the tab is in the background) - in seconds
-        dt = Math.min( dt, 0.05 );
-
-        // step axon's timer (used by many phet-libs)
-        axon.stepTimer.emit( dt );
-
-        // steps model then view
-        sceneryDisplay.updateDisplay();
-      }
-    } );
+    // set up animation - This takes an optional callback( dt ) if needed at some point
+    sceneryDisplay.updateOnRequestAnimationFrame();
 
     // a property that indicates if the browser tab is visible
     const browserTabVisibleProperty = new axon.Property( true );
     document.addEventListener( 'visibilitychange', () => {
       browserTabVisibleProperty.set( document.visibilityState === 'visible' );
-      console.log( browserTabVisibleProperty.value );
     }, false );
 
     // initialize Voicing
@@ -66,6 +51,13 @@ const SceneryDisplay = ( props ) => {
     } );
     scenery.voicingUtteranceQueue.enabled = true;
     scenery.voicingManager.enabledProperty.value = true; // TODO: Why can't this use a setter?
+    scenery.voicingManager.respectResponseCollectorProperties = false;
+
+    // All responses are enabled by default
+    utteranceQueue.responseCollector.nameResponsesEnabledProperty.value = true;
+    utteranceQueue.responseCollector.objectResponsesEnabledProperty.value = true;
+    utteranceQueue.responseCollector.contextResponsesEnabledProperty.value = true;
+    utteranceQueue.responseCollector.hintResponsesEnabledProperty.value = true;
 
   }, [] );
 
