@@ -11,8 +11,7 @@ import ReactDOM from 'react-dom';
 import SceneryDisplay from './SceneryDisplay.js';
 
 // constants
-const DISPLAY_WIDTH = 640;
-const DISPLAY_HEIGHT = 480;
+const DISPLAY_SIZE = new dot.Dimension2( 640, 480 );
 
 // Create the root element for React.
 const element = document.createElement( 'div' );
@@ -22,7 +21,7 @@ document.body.appendChild( element );
 const scene = new scenery.Node();
 
 ReactDOM.render(
-  <SceneryDisplay scene={scene} width={DISPLAY_WIDTH} height={DISPLAY_HEIGHT}/>,
+  <SceneryDisplay scene={scene} width={DISPLAY_SIZE.width} height={DISPLAY_SIZE.height}/>,
   element
 );
 
@@ -93,6 +92,14 @@ const mapOfProgramNumbersToScratchpadObjects = new Map();
 
 // {Map<number,Object>} - map of paper program numbers that are present in the detection window to their position points
 const mapOfPaperProgramNumbersToPreviousPoints = new Map();
+
+// {Object} - This object contains the data that is passed into the handlers for the paper programs and can be used to
+// share information between them.  The data can be referenced and sometimes updated.
+const sharedData = {
+  modelProperty: modelProperty,
+  scene: scene,
+  displaySize: DISPLAY_SIZE
+};
 
 // TODO: This should probably go.
 const mapOfPaperProgramIdToViewComponentList = new Map();
@@ -216,7 +223,11 @@ const updateBoard = presentPaperProgramInfo => {
         // re-appearance of the program.
         const eventHandlers = mapOfProgramNumbersToEventHandlers.get( paperProgramNumber );
         if ( eventHandlers.onProgramRemoved ) {
-          eval( eventHandlers.onProgramRemoved )( paperProgramNumber, mapOfProgramNumbersToScratchpadObjects.get( paperProgramNumber ) );
+          eval( eventHandlers.onProgramRemoved )(
+            paperProgramNumber,
+            mapOfProgramNumbersToScratchpadObjects.get( paperProgramNumber ) ,
+            sharedData
+          );
         }
       }
 
@@ -231,8 +242,8 @@ const updateBoard = presentPaperProgramInfo => {
       if ( eventHandlers.onProgramAdded ){
         eval( eventHandlers.onProgramAdded )(
           paperProgramNumber,
-          {},
-          mapOfProgramNumbersToScratchpadObjects.get( paperProgramNumber )
+          mapOfProgramNumbersToScratchpadObjects.get( paperProgramNumber ),
+          sharedData
         );
       }
     }
@@ -243,7 +254,8 @@ const updateBoard = presentPaperProgramInfo => {
       eval( eventHandlers.onProgramChangedPosition )(
         paperProgramNumber,
         currentPaperProgramPoints,
-        mapOfProgramNumbersToScratchpadObjects.get( paperProgramNumber )
+        mapOfProgramNumbersToScratchpadObjects.get( paperProgramNumber ),
+        sharedData
       );
     }
 
@@ -289,8 +301,8 @@ const updateBoard = presentPaperProgramInfo => {
     if ( uiComponent ) {
       const normalizedCenterX = ( paperProgramInstanceInfo.points[ 0 ].x + paperProgramInstanceInfo.points[ 2 ].x ) / 2;
       const normalizedCenterY = ( paperProgramInstanceInfo.points[ 0 ].y + paperProgramInstanceInfo.points[ 2 ].y ) / 2;
-      uiComponent.centerX = normalizedCenterX * DISPLAY_WIDTH;
-      uiComponent.centerY = normalizedCenterY * DISPLAY_HEIGHT;
+      uiComponent.centerX = normalizedCenterX * DISPLAY_SIZE.width;
+      uiComponent.centerY = normalizedCenterY * DISPLAY_SIZE.height;
     }
 
     // Update the paper program points for the next time through this loop.
