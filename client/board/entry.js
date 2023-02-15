@@ -82,6 +82,25 @@ const resolveModelReferences = ( objectWithPotentialModelReferences, model ) => 
   return objectWithResolvedReferences;
 };
 
+// {Map<number,Object>} - Event handlers from the paper programs, stored as strings.  These are evaluated when the
+// programs are added, moved, or removed, see the usage below for details.
+const paperProgramEventHandlers = new Map();
+
+// {Map<number,Object>} - Temporary data that can be set and used by the paper program code when they are in the
+// detection window.  This data is generally set when a paper program comes into the field of view, used while it is
+// there, and cleared when it goes out of the field of view.
+const scratchPadData = new Map();
+
+// TODO: This should probably go.
+const mapOfPaperProgramIdToViewComponentList = new Map();
+const registerViewComponent = ( paperProgramNumber, viewComponent ) => {
+  if ( !mapOfPaperProgramIdToViewComponentList.has( paperProgramNumber ) ) {
+    mapOfPaperProgramIdToViewComponentList.set( paperProgramNumber, [] );
+  }
+  const viewComponentList = mapOfPaperProgramIdToViewComponentList.get( paperProgramNumber );
+  viewComponentList.push( viewComponent );
+};
+
 // Update the model and add or remove UI components based on the presence or absence of certain paper programs.
 const updateBoard = presentPaperProgramInfo => {
 
@@ -94,7 +113,7 @@ const updateBoard = presentPaperProgramInfo => {
 
     // If this paper program contains model data, and that data has changed since the last time through this function,
     // update the local model Property.
-    if ( programSpecificData && programSpecificData.updateTime > lastUpdateTime ) {
+    if ( programSpecificData && programSpecificData.updateTime && programSpecificData.updateTime > lastUpdateTime ) {
 
       lastUpdateTime = programSpecificData.updateTime;
 
@@ -149,12 +168,57 @@ const updateBoard = presentPaperProgramInfo => {
       }
       if ( programSpecificData.program ) {
 
-        // Run the javascript code provided by the program
-        eval( programSpecificData.program )();
+        // TODO: Remove handling of program as string once the newer approach is working, -jbphet 2/14/2023
+        if ( typeof programSpecificData.program === 'string' ) {
+
+          // Run the javascript code provided by the program
+          eval( programSpecificData.program )();
+        }
+        else {
+
+          // Run the JavaScript code provided by the paper program for when it is added to the detection window.
+          eval( programSpecificData.program.onProgramAdded )( paperProgramNumber );
+        }
 
         // the model may have changed in the eval, call listeners
         modelProperty.notifyListenersStatic();
       }
+    }
+
+    if ( programSpecificData &&
+         programSpecificData.paperPlaygroundData &&
+         programSpecificData.paperPlaygroundData.updateTime > lastUpdateTime ) {
+
+      lastUpdateTime = programSpecificData.updateTime;
+
+      // If there are no handlers for this program, it means that it just appeared in the detection window.
+      const paperProgramJustAppeared = !paperProgramEventHandlers.has( paperProgramNumber );
+
+      if ( !paperProgramJustAppeared ) {
+
+        // Since the paper program didn't just appear in the detection window, it indicates that its program probably
+        // changed.  Since pretty much anything could have changed about the program, we treat this as a removal and
+        // re-appearance of the program.
+        const eventHandlers = paperProgramEventHandlers.get( paperProgramNumber );
+        if ( eventHandlers.onProgramRemoved ) {
+
+          eventHandlers.onProgramRemoved( paperProgramNumber, scratchPadData.get( paperProgramNumber ) );
+        }
+      }
+
+      // Extract the event handlers from the program, since they are either new or potentially changed.
+      paperProgramEventHandlers.set( paperProgramNumber, programSpecificData.paperPlaygroundData.eventHandlers || {} );
+
+      // Set the scratchpad data to an empty object.
+      scratchPadData.set( paperProgramNumber, {} );
+
+      // Run this program's "added" handler, if present (and generally it should be).
+      const eventHandlers = paperProgramEventHandlers.get( paperProgramNumber );
+      eventHandlers.onProgramAdded && eval( eventHandlers.onProgramAdded )(
+        paperProgramNumber,
+        {},
+        scratchPadData.get( paperProgramNumber )
+      );
     }
 
     // TODO: If we keep this, consider moving into the updateTime block above.
@@ -210,6 +274,30 @@ const updateBoard = presentPaperProgramInfo => {
     if ( !presentPaperProgramNumbers.includes( key ) ) {
       scene.removeChild( val );
       mapOfProgramsToComponents.delete( key );
+    }
+  }
+
+  // Remove view components that were registered by a paper program that has now gone away.
+  for ( let [ paperProgramNumber, viewComponentList ] of mapOfPaperProgramIdToViewComponentList ) {
+    if ( !presentPaperProgramNumbers.includes( paperProgramNumber ) ) {
+      console.log( `Removing components for pp ${paperProgramNumber}, viewComponentList.length = ${viewComponentList.length}` );
+      viewComponentList.forEach( viewComponent => {
+        scene.removeChild( viewComponent );
+      } );
+      mapOfPaperProgramIdToViewComponentList.delete( paperProgramNumber );
+    }
+  }
+
+  // Run removal handlers for any paper programs that have disappeared.
+  for ( let [ paperProgramNumber, eventHandlers ] of paperProgramEventHandlers ) {
+    if ( !presentPaperProgramNumbers.includes( paperProgramNumber ) ) {
+
+      // This paper program has disappeared.  Run its removal method and clear its data.
+      if ( eventHandlers.onProgramRemoved ) {
+        eval( eventHandlers.onProgramRemoved )( paperProgramNumber, scratchPadData.get( paperProgramNumber ) );
+      }
+      paperProgramEventHandlers.delete( paperProgramNumber );
+      scratchPadData.delete( paperProgramNumber );
     }
   }
 }
