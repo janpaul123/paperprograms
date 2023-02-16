@@ -14,15 +14,15 @@ import SceneryDisplay from './SceneryDisplay.js';
 const DISPLAY_SIZE = new dot.Dimension2( 640, 480 );
 
 // Create the root element for React.
-const element = document.createElement( 'div' );
-document.body.appendChild( element );
+const simDisplayDiv = document.getElementById( 'sim-display' );
+document.body.appendChild( simDisplayDiv );
 
 // Create the root of the scene graph for the Scenery node.
 const scene = new scenery.Node();
 
 ReactDOM.render(
   <SceneryDisplay scene={scene} width={DISPLAY_SIZE.width} height={DISPLAY_SIZE.height}/>,
-  element
+  simDisplayDiv
 );
 
 const mapOfProgramsToComponents = new Map();

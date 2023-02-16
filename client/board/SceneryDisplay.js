@@ -22,15 +22,6 @@ const SceneryDisplay = ( props ) => {
     // Make the scenery display interactive.
     sceneryDisplay.initializeEvents();
 
-    // Add some text.  This helps indicate that things started successfully.
-    const titleText = new scenery.Text( 'Scenery Display - Use paper programs to add components.', {
-      font: new scenery.Font( { size: '20px' } ),
-      left: 10,
-      top: 10
-    } )
-    props.scene.addChild( titleText );
-    sceneryDisplay.updateDisplay();
-
     // scenery workaround for consistent requestAnimationFrame
     scenery.Utils.polyfillRequestAnimationFrame();
 
