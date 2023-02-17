@@ -196,7 +196,7 @@ export default class CameraMain extends React.Component {
 
   _createHelloWorld() {
     xhr.post(
-      getApiUrl( this.state.spaceData.spaceName, '/programs' ),
+      getApiUrl( this.state.selectedSpaceName, '/programs' ),
       { json: { code: helloWorld } },
       error => {
         if ( error ) {
@@ -347,7 +347,7 @@ export default class CameraMain extends React.Component {
           </div>
           <div className={styles.sidebar}>
             <div className={`${styles.sidebarSection} ${styles.create}`}>
-              <button onClick={this._createHelloWorld}>Create Program</button>
+              <button onClick={this._createHelloWorld.bind( this )}>Create Program</button>
               <a href={editorUrl} target="_blank" className={styles.editorAnchor}>
                 Open Editor
               </a>
