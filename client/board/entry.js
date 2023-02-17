@@ -28,8 +28,6 @@ ReactDOM.render(
   simDisplayDiv
 );
 
-const mapOfProgramsToComponents = new Map();
-
 // The model of our sim design board, with all model Properties from paper programs. It is observable so that view
 // elements and controllers can update/reconstruct themselves when the model changes.
 const modelProperty = new axon.Property( {} );
