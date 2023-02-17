@@ -140,6 +140,7 @@ const updateBoard = presentPaperProgramInfo => {
   } );
 
   // Run removal handlers for any paper programs that have disappeared.
+  const presentPaperProgramNumbers = presentPaperProgramInfo.map( info => Number( info.number ) );
   for ( let [ paperProgramNumber, eventHandlers ] of mapOfProgramNumbersToEventHandlers ) {
     if ( !presentPaperProgramNumbers.includes( paperProgramNumber ) ) {
 
