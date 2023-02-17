@@ -1,4 +1,5 @@
 @value cameraMainPadding: 20px;
+
 @value cameraMainSidebarWidth: 300px;
 
 :local(.root) {
@@ -22,7 +23,7 @@
 :local(.sidebar) {
   flex: 1 1 cameraMainSidebarWidth;
   color: white;
-  font: 18px sans-serif;
+  font: 16px sans-serif;
   font-weight: 300;
 }
 
@@ -105,31 +106,36 @@
 :local(.printQueueItem) {
   width: 100%;
 }
+
+:local(.printQueueItem):nth-child(even) {
+  background: #555;
+}
+
 :local(.printQueueItemContent) {
   width: 75%;
   display: inline-block;
 }
+
 :local(.printQueueItemPrinted),
 :local(.printQueueItemNotPrinted) {
   margin-bottom: calc(cameraMainPadding / 4);
   cursor: pointer;
 }
+
 :local(.printQueueItemPrinted):hover,
 :local(.printQueueItemNotPrinted):hover {
-  background: #666;
-}
-
-:local(.printQueueItemPrinted) :local(.printQueueItemName) {
-  text-decoration: line-through;
+  background: #99e;
 }
 
 :local(.printQueueItemToggle) {
   visibility: hidden;
   cursor: pointer;
 }
+
 :local(.printQueueItem):hover :local(.printQueueItemToggle) {
   visibility: visible;
 }
+
 :local(.printQueueItemToggle):hover {
   background: #999;
 }
@@ -157,12 +163,15 @@
   line-height: 20px;
   cursor: pointer;
 }
+
 :local(.colorListItem):hover {
   box-shadow: 0 0 0 20px rgba(255, 255, 255, 0.3) inset;
 }
+
 :local(.colorListItemSelected) {
   box-shadow: 0 0 0 3px white;
 }
+
 :local(.colorListItemSelected):hover {
   box-shadow: 0 0 0 3px white, 0 0 0 20px rgba(255, 255, 255, 0.3) inset;
 }

@@ -404,6 +404,7 @@ export default class CameraMain extends React.Component {
                 <div>
                   {this.state.spaceData.programs
                     .filter( program => !program.printed || this.props.config.showPrintedInQueue )
+                    .sort( ( programA, programB ) => programA.number - programB.number )
                     .map( program => (
                       <div
                         key={program.number}
