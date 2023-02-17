@@ -63,7 +63,7 @@ const pointsEqual = ( points1, points2 ) => {
          points1[ 3 ].x === points2[ 3 ].x && points1[ 3 ].y === points2[ 3 ].y;
 }
 
-// Update the model and add or remove UI components based on the presence or absence of certain paper programs.
+// Update the sim design board based on changes to the paper programs.
 const updateBoard = presentPaperProgramInfo => {
 
   const dataByProgramNumber = JSON.parse( localStorage.paperProgramsDataByProgramNumber || '{}' );
