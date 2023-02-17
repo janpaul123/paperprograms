@@ -55,16 +55,6 @@ const sharedData = {
   displaySize: DISPLAY_SIZE
 };
 
-// TODO: This should probably go.
-const mapOfPaperProgramIdToViewComponentList = new Map();
-const registerViewComponent = ( paperProgramNumber, viewComponent ) => {
-  if ( !mapOfPaperProgramIdToViewComponentList.has( paperProgramNumber ) ) {
-    mapOfPaperProgramIdToViewComponentList.set( paperProgramNumber, [] );
-  }
-  const viewComponentList = mapOfPaperProgramIdToViewComponentList.get( paperProgramNumber );
-  viewComponentList.push( viewComponent );
-};
-
 // Helper function to compare two sets of paper program position points.
 const pointsEqual = ( points1, points2 ) => {
   return points1[ 0 ].x === points2[ 0 ].x && points1[ 0 ].y === points2[ 0 ].y &&
