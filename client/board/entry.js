@@ -1,5 +1,6 @@
 /**
- * Entry-point file for the Scenery-based display that is manipulated using the paper programs.
+ * Entry-point file for the Sim Design Board, which is a scene graph based on the PhET libraries that uses PhET
+ * components that can be manipulated using the paper programs.
  *
  * @author John Blanco (PhET Interactive Simulations)
  * @author Jesse Greenberg (PhET Interactive Simulations)
@@ -17,9 +18,11 @@ const DISPLAY_SIZE = new dot.Dimension2( 640, 480 );
 const simDisplayDiv = document.getElementById( 'sim-display' );
 document.body.appendChild( simDisplayDiv );
 
-// Create the root of the scene graph for the Scenery node.
+// Create the root of the scene graph.
 const scene = new scenery.Node();
 
+// Render the scene graph.  Once this is done it updates itself, so there is no other React-based rendering of this
+// component.
 ReactDOM.render(
   <SceneryDisplay scene={scene} width={DISPLAY_SIZE.width} height={DISPLAY_SIZE.height}/>,
   simDisplayDiv
@@ -27,59 +30,12 @@ ReactDOM.render(
 
 const mapOfProgramsToComponents = new Map();
 
-// The model of our board, with all model Properties from programs. It is observable so that view elements and
-// controller can update/reconstruct themselves when the model changes.
+// The model of our sim design board, with all model Properties from paper programs. It is observable so that view
+// elements and controllers can update/reconstruct themselves when the model changes.
 const modelProperty = new axon.Property( {} );
 
-// If the model changes from programs, a timestamp is saved and we compare it to this saved timestamp to only
-// reconstruct the model when needed
+// timestamp of the last update of paper program information
 let lastUpdateTime = 0;
-
-/**
- * Helper function to fill in string-based references to elements in a model with the actual value in the model.  If
- * no matching reference is found, an assertion is thrown.
- */
-const resolveModelReferences = ( objectWithPotentialModelReferences, model ) => {
-
-  // Make a clone of the object so that we don't need to change it.
-  const objectWithResolvedReferences = _.cloneDeep( objectWithPotentialModelReferences );
-
-  for ( const key in objectWithResolvedReferences ) {
-
-    const value = objectWithResolvedReferences[ key ];
-
-    // Model references are strings that start with 'model.', e.g. 'model.heightProperty'.
-    if ( typeof value === 'string' && value.indexOf( 'model.' ) === 0 ) {
-
-      const valueStringElements = value.split( '.' );
-      const modelElementName = valueStringElements[ 1 ];
-
-      // Note to future maintainers: The following code does not support nested model properties, so it will need to be
-      // revised if and when that is needed.
-
-      // Check that the decoded information looks correct and that the reference exists in the model.
-      assert && assert(
-        valueStringElements.length === 2,
-        `unexpected number of keys in model reference: ${value}`
-      );
-      assert && assert(
-        typeof modelElementName === 'string',
-        `unexpected model element name value: ${modelElementName}`
-      );
-      assert && assert(
-        model[ modelElementName ] !== undefined,
-        `model element name not found in model: ${modelElementName}`
-      );
-
-      // Replace the reference to the model element with the element value.
-      if ( model[ modelElementName ] !== undefined ) {
-        objectWithResolvedReferences[ key ] = model[ modelElementName ];
-      }
-    }
-  }
-
-  return objectWithResolvedReferences;
-};
 
 // {Map<number,Object>} - Event handlers from the paper programs, stored as strings.  These are evaluated when the
 // programs are added, moved, or removed, see the usage below for details.
@@ -124,8 +80,9 @@ const updateBoard = presentPaperProgramInfo => {
 
   const dataByProgramNumber = JSON.parse( localStorage.paperProgramsDataByProgramNumber || '{}' );
 
-  // Add elements (model and view) for paper programs that have appeared since the last time through this function.
+  // Process the data associated with each of the paper programs that are currently present in the detection window.
   presentPaperProgramInfo.forEach( paperProgramInstanceInfo => {
+
     const paperProgramNumber = Number( paperProgramInstanceInfo.number );
     const previousPaperProgramPoints = mapOfPaperProgramNumbersToPreviousPoints.get( paperProgramNumber );
     const currentPaperProgramPoints = paperProgramInstanceInfo.points;
@@ -133,80 +90,8 @@ const updateBoard = presentPaperProgramInfo => {
                                !pointsEqual( previousPaperProgramPoints, currentPaperProgramPoints );
     const programSpecificData = dataByProgramNumber[ paperProgramNumber ];
 
-    // If this paper program contains model data, and that data has changed since the last time through this function,
-    // update the local model Property.
-    if ( programSpecificData && programSpecificData.updateTime && programSpecificData.updateTime > lastUpdateTime ) {
-
-      lastUpdateTime = programSpecificData.updateTime;
-
-      if ( programSpecificData.model ) {
-
-        const newModelValue = {};
-        for ( const field in programSpecificData.model ) {
-
-          if ( field !== 'updateTime' ) {
-
-            const modelObjectDescriptor = programSpecificData.model[ field ];
-
-            // Extract and verify the namespace and type for this model element.
-            const modelPropertyType = modelObjectDescriptor.type;
-            assert && assert( typeof modelPropertyType === 'string', `unexpected model property type: ${modelPropertyType}` );
-            const namespaceAndConstructor = modelPropertyType.split( '.' );
-            const nameSpace = namespaceAndConstructor[ 0 ];
-            assert && assert( window[ nameSpace ], `namespace not found on window: ${nameSpace}` );
-            const className = namespaceAndConstructor[ 1 ];
-            assert && assert( window[ nameSpace ][ className ], `class name not found on window.namespace: ${className}` );
-
-            // Extract the arguments for constructing the model element.
-            //
-            // Note to future maintainers: This code assumes that there are always arguments when constructing a model
-            // element.  Long term, that may or may not be a valid assumption, but as of this writing (Jan 2023), we don't
-            // know, and are keeping it simple.  Feel free to add support for no-arg model elements if and when it is
-            // needed.
-            const modelPropertyArgs = resolveModelReferences( modelObjectDescriptor.args, newModelValue );
-
-            // Extract and resolve the options if present.
-            const modelPropertyOptions = modelObjectDescriptor.options === undefined ? {} :
-                                         resolveModelReferences( modelObjectDescriptor.options, newModelValue );
-
-            // Construct the model property using the namespace, class name, arguments, and options extracted from the
-            // program-specific data.
-            newModelValue[ field ] = new window[ namespaceAndConstructor[ 0 ] ][ namespaceAndConstructor[ 1 ] ](
-              ...modelPropertyArgs,
-              modelPropertyOptions
-            );
-          }
-        }
-
-        // Update the model Property.  There is an implicit assumption here that there is only one paper program that
-        // defines the model.  If that ever changes, this will need to be a merge instead of an overwrite.
-        modelProperty.value = newModelValue;
-
-        // Log the model info (for debug purposes).
-        console.log( 'Model updated, value:' );
-        for ( const key in modelProperty.value ) {
-          console.log( `  ${key}: ${modelProperty.value[ key ].toString()}` );
-        }
-      }
-      if ( programSpecificData.program ) {
-
-        // TODO: Remove handling of program as string once the newer approach is working, -jbphet 2/14/2023
-        if ( typeof programSpecificData.program === 'string' ) {
-
-          // Run the javascript code provided by the program
-          eval( programSpecificData.program )();
-        }
-        else {
-
-          // Run the JavaScript code provided by the paper program for when it is added to the detection window.
-          eval( programSpecificData.program.onProgramAdded )( paperProgramNumber );
-        }
-
-        // the model may have changed in the eval, call listeners
-        modelProperty.notifyListenersStatic();
-      }
-    }
-
+    // If this paper program contains data that is intended for use by the sim design board, and that data has changed
+    // since the last time through this function, process the changes.
     if ( programSpecificData &&
          programSpecificData.paperPlaygroundData &&
          programSpecificData.paperPlaygroundData.updateTime > lastUpdateTime ) {
@@ -262,75 +147,9 @@ const updateBoard = presentPaperProgramInfo => {
       );
     }
 
-    // TODO: If we keep this, consider moving into the updateTime block above.
-    if ( programSpecificData && programSpecificData.phetComponent && !mapOfProgramsToComponents.has( paperProgramNumber ) ) {
-
-      // Add the specified component.
-      const labelString = programSpecificData.phetComponent.labelString;
-
-      if ( programSpecificData.phetComponent.type === 'slider' ) {
-        const valueProperty = new axon.Property( 0 );
-        const range = new dot.Range( 0, 100 );
-        const slider = new sun.HSlider( valueProperty, range );
-        mapOfProgramsToComponents.set( paperProgramNumber, slider );
-      }
-      else if ( programSpecificData.phetComponent.type === 'checkbox' ) {
-        const booleanProperty = new axon.Property( false );
-        const checkboxLabel = new scenery.Text( labelString );
-        const checkbox = new sun.Checkbox( booleanProperty, checkboxLabel );
-        mapOfProgramsToComponents.set( paperProgramNumber, checkbox );
-      }
-      else if ( programSpecificData.phetComponent.type === 'button' ) {
-        const button = new sun.TextPushButton( labelString, {
-          font: new scenery.Font( { size: '16px' } )
-        } );
-        mapOfProgramsToComponents.set( paperProgramNumber, button );
-      }
-      else if ( programSpecificData.phetComponent.type === 'image' ) {
-        const imageElement = document.createElement( 'img' );
-        imageElement.setAttribute( 'src', `media/images/${programSpecificData.phetComponent.imageSource}` );
-        const image = new scenery.Image( imageElement, {
-          maxWidth: 100
-        } );
-        mapOfProgramsToComponents.set( paperProgramNumber, image );
-      }
-
-      scene.addChild( mapOfProgramsToComponents.get( paperProgramNumber ) );
-    }
-
-    // Position the component based on the position of the paper program.
-    const uiComponent = mapOfProgramsToComponents.get( paperProgramNumber );
-
-    if ( uiComponent ) {
-      const normalizedCenterX = ( paperProgramInstanceInfo.points[ 0 ].x + paperProgramInstanceInfo.points[ 2 ].x ) / 2;
-      const normalizedCenterY = ( paperProgramInstanceInfo.points[ 0 ].y + paperProgramInstanceInfo.points[ 2 ].y ) / 2;
-      uiComponent.centerX = normalizedCenterX * DISPLAY_SIZE.width;
-      uiComponent.centerY = normalizedCenterY * DISPLAY_SIZE.height;
-    }
-
     // Update the paper program points for the next time through this loop.
     mapOfPaperProgramNumbersToPreviousPoints.set( paperProgramNumber, currentPaperProgramPoints );
   } );
-
-  // Remove components for paper programs that have disappeared since the last time this function was run.
-  const presentPaperProgramNumbers = presentPaperProgramInfo.map( info => Number( info.number ) );
-  for ( let [ key, val ] of mapOfProgramsToComponents ) {
-    if ( !presentPaperProgramNumbers.includes( key ) ) {
-      scene.removeChild( val );
-      mapOfProgramsToComponents.delete( key );
-    }
-  }
-
-  // Remove view components that were registered by a paper program that has now gone away.
-  for ( let [ paperProgramNumber, viewComponentList ] of mapOfPaperProgramIdToViewComponentList ) {
-    if ( !presentPaperProgramNumbers.includes( paperProgramNumber ) ) {
-      console.log( `Removing components for pp ${paperProgramNumber}, viewComponentList.length = ${viewComponentList.length}` );
-      viewComponentList.forEach( viewComponent => {
-        scene.removeChild( viewComponent );
-      } );
-      mapOfPaperProgramIdToViewComponentList.delete( paperProgramNumber );
-    }
-  }
 
   // Run removal handlers for any paper programs that have disappeared.
   for ( let [ paperProgramNumber, eventHandlers ] of mapOfProgramNumbersToEventHandlers ) {
@@ -350,9 +169,9 @@ const updateBoard = presentPaperProgramInfo => {
   }
 }
 
-// Make updates when the local storage is updated. This is how the processes communicate.  Through experimentation, we
-// (PhET devs) found that this is called every second even if nothing changes as long as there is at least one paper
-// program in the detection window.
+// Handle changes to local storage.  This is how paper programs communicate with the sim design board.
+// Note: Through experimentation, we (PhET devs) found that this is called every second even if nothing changes as long
+// as there is at least one paper program in the detection window.
 let paperProgramsInfo = [];
 addEventListener( 'storage', () => {
   const currentPaperProgramsInfo = JSON.parse( localStorage.paperProgramsProgramsToRender );
@@ -371,9 +190,9 @@ addEventListener( 'storage', () => {
     }
   } );
 
-  // Update our copy of the into entries.
+  // Update our local copy of the paper programs information.
   paperProgramsInfo = currentPaperProgramsInfo;
 
-  // Update the UI components on the screen.
+  // Update the sim design board.
   updateBoard( currentPaperProgramsInfo );
 } );
