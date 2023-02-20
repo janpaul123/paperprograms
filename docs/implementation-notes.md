@@ -2,7 +2,7 @@
 
 ## Model-View Separation
 
-Papyrus is set up support a software design pattern called "model-view separation" in the Program code. This pattern
+Papyrus is set up to support a software design pattern called "model-view separation" in the Program code. This pattern
 is often used when developing user interfaces and is heavily used by PhET libraries. It separates internal
 data from the way it is presented to the user.
 
