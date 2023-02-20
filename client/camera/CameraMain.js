@@ -353,6 +353,67 @@ export default class CameraMain extends React.Component {
               </a>
             </div>
             <div className={styles.sidebarSection}>
+              <h3 className={styles.sidebarSubSection}>Space</h3>
+              <div>
+                <div>
+                  <label htmlFor="spaces">Select a Space:</label>
+                  <select
+                    name="spaces"
+                    id="spaces"
+                    value={this.state.selectedSpaceName}
+                    onChange={event => {
+                      this.setState( { selectedSpaceName: event.target.value } );
+                      this.props.onConfigChange( {
+                        ...this.props.config,
+                        selectedSpaceName: event.target.value
+                      } );
+                    }}
+                  >
+                    {this.state.availableSpaces.map( ( option, index ) => {
+                      return <option key={index}>
+                        {option}
+                      </option>
+                    } )}
+                  </select>
+                </div>
+                <div>
+                  {this.state.isAddingNewSpace ? (
+                    <div>
+                      <form onSubmit={event => {
+                        if ( this._handleNewSpaceNameSubmit( event ) ) {
+                          this.setState( { isAddingNewSpace: false } );
+                        }
+                      }}>
+                        <label>
+                          Name:&nbsp;
+                          <input
+                            type="text"
+                            onChange={this._handleNewSpaceNameChange.bind( this )}
+                          />
+                        </label>
+                        <br/>
+                        <button type="submit">
+                          Confirm
+                        </button>
+                        <button type="button" onClick={() => this.setState( { isAddingNewSpace: false } )}>
+                          Cancel
+                        </button>
+                      </form>
+                    </div>
+                  ) : (
+                     <div>
+                       <button onClick={() => {
+                         this.setState( { isAddingNewSpace: true } );
+                         this.setState( { newSpaceName: '' } );
+                       }}>
+                         Add New Space
+                       </button>
+                     </div>
+                   )}
+                </div>
+              </div>
+            </div>
+            <div className={styles.sidebarSection}>
               <h3>Printing</h3>
               <div className={styles.sidebarSubSection}>
                 <span>Paper Size: </span>
@@ -601,67 +662,6 @@ export default class CameraMain extends React.Component {
                   }
                 />{' '}
                 programs
-              </div>
-            </div>
-            <div className={styles.sidebarSection}>
-              <h3 className={styles.sidebarSubSection}>Space</h3>
-              <div>
-                <div>
-                  <label htmlFor="spaces">Select a Space:</label>
-                  <select
-                    name="spaces"
-                    id="spaces"
-                    value={this.state.selectedSpaceName}
-                    onChange={event => {
-                      this.setState( { selectedSpaceName: event.target.value } );
-                      this.props.onConfigChange( {
-                        ...this.props.config,
-                        selectedSpaceName: event.target.value
-                      } );
-                    }}
-                  >
-                    {this.state.availableSpaces.map( ( option, index ) => {
-                      return <option key={index}>
-                        {option}
-                      </option>
-                    } )}
-                  </select>
-                </div>
-                <div>
-                  {this.state.isAddingNewSpace ? (
-                    <div>
-                      <form onSubmit={event => {
-                        if ( this._handleNewSpaceNameSubmit( event ) ) {
-                          this.setState( { isAddingNewSpace: false } );
-                        }
-                      }}>
-                        <label>
-                          Name:&nbsp;
-                          <input
-                            type="text"
-                            onChange={this._handleNewSpaceNameChange.bind( this )}
-                          />
-                        </label>
-                        <br/>
-                        <button type="submit">
-                          Confirm
-                        </button>
-                        <button type="button" onClick={() => this.setState( { isAddingNewSpace: false } )}>
-                          Cancel
-                        </button>
-                      </form>
-                    </div>
-                  ) : (
-                     <div>
-                       <button onClick={() => {
-                         this.setState( { isAddingNewSpace: true } );
-                         this.setState( { newSpaceName: '' } );
-                       }}>
-                         Add New Space
-                       </button>
-                     </div>
-                   )}
-                </div>
               </div>
             </div>
           </div>
