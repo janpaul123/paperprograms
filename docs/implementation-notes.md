@@ -1,6 +1,6 @@
 # Papyrus Implementation Notes
 
-## Model-View separation
+## Model-View Separation
 
 Papyrus is set up support a software design pattern called "model-view separation" in the Program code. This pattern
 is often used when developing user interfaces and is heavily used by PhET libraries. It separates internal
@@ -8,7 +8,7 @@ data from the way it is presented to the user.
 
 Benefits of model-view separation include:
 
-- You can create multiple modalities/representations from a single model.
+- You can create multiple output modalities/representations from a single model.
 - Changes to the view do not impact application behavior.
 
 ### Model
@@ -28,9 +28,11 @@ and https://en.wikipedia.org/wiki/Model%E2%80%93view%E2%80%93controller.
 
 ### Example Papyrus model
 
-Lets pretend we want to represent a cupcake 🧁 in the Papyrus Board. On the Board, we want to display a visual cupcake
-write strings that describe its properties. First, lets consider what we might want to draw or describe about the
-cupcake. That will determine the components we need in the model.
+Let's pretend we want to represent a cupcake 🧁 in the Papyrus Board. On the Board, we want to display a visual cupcake
+and write strings that describe its properties.
+
+First, lets consider the important things to draw and describe about the cupcake. That will determine the components we
+need in the model.
 
 - Type of cake (carrot, chocolate, lemon, ...)
 - Type of icing (buttercream, royal, whipped cream, ...)
@@ -115,12 +117,12 @@ descriptions that will change with the model.
 
 Quickly breaking down the numbered sections of the above Program code:
 
-1) We create a CupcakeNode and add it to the scene. The CupcakeNode could use scenery to draw the cake, icing, and
-   sprinkles and add PDOM structure for a screen reader but that is beyond the scope of these notes. The cupcakeNode is
+1) We create a `CupcakeNode` and add it to the scene. The `CupcakeNode` could use scenery to draw the cake, icing, and
+   sprinkles and add PDOM structure for a screen reader but that is beyond the scope of these notes. The `cupcakeNode` is
    added as a child to the scene so that it is drawn to the Board.
 2) We get our `cakeTypeProperty` that we created in our model Program and use `link`. With `link`, whenever
    the `cakeTypeProperty` value changes, the provided code is run. This is what creates dynamic behavior.
-3) This is the logic called whenever the model cakeTypeProperty changes. I introduced
+3) This is the logic called whenever the model `cakeTypeProperty` changes. I introduced
    imaginary `drawChocolate`, `drawCarrot` and `drawLemon` functions. These functions are beyond the scope of these
    notes, but you could imagine they change images or colors representing the cupcake. They are followed by code
    that changes how the cupcake is described in the PDOM for a screen reader.
