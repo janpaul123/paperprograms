@@ -28,6 +28,12 @@ ReactDOM.render(
   simDisplayDiv
 );
 
+// Initialize sound production.
+const TRUE_PROPERTY = new axon.BooleanProperty( true );
+const FALSE_PROPERTY = new axon.BooleanProperty( false );
+tambo.soundManager.enabledProperty.value = true;
+tambo.soundManager.initialize( TRUE_PROPERTY, TRUE_PROPERTY, TRUE_PROPERTY, TRUE_PROPERTY, FALSE_PROPERTY );
+
 // The model of our sim design board, with all model Properties from paper programs. It is observable so that view
 // elements and controllers can update/reconstruct themselves when the model changes.
 const modelProperty = new axon.Property( {} );
@@ -61,6 +67,47 @@ const pointsEqual = ( points1, points2 ) => {
          points1[ 1 ].x === points2[ 1 ].x && points1[ 1 ].y === points2[ 1 ].y &&
          points1[ 2 ].x === points2[ 2 ].x && points1[ 2 ].y === points2[ 2 ].y &&
          points1[ 3 ].x === points2[ 3 ].x && points1[ 3 ].y === points2[ 3 ].y;
+}
+
+/**
+ * TODO: I (jbphet) don't understand why WrappedAudioBuffer is not in phetlib, but it isn't, so I had to add this.  If
+ *       we can get it into phetlib, this can be removed.
+ */
+class WrappedAudioBuffer {
+
+  constructor() {
+
+    this.audioBufferProperty = new axon.TinyProperty( null );
+
+    // Make sure that the audio buffer is only ever set once.
+    assert && this.audioBufferProperty.lazyLink( ( audioBuffer, previousAudioBuffer ) => {
+      assert && assert( previousAudioBuffer === null && audioBuffer !== null, 'The audio buffer can only be set once' );
+    } );
+  }
+}
+
+/**
+ * Create an instance of WrappedAudioBuffer and return it, and start the process of decoding the audio file from the
+ * provided path and load it into the buffer when complete.
+ * @param {string} pathToAudioFile
+ */
+const createAndLoadWrappedAudioBuffer = pathToAudioFile => {
+  const wrappedAudioBuffer = new WrappedAudioBuffer();
+
+  window.fetch( pathToAudioFile )
+    .then( response => response.arrayBuffer() )
+    .then( arrayBuffer => tambo.phetAudioContext.decodeAudioData( arrayBuffer ) )
+    .then( audioBuffer => {
+      wrappedAudioBuffer.audioBufferProperty.value = audioBuffer;
+    } );
+
+  return wrappedAudioBuffer;
+};
+
+// This is here to prevent the IDE from marking the function as unused.  We need this, because the function is only
+// used by the paper programs.
+if ( !createAndLoadWrappedAudioBuffer ) {
+  console.warn( 'createAndLoadWrappedAudioBuffer not defined' );
 }
 
 // Update the sim design board based on changes to the paper programs.
