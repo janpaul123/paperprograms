@@ -48,7 +48,11 @@
   height: 16px;
 }
 
-:local(.link), :local(.link):hover, :local(.link):visited, :local(.link):active {
+:local(.link), :local(.link):visited, :local(.link):active {
+  color: skyblue;
+}
+
+:local(.link):hover {
   color: white;
 }
 
