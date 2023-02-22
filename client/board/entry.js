@@ -70,29 +70,14 @@ const pointsEqual = ( points1, points2 ) => {
 }
 
 /**
- * TODO: I (jbphet) don't understand why WrappedAudioBuffer is not in phetlib, but it isn't, so I had to add this.  If
- *       we can get it into phetlib, this can be removed.
- */
-class WrappedAudioBuffer {
-
-  constructor() {
-
-    this.audioBufferProperty = new axon.TinyProperty( null );
-
-    // Make sure that the audio buffer is only ever set once.
-    assert && this.audioBufferProperty.lazyLink( ( audioBuffer, previousAudioBuffer ) => {
-      assert && assert( previousAudioBuffer === null && audioBuffer !== null, 'The audio buffer can only be set once' );
-    } );
-  }
-}
-
-/**
  * Create an instance of WrappedAudioBuffer and return it, and start the process of decoding the audio file from the
- * provided path and load it into the buffer when complete.
+ * provided path and load it into the buffer when complete.  Instances of WrappedAudioBuffer are often needed for
+ * creating sounds using the tambo library.
+ * TODO: Move this into a namespace like window.papyrus or window.phet.papyrus if retained.
  * @param {string} pathToAudioFile
  */
 const createAndLoadWrappedAudioBuffer = pathToAudioFile => {
-  const wrappedAudioBuffer = new WrappedAudioBuffer();
+  const wrappedAudioBuffer = new tambo.WrappedAudioBuffer();
 
   window.fetch( pathToAudioFile )
     .then( response => response.arrayBuffer() )
