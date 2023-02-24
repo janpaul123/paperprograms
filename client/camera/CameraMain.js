@@ -21,7 +21,6 @@ export default class CameraMain extends React.Component {
       framerate: 0,
       selectedColorIndex: -1,
       spaceData: { programs: [] },
-      autoPrintedNumbers: [],
       isEditingSpaceUrl: false,
       selectedSpaceName: props.config.selectedSpaceName,
       availableSpaces: [],
@@ -84,9 +83,6 @@ export default class CameraMain extends React.Component {
       }
       else {
         this.setState( { spaceData: response.body }, () => {
-          if ( this.props.config.autoPrintEnabled ) {
-            this._autoPrint();
-          }
           this._programsChange( this.props.paperProgramsProgramsToRender );
         } );
       }
@@ -136,17 +132,7 @@ export default class CameraMain extends React.Component {
       if ( error ) {
         console.error( `error adding space: ${error}` ); // eslint-disable-line no-console
       }
-      else {
-        // this.setState( { spaceData: response.body }, () => {
-        //   if ( this.props.config.autoPrintEnabled ) {
-        //     this._autoPrint();
-        //   }
-        //   this._programsChange( this.props.paperProgramsProgramsToRender );
-        // } );
-        console.log( `JSON.stringify(response.body) = ${JSON.stringify( response.body )}` );
-      }
     } );
-
   }
 
   _updatePageWidth() {
@@ -180,18 +166,6 @@ export default class CameraMain extends React.Component {
         }
       }
     );
-  };
-
-  _autoPrint() {
-    const toPrint = this.state.spaceData.programs.filter(
-      program => !program.printed && !this.state.autoPrintedNumbers.includes( program.number )
-    );
-    if ( toPrint.length > 0 ) {
-      this.setState(
-        { autoPrintedNumbers: this.state.autoPrintedNumbers.concat( [ toPrint[ 0 ].number ] ) },
-        () => this._print( toPrint[ 0 ] )
-      );
-    }
   };
 
   _createHelloWorld() {
@@ -414,57 +388,10 @@ export default class CameraMain extends React.Component {
               </div>
             </div>
             <div className={styles.sidebarSection}>
-              <h3>Printing</h3>
-              <div className={styles.sidebarSubSection}>
-                <span>Paper Size: </span>
-                <select
-                  value={this.props.config.paperSize}
-                  onChange={event => {
-                    const paperSize = event.target.value;
-                    this.props.onConfigChange( { ...this.props.config, paperSize } );
-                  }}
-                >
-                  <optgroup label="Common">
-                    {commonPaperSizeNames.map( name => {
-                      return (
-                        <option key={name} value={name}>
-                          {name}
-                        </option>
-                      );
-                    } )}
-                  </optgroup>
-                  <optgroup label="Other">
-                    {otherPaperSizeNames.map( name => {
-                      return (
-                        <option key={name} value={name}>
-                          {name}
-                        </option>
-                      );
-                    } )}
-                  </optgroup>
-                </select>
-              </div>
-              <div className={styles.sidebarSubSection}>
-                <h4 className={styles.headerWithOption}>Queue</h4>
-                <div className={styles.optionWithHeader}>
-                  <label htmlFor="show-printed">show printed</label>
-                  <input
-                    type="checkbox"
-                    name="show-printed"
-                    checked={this.props.config.showPrintedInQueue}
-                    onChange={() =>
-                      this.props.onConfigChange( {
-                        ...this.props.config,
-                        showPrintedInQueue: !this.props.config.showPrintedInQueue,
-                      } )
-                    }
-                  />
-                </div>
-              </div>
+              <h3>Programs</h3>
               <div className={`${styles.sidebarSubSection} ${styles.printQueue}`}>
                 <div>
                   {this.state.spaceData.programs
-                    .filter( program => !program.printed || this.props.config.showPrintedInQueue )
                     .sort( ( programA, programB ) => programA.number - programB.number )
                     .map( program => (
                       <div
@@ -509,24 +436,43 @@ export default class CameraMain extends React.Component {
                     ) )}
                 </div>
               </div>
+            </div>
+
+            <div className={styles.sidebarSection}>
+              <h3>Printing</h3>
+              <p>Click the print icon next to the program name to print.</p>
+              <div className={styles.sidebarSubSection}>
+                <span>Paper Size: </span>
+                <select
+                  value={this.props.config.paperSize}
+                  onChange={event => {
+                    const paperSize = event.target.value;
+                    this.props.onConfigChange( { ...this.props.config, paperSize } );
+                  }}
+                >
+                  <optgroup label="Common">
+                    {commonPaperSizeNames.map( name => {
+                      return (
+                        <option key={name} value={name}>
+                          {name}
+                        </option>
+                      );
+                    } )}
+                  </optgroup>
+                  <optgroup label="Other">
+                    {otherPaperSizeNames.map( name => {
+                      return (
+                        <option key={name} value={name}>
+                          {name}
+                        </option>
+                      );
+                    } )}
+                  </optgroup>
+                </select>
+              </div>
               <div>
                 <button onClick={this._printCalibration}>Print Calibration Page</button>
                 {' '}
-              </div>
-              <div>
-                <input
-                  type="checkbox"
-                  name="autoPrint"
-                  checked={this.props.config.autoPrintEnabled}
-                  onChange={() =>
-                    this.props.onConfigChange( {
-                      ...this.props.config,
-                      autoPrintEnabled: !this.props.config.autoPrintEnabled,
-                    } )
-                  }
-                />
-                <label htmlFor="autoPrint">auto-print</label>
-                <div className={styles.note}>(start Chrome with "--kiosk-printing" flag)</div>
               </div>
             </div>
 

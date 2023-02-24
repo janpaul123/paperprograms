@@ -23,7 +23,6 @@ const defaultConfig = {
   showOverlayShapeId: true,
   showOverlayProgram: true,
   selectedSpaceName,
-  autoPrintEnabled: false,
   freezeDetection: false,
   showPrintedInQueue: false,
   scaleFactor: 4
