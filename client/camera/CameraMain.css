@@ -96,56 +96,56 @@
   height: 100%;
 }
 
-:local(.printQueue) {
+:local(.programList) {
   border: 1px white solid;
   padding: 5px;
 }
 
 
-:local(.printQueueItem) {
+:local(.programListItem) {
   width: 100%;
 }
 
-:local(.printQueueItem):nth-child(even) {
+:local(.programListItem):nth-child(even) {
   background: #555;
 }
 
-:local(.printQueueItemContent) {
+:local(.programListItemContent) {
   width: 75%;
   display: inline-block;
 }
 
-:local(.printQueueItemPrinted),
-:local(.printQueueItemNotPrinted) {
+:local(.programListItemPrinted),
+:local(.programListItemNotPrinted) {
   margin-bottom: calc(cameraMainPadding / 4);
   cursor: pointer;
 }
 
-:local(.printQueueItemPrinted):hover,
-:local(.printQueueItemNotPrinted):hover {
+:local(.programListItemPrinted):hover,
+:local(.programListItemNotPrinted):hover {
   background: #99e;
 }
 
-:local(.printQueueItemToggle) {
+:local(.programListItemToggle) {
   visibility: hidden;
   cursor: pointer;
 }
 
-:local(.printQueueItem):hover :local(.printQueueItemToggle) {
+:local(.programListItem):hover :local(.programListItemToggle) {
   visibility: visible;
 }
 
-:local(.printQueueItemToggle):hover {
+:local(.programListItemToggle):hover {
   background: #999;
 }
 
-:local(.printQueueDebug) {
+:local(.programListDebug) {
   display: inline-block;
   width: 25%;
   text-align: right;
 }
 
-:local(.printQueueDebug):hover {
+:local(.programListDebug):hover {
   background: #999;
 }
 

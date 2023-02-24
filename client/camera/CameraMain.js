@@ -389,7 +389,7 @@ export default class CameraMain extends React.Component {
             </div>
             <div className={styles.sidebarSection}>
               <h3>Programs</h3>
-              <div className={`${styles.sidebarSubSection} ${styles.printQueue}`}>
+              <div className={`${styles.sidebarSubSection} ${styles.programList}`}>
                 <div>
                   {this.state.spaceData.programs
                     .sort( ( programA, programB ) => programA.number - programB.number )
@@ -397,31 +397,22 @@ export default class CameraMain extends React.Component {
                       <div
                         key={program.number}
                         className={[
-                          styles.printQueueItem,
+                          styles.programListItem,
                           program.printed
-                          ? styles.printQueueItemPrinted
-                          : styles.printQueueItemNotPrinted,
+                          ? styles.programListItemPrinted
+                          : styles.programListItemNotPrinted,
                         ].join( ' ' )}
                         onClick={() => this._print( program )}
                       >
-                        <span className={styles.printQueueItemContent}>
-                          <span className={styles.printQueueItemName}>
+                        <span className={styles.programListItemContent}>
+                          <span className={styles.programListItemName}>
                             <strong>#{program.number}</strong> {codeToName( program.currentCode )}{' '}
-                          </span>
-                          <span
-                            className={styles.printQueueItemToggle}
-                            onClick={event => {
-                              event.stopPropagation();
-                              this._markPrinted( program, !program.printed );
-                            }}
-                          >
-                            {program.printed ? '[show]' : '[hide]'}
                           </span>
                         </span>
                         {this.state.debugPrograms.find( p => p.number === program.number ) ===
                          undefined ? (
                            <span
-                             className={styles.printQueueDebug}
+                             className={styles.programListDebug}
                              onClick={event => {
                                event.stopPropagation();
                                this._createDebugProgram( program.number );
