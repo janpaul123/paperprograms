@@ -139,16 +139,17 @@
   background: #999;
 }
 
-:local(.programListDebug) {
+:local(.programListIcon) {
   display: inline-block;
-  width: 25%;
-  text-align: right;
+  padding: 0 3px;
+  margin-left: 10px;
+  margin-right: 3px;
+  text-align: center;
 }
 
-:local(.programListDebug):hover {
-  background: #999;
+:local(.programListIcon):hover {
+  background: #444;
 }
-
 
 :local(.colorListItem) {
   display: inline-block;
@@ -189,5 +190,3 @@
   font-size: 20px;
   margin-bottom: 10px;
 }
-
-

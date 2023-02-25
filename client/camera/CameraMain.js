@@ -409,18 +409,26 @@ export default class CameraMain extends React.Component {
                             <strong>#{program.number}</strong> {codeToName( program.currentCode )}{' '}
                           </span>
                         </span>
-                        {this.state.debugPrograms.find( p => p.number === program.number ) ===
-                         undefined ? (
-                           <span
-                             className={styles.programListDebug}
-                             onClick={event => {
-                               event.stopPropagation();
-                               this._createDebugProgram( program.number );
-                             }}
-                           >
-                            [Preview]
+                        <span
+                          className={styles.programListIcon}
+                          onClick={event => {
+                            event.stopPropagation();
+                            this._print( program );
+                          }}
+                        >
+                          <img src={"media/images/printer.svg"}/>
+                        </span>
+                        {this.state.debugPrograms.find( p => p.number === program.number ) === undefined ? (
+                          <span
+                            className={styles.programListIcon}
+                            onClick={event => {
+                              event.stopPropagation();
+                              this._createDebugProgram( program.number );
+                            }}
+                          >
+                            <img src={"media/images/eye.svg"}/>
                           </span>
-                         ) : (
+                        ) : (
                            ''
                          )}
                       </div>
