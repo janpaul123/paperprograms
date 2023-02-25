@@ -27,6 +27,7 @@ export default class CameraMain extends React.Component {
       isAddingNewSpace: false,
       newSpaceName: '',
       debugPrograms: [],
+      programFilterWords: ''
     };
 
     // @private {number|null} - id of current timeout, null when no timeout set
@@ -389,9 +390,38 @@ export default class CameraMain extends React.Component {
             </div>
             <div className={styles.sidebarSection}>
               <h3>Programs</h3>
+              <label>
+                Filter on: <input
+                name='filterProgramsOn'
+                style={{ marginBottom: '10px' }}
+                onChange={e => this.setState( { programFilterWords: e.target.value } )}
+              />
+              </label>
               <div className={`${styles.sidebarSubSection} ${styles.programList}`}>
                 <div>
                   {this.state.spaceData.programs
+
+                    // TODO: If we keep this filtering function, pull it into a separate helper function for neatness.
+                    //       -jbphet, 2/24/2023.
+                    .filter( program => {
+                      const programNameLowerCase = codeToName( program.currentCode ).toLowerCase();
+                      let includeThisProgram = false;
+                      if ( this.state.programFilterWords && this.state.programFilterWords.length > 0 ){
+                        const separatedWordsAndPhrases = this.state.programFilterWords.split( ',' );
+                        separatedWordsAndPhrases.forEach( wordOrPhrase => {
+                          const wordOrPhraseLowerCase = wordOrPhrase.toLowerCase();
+                          if ( programNameLowerCase.includes(wordOrPhraseLowerCase)){
+                            includeThisProgram = true;
+                          }
+                        })
+                      }
+                      else{
+
+                        // There are no filters set, so include everything.
+                        includeThisProgram = true;
+                      }
+                      return includeThisProgram;
+                    } )
                     .sort( ( programA, programB ) => programA.number - programB.number )
                     .map( program => (
                       <div
