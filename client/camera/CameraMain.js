@@ -402,7 +402,6 @@ export default class CameraMain extends React.Component {
                           ? styles.programListItemPrinted
                           : styles.programListItemNotPrinted,
                         ].join( ' ' )}
-                        onClick={() => this._print( program )}
                       >
                         <span className={styles.programListItemContent}>
                           <span className={styles.programListItemName}>
