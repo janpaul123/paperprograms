@@ -150,7 +150,7 @@ export default class EditorMain extends React.Component {
     return (
       <div className={styles.root}>
         {!selectedProgram && (
-          <div className={styles.getStarted}>Select a program on the right to get started!</div>
+          <div className={styles.getStarted}>Select a program on the right to get started.</div>
         )}
         {selectedProgram && (
           <div className={styles.editor}>
@@ -165,20 +165,8 @@ export default class EditorMain extends React.Component {
           </div>
         )}
         <div className={styles.sidebar}>
-          <div className={styles.sidebarSection}>
-            editor color{' '}
-            <div className={styles.editorColor} style={{ background: this._editorColor() }} />
-          </div>
 
-          <div className={styles.sidebarSection}>
-            <a
-              href="https://github.com/janpaul123/paperprograms/blob/master/docs/api.md"
-              target="_blank"
-              className={styles.link}
-            >
-              Paper API Reference
-            </a>
-          </div>
+          <h2>Edit Program</h2>
 
           <div className={styles.sidebarSection}>
             <select
@@ -198,7 +186,7 @@ export default class EditorMain extends React.Component {
                 }
               }}
             >
-              <option value={''}>- select program -</option>
+              <option value={''}>- select -</option>
               {sortBy(this.state.spaceData.programs, 'number').map(program => {
                 const beingEditedBySomeoneElse =
                   program.editorInfo.claimed &&
@@ -211,7 +199,6 @@ export default class EditorMain extends React.Component {
                     disabled={beingEditedBySomeoneElse}
                   >
                     #{program.number} {codeToName(program.currentCode)}
-                    {program.printed ? '' : ' (queued to print)'}
                     {beingEditedBySomeoneElse ? ' (being edited)' : ''}
                   </option>
                 );
@@ -222,8 +209,6 @@ export default class EditorMain extends React.Component {
           {selectedProgram && (
             <div className={styles.sidebarSection}>
               <button onClick={this._save}>save ({isMac ? 'cmd' : 'ctrl'}+s)</button>{' '}
-              <button onClick={this._print}>print as new paper</button>{' '}
-              <button onClick={this._restore}>restore original</button>
             </div>
           )}
 
@@ -258,6 +243,16 @@ export default class EditorMain extends React.Component {
 
           <div className={styles.sidebarSection}>
             <a
+              href="https://github.com/janpaul123/paperprograms/blob/master/docs/api.md"
+              target="_blank"
+              className={styles.link}
+            >
+              Paper API Reference
+            </a>
+          </div>
+
+          <div className={styles.sidebarSection}>
+            <a
               href="https://learnxinyminutes.com/docs/javascript/"
               target="_blank"
               className={styles.link}
@@ -274,6 +269,11 @@ export default class EditorMain extends React.Component {
             >
               PhET Library References
             </a>
+          </div>
+
+          <div className={styles.sidebarSection}>
+            editor color{' '}
+            <div className={styles.editorColor} style={{ background: this._editorColor() }} />
           </div>
 
         </div>
