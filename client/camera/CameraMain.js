@@ -11,7 +11,7 @@ import styles from './CameraMain.css';
 import CameraVideo from './CameraVideo';
 
 // constants
-const SPACE_DATA_POLLING_PERIOD = 0.5; // in seconds
+const SPACE_DATA_POLLING_PERIOD = 1; // in seconds
 
 export default class CameraMain extends React.Component {
   constructor( props ) {

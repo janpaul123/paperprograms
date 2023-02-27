@@ -43,7 +43,7 @@ export default class EditorMain extends React.Component {
   };
 
   _pollDebugUrl = () => {
-    const targetTimeMs = 250;
+    const targetTimeMs = 1000;
     const beginTimeMs = Date.now();
 
     const done = () => {
