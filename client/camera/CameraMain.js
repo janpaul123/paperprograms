@@ -1,7 +1,7 @@
 import React from 'react';
 import xhr from 'xhr';
 
-import { codeToName, codeToPrint, getApiUrl } from '../utils';
+import { codeToName, codeToPrint, getApiUrl, getKeywordsFromProgram } from '../utils';
 import { colorNames, paperSizes, commonPaperSizeNames, otherPaperSizeNames } from '../constants';
 import { printCalibrationPage, printPage } from './printPdf';
 
@@ -404,20 +404,24 @@ export default class CameraMain extends React.Component {
                     // TODO: If we keep this filtering function, pull it into a separate helper function for neatness.
                     //       -jbphet, 2/24/2023.
                     .filter( program => {
-                      const programNameLowerCase = codeToName( program.currentCode ).toLowerCase();
-                      let includeThisProgram = false;
-                      if ( this.state.programFilterWords && this.state.programFilterWords.length > 0 ){
-                        const separatedWordsAndPhrases = this.state.programFilterWords.split( ',' );
-                        separatedWordsAndPhrases.forEach( wordOrPhrase => {
-                          const wordOrPhraseLowerCase = wordOrPhrase.toLowerCase();
-                          if ( programNameLowerCase.includes(wordOrPhraseLowerCase)){
-                            includeThisProgram = true;
-                          }
-                        })
-                      }
-                      else{
 
-                        // There are no filters set, so include everything.
+                      // Get the keywords that are contained in the program so that they can be used for filtering.
+                      const keywords = getKeywordsFromProgram( program.currentCode )
+                        .map( keyword => keyword.toLowerCase() );
+
+                      // Determine if the search terms entered by the user match any of the keywords in the program.
+                      let includeThisProgram = false;
+                      if ( this.state.programFilterWords && this.state.programFilterWords.length > 0 ) {
+                        const filterWordsFromUser = this.state.programFilterWords.match( /\b[a-zA-Z]+\b/g )
+                          .map( word => word.toLowerCase() );
+
+                        if ( filterWordsFromUser.some( filterWord => keywords.some( keyword => keyword.includes( filterWord ) ) ) ) {
+                          includeThisProgram = true;
+                        }
+                      }
+                      else {
+
+                        // There are no search terms, so include everything.
                         includeThisProgram = true;
                       }
                       return includeThisProgram;

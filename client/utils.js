@@ -108,6 +108,45 @@ export function codeToName( code ) {
   }
 }
 
+/**
+ * Get a list of the keywords from a paper program.  Keywords are on the 2nd line and should be labeled like this:
+ *   // Keywords: cool, fun, scary
+ * If there are no keywords in the file, an empty array is returned.
+ * @param {string} program
+ * @returns {string[]}
+ */
+export function getKeywordsFromProgram( program ) {
+  const programLines = program.split( '\n' );
+  const firstLine = programLines[ 0 ];
+  const secondLine = programLines[ 1 ];
+  const keywords = [];
+
+  const commentRegEx = /\s*\/\/\s*(.+)/;
+  const wordRegEx = /\b[a-zA-Z]+\b/g;
+
+  // Test the first line and see if it is a comment and contains words.  If so, extract those words.
+  const titleMatchResults = firstLine.match( commentRegEx );
+  if ( titleMatchResults && titleMatchResults[ 1 ] ) {
+    const titleWords = titleMatchResults[ 1 ].match( wordRegEx );
+    keywords.push( ...titleWords );
+  }
+
+  // Test the second line to see if it is a comment and is formatted correctly to indicate that it contains keywords and
+  // add them to our list if so.
+  const keywordMatchResults = secondLine.match( commentRegEx );
+  if ( keywordMatchResults && keywordMatchResults[ 1 ] ) {
+    let explicitlySpecifiedKeywords = keywordMatchResults[ 1 ].match( wordRegEx );
+
+    // Filter out the word "keywords" in case it was used on this line.
+    explicitlySpecifiedKeywords = explicitlySpecifiedKeywords.filter( word => !word.toLowerCase().includes( 'keyword' ) );
+
+    // Add these to our keyword list.
+    keywords.push( ...explicitlySpecifiedKeywords );
+  }
+
+  return keywords;
+}
+
 export function codeToPrint( code ) {
   let lines = code.split( '\n' );
   let i = 0;
