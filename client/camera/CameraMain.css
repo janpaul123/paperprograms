@@ -16,6 +16,10 @@
   flex: 1 0 auto;
 }
 
+:local(.dialog) {
+  color: black;
+}
+
 :local(.note) {
   font-size: 0.9em;
 }

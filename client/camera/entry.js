@@ -3,6 +3,8 @@ import ReactDOM from 'react-dom';
 import uuidv4 from 'uuid/v4';
 import * as d3 from 'd3';
 
+import 'bootstrap/dist/css/bootstrap.min.css';
+
 import CameraMain from './CameraMain';
 
 const storedConfig = JSON.parse( localStorage.paperProgramsConfig || '{}' );

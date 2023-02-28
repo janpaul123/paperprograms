@@ -1,14 +1,17 @@
 import React from 'react';
+
+import Button from 'react-bootstrap/Button';
+import Modal from 'react-bootstrap/Modal';
 import xhr from 'xhr';
+import { colorNames, commonPaperSizeNames, otherPaperSizeNames, paperSizes } from '../constants';
 
 import { codeToName, codeToPrint, getApiUrl, getKeywordsFromProgram } from '../utils';
-import { colorNames, paperSizes, commonPaperSizeNames, otherPaperSizeNames } from '../constants';
-import { printCalibrationPage, printPage } from './printPdf';
+
+import styles from './CameraMain.css';
+import CameraVideo from './CameraVideo.js';
 
 import helloWorld from './helloWorld';
-import styles from './CameraMain.css';
-
-import CameraVideo from './CameraVideo';
+import { printCalibrationPage, printPage } from './printPdf';
 
 // constants
 const SPACE_DATA_POLLING_PERIOD = 1; // in seconds
@@ -27,7 +30,8 @@ export default class CameraMain extends React.Component {
       isAddingNewSpace: false,
       newSpaceName: '',
       debugPrograms: [],
-      programFilterWords: ''
+      programFilterWords: '',
+      showCreateProgramDialog: false
     };
 
     // @private {number|null} - id of current timeout, null when no timeout set
@@ -285,9 +289,30 @@ export default class CameraMain extends React.Component {
       window.location.origin
     ).toString();
 
+    const handleClose = () => {
+      this.state.showCreateProgramDialog = false;
+    }
+
     return (
       <div className={styles.root}>
         <div className={styles.appRoot}>
+          <>
+            <Modal show={this.state.showCreateProgramDialog} className={styles.dialog}>
+              <Modal.Header closeButton>
+                <Modal.Title>Modal heading</Modal.Title>
+              </Modal.Header>
+              <Modal.Body>Woohoo, you're reading this text in a modal!</Modal.Body>
+              <Modal.Footer>
+                <Button variant="secondary" onClick={handleClose}>
+                  Close
+                </Button>
+                <Button variant="primary" onClick={handleClose}>
+                  Save Changes
+                </Button>
+              </Modal.Footer>
+            </Modal>
+          </>
+
           <div className={styles.video}>
             <CameraVideo
               width={this.state.pageWidth - padding * 3 - sidebarWidth}
@@ -321,6 +346,8 @@ export default class CameraMain extends React.Component {
             />
           </div>
           <div className={styles.sidebar}>
+            <Button onClick={() => this.state.showCreateProgramDialog = true}>Open Dialog</Button>
+
             <div className={`${styles.sidebarSection} ${styles.create}`}>
               <button onClick={this._createHelloWorld.bind( this )}>Create Program</button>
               <a href={editorUrl} target="_blank" className={styles.editorAnchor}>
