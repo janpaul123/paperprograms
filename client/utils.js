@@ -134,7 +134,7 @@ export function getKeywordsFromProgram( program ) {
   // Test the second line to see if it is a comment and is formatted correctly to indicate that it contains keywords and
   // add them to our list if so.
   const keywordMatchResults = secondLine.match( commentRegEx );
-  if ( keywordMatchResults && keywordMatchResults[ 1 ] ) {
+  if ( keywordMatchResults && keywordMatchResults[ 1 ] && keywordMatchResults[ 1 ].includes( 'Keywords' ) ) {
     let explicitlySpecifiedKeywords = keywordMatchResults[ 1 ].match( wordRegEx );
 
     // Filter out the word "keywords" in case it was used on this line.
