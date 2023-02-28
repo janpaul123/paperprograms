@@ -1,16 +1,18 @@
-import MonacoEditor from 'react-monaco-editor';
-import React from 'react';
-import randomColor from 'randomcolor';
 import sortBy from 'lodash/sortBy';
+import randomColor from 'randomcolor';
+import React from 'react';
+import MonacoEditor from 'react-monaco-editor';
 import xhr from 'xhr';
 
-import { codeToName, getApiUrl } from '../utils';
+import { codeToName, getApiUrl, getKeywordsFromProgram } from '../utils';
 import styles from './EditorMain.css';
 
 export default class EditorMain extends React.Component {
-  constructor(props) {
-    super(props);
+
+  constructor( props ) {
+    super( props );
     this.state = {
+      programFilterWords: [],
       selectedProgramNumber: '',
       spaceData: { programs: [] },
       code: '',
@@ -26,20 +28,21 @@ export default class EditorMain extends React.Component {
   _pollSpaceUrl = () => {
     const targetTimeMs = 5000;
     const beginTimeMs = Date.now();
-    xhr.get(getApiUrl(this.props.spaceName, ''), { json: true }, (error, response) => {
-      if (error) {
-        console.error(error); // eslint-disable-line no-console
-      } else {
-        this.setState({ spaceData: response.body });
+    xhr.get( getApiUrl( this.props.spaceName, '' ), { json: true }, ( error, response ) => {
+      if ( error ) {
+        console.error( error ); // eslint-disable-line no-console
+      }
+      else {
+        this.setState( { spaceData: response.body } );
       }
 
       const elapsedTimeMs = Date.now() - beginTimeMs;
-      clearTimeout(this._pollSpaceUrlTimeout);
+      clearTimeout( this._pollSpaceUrlTimeout );
       this._pollSpaceUrlTimeout = setTimeout(
         this._pollSpaceUrl,
-        Math.max(0, targetTimeMs - elapsedTimeMs)
+        Math.max( 0, targetTimeMs - elapsedTimeMs )
       );
-    });
+    } );
   };
 
   _pollDebugUrl = () => {
@@ -48,31 +51,34 @@ export default class EditorMain extends React.Component {
 
     const done = () => {
       const elapsedTimeMs = Date.now() - beginTimeMs;
-      clearTimeout(this._pollDebugUrlTimeout);
+      clearTimeout( this._pollDebugUrlTimeout );
       this._pollDebugUrlTimeout = setTimeout(
         this._pollDebugUrl,
-        Math.max(0, targetTimeMs - elapsedTimeMs)
+        Math.max( 0, targetTimeMs - elapsedTimeMs )
       );
     };
 
-    const program = this._selectedProgram(this.state.selectedProgramNumber);
-    if (program) {
+    const program = this._selectedProgram( this.state.selectedProgramNumber );
+    if ( program ) {
       const { editorId } = this.props.editorConfig;
-      xhr.post(program.claimUrl, { json: { editorId } }, (error, response) => {
-        if (error) {
-          console.error(error); // eslint-disable-line no-console
-        } else if (response.statusCode === 400) {
-          this.setState({
+      xhr.post( program.claimUrl, { json: { editorId } }, ( error, response ) => {
+        if ( error ) {
+          console.error( error ); // eslint-disable-line no-console
+        }
+        else if ( response.statusCode === 400 ) {
+          this.setState( {
             selectedProgramNumber: '',
             code: '',
             debugInfo: {},
-          });
-        } else {
-          this.setState({ debugInfo: response.body.debugInfo });
+          } );
+        }
+        else {
+          this.setState( { debugInfo: response.body.debugInfo } );
         }
         done();
-      });
-    } else {
+      } );
+    }
+    else {
       done();
     }
   };
@@ -80,12 +86,14 @@ export default class EditorMain extends React.Component {
   _save = () => {
     const { code, selectedProgramNumber } = this.state;
     xhr.put(
-      getApiUrl(this.props.spaceName, `/programs/${selectedProgramNumber}`),
+      getApiUrl( this.props.spaceName, `/programs/${selectedProgramNumber}` ),
       {
         json: { code },
       },
       error => {
-        if (error) console.error(error); // eslint-disable-line no-console
+        if ( error ) {
+          console.error( error );
+        } // eslint-disable-line no-console
       }
     );
   };
@@ -93,29 +101,30 @@ export default class EditorMain extends React.Component {
   _print = () => {
     const { code } = this.state;
     xhr.post(
-      getApiUrl(this.props.spaceName, '/programs'),
+      getApiUrl( this.props.spaceName, '/programs' ),
       { json: { code } },
-      (error, response) => {
-        if (error) {
-          console.error(error); // eslint-disable-line no-console
-        } else {
+      ( error, response ) => {
+        if ( error ) {
+          console.error( error ); // eslint-disable-line no-console
+        }
+        else {
           const { body } = response;
-          this.setState({
+          this.setState( {
             code,
             selectedProgramNumber: body.number,
             spaceData: body.spaceData,
             debugInfo: {},
-          });
+          } );
         }
       }
     );
   };
 
   _restore = () => {
-    if (window.confirm('This will remove any changes, continue?')) {
+    if ( window.confirm( 'This will remove any changes, continue?' ) ) {
       this.setState(
         {
-          code: this._selectedProgram(this.state.selectedProgramNumber).originalCode,
+          code: this._selectedProgram( this.state.selectedProgramNumber ).originalCode,
           debugInfo: {},
         },
         () => {
@@ -126,9 +135,9 @@ export default class EditorMain extends React.Component {
     }
   };
 
-  _onEditorDidMount = (editor, monaco) => {
+  _onEditorDidMount = ( editor, monaco ) => {
     editor.focus();
-    editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KEY_S, this._save);
+    editor.addCommand( monaco.KeyMod.CtrlCmd | monaco.KeyCode.KEY_S, this._save );
   };
 
   _selectedProgram = selectedProgramNumber => {
@@ -138,12 +147,12 @@ export default class EditorMain extends React.Component {
   };
 
   _editorColor = () => {
-    return randomColor({ seed: this.props.editorConfig.editorId });
+    return randomColor( { seed: this.props.editorConfig.editorId } );
   };
 
   render() {
-    const selectedProgram = this._selectedProgram(this.state.selectedProgramNumber);
-    const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
+    const selectedProgram = this._selectedProgram( this.state.selectedProgramNumber );
+    const isMac = navigator.platform.toUpperCase().indexOf( 'MAC' ) >= 0;
     const errors = this.state.debugInfo.errors || [];
     const logs = this.state.debugInfo.logs || [];
 
@@ -158,7 +167,7 @@ export default class EditorMain extends React.Component {
               language="javascript"
               theme="vs-dark"
               value={this.state.code}
-              onChange={code => this.setState({ code })}
+              onChange={code => this.setState( { code } )}
               editorDidMount={this._onEditorDidMount}
               options={{ tabSize: 2 }}
             />
@@ -168,78 +177,112 @@ export default class EditorMain extends React.Component {
 
           <h2>Edit Program</h2>
 
+          <label>
+            Filter on: <input
+            name='filterProgramsOn'
+            style={{ marginBottom: '10px' }}
+            onChange={e => this.setState( { programFilterWords: e.target.value } )}
+          />
+          </label>
+
           <div className={styles.sidebarSection}>
             <select
               value={this.state.selectedProgramNumber}
               onChange={event => {
-                if (event.target.value !== '') {
+                if ( event.target.value !== '' ) {
                   this.setState(
                     {
                       selectedProgramNumber: event.target.value,
-                      code: this._selectedProgram(event.target.value).currentCode,
+                      code: this._selectedProgram( event.target.value ).currentCode,
                       debugInfo: {},
                     },
                     () => this._pollDebugUrl()
                   );
-                } else {
-                  this.setState({ selectedProgramNumber: '', code: '', debugInfo: {} });
+                }
+                else {
+                  this.setState( { selectedProgramNumber: '', code: '', debugInfo: {} } );
                 }
               }}
             >
               <option value={''}>- select -</option>
-              {sortBy(this.state.spaceData.programs, 'number').map(program => {
-                const beingEditedBySomeoneElse =
-                  program.editorInfo.claimed &&
-                  program.editorInfo.editorId !== this.props.editorConfig.editorId;
+              {sortBy( this.state.spaceData.programs, 'number' )
+                .filter( program => {
 
-                return (
-                  <option
-                    key={program.number}
-                    value={program.number}
-                    disabled={beingEditedBySomeoneElse}
-                  >
-                    #{program.number} {codeToName(program.currentCode)}
-                    {beingEditedBySomeoneElse ? ' (being edited)' : ''}
-                  </option>
-                );
-              })}
+                  // Get the keywords that are contained in the program so that they can be used for filtering.
+                  const keywords = getKeywordsFromProgram( program.currentCode )
+                    .map( keyword => keyword.toLowerCase() );
+
+                  // Determine if the search terms entered by the user match any of the keywords in the program.
+                  let includeThisProgram = false;
+                  if ( this.state.programFilterWords && this.state.programFilterWords.length > 0 ) {
+                    const filterWordsFromUser = this.state.programFilterWords.match( /\b[a-zA-Z]+\b/g )
+                      .map( word => word.toLowerCase() );
+
+                    if ( filterWordsFromUser.some( filterWord => keywords.some( keyword => keyword.includes( filterWord ) ) ) ) {
+                      includeThisProgram = true;
+                    }
+                  }
+                  else {
+
+                    // There are no search terms, so include everything.
+                    includeThisProgram = true;
+                  }
+                  return includeThisProgram;
+                } )
+                .map( program => {
+                  const beingEditedBySomeoneElse =
+                    program.editorInfo.claimed &&
+                    program.editorInfo.editorId !== this.props.editorConfig.editorId;
+
+                  return (
+                    <option
+                      key={program.number}
+                      value={program.number}
+                      disabled={beingEditedBySomeoneElse}
+                    >
+                      #{program.number} {codeToName( program.currentCode )}
+                      {beingEditedBySomeoneElse ? ' (being edited)' : ''}
+                    </option>
+                  );
+                } )}
             </select>
           </div>
 
           {selectedProgram && (
             <div className={styles.sidebarSection}>
-              <button onClick={this._save}>save ({isMac ? 'cmd' : 'ctrl'}+s)</button>{' '}
+              <button onClick={this._save}>save ({isMac ? 'cmd' : 'ctrl'}+s)</button>
+              {' '}
             </div>
           )}
 
           {selectedProgram &&
-            errors.length > 0 && (
-              <div className={styles.sidebarSection}>
-                errors:{' '}
-                {errors.map((error, index) => (
-                  <div key={index} className={styles.logline}>
-                    <strong>
-                      error[{error.filename}:{error.lineNumber}:{error.columnNumber}]:
-                    </strong>{' '}
-                    {error.message}
-                  </div>
-                ))}
-              </div>
-            )}
+           errors.length > 0 && (
+             <div className={styles.sidebarSection}>
+               errors:{' '}
+               {errors.map( ( error, index ) => (
+                 <div key={index} className={styles.logline}>
+                   <strong>
+                     error[{error.filename}:{error.lineNumber}:{error.columnNumber}]:
+                   </strong>{' '}
+                   {error.message}
+                 </div>
+               ) )}
+             </div>
+           )}
 
           {selectedProgram &&
-            logs.length > 0 && (
-              <div className={styles.sidebarSection}>
-                {logs.map((logLine, index) => (
-                  <div key={index} className={styles.logline}>
-                    <strong>
-                      {logLine.name}[{logLine.filename}:{logLine.lineNumber}:{logLine.columnNumber}]:
-                    </strong>{' '}
-                    {logLine.args.join(', ')}
-                  </div>
-                ))}
-              </div>
-            )}
+           logs.length > 0 && (
+             <div className={styles.sidebarSection}>
+               {logs.map( ( logLine, index ) => (
+                 <div key={index} className={styles.logline}>
+                   <strong>
+                     {logLine.name}[{logLine.filename}:{logLine.lineNumber}:{logLine.columnNumber}]:
+                   </strong>{' '}
+                   {logLine.args.join( ', ' )}
+                 </div>
+               ) )}
+             </div>
+           )}
 
           <div className={styles.sidebarSection}>
             <a
@@ -273,7 +316,7 @@ export default class EditorMain extends React.Component {
 
           <div className={styles.sidebarSection}>
             editor color{' '}
-            <div className={styles.editorColor} style={{ background: this._editorColor() }} />
+            <div className={styles.editorColor} style={{ background: this._editorColor() }}/>
           </div>
 
         </div>
