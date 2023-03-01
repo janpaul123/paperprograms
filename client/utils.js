@@ -115,7 +115,7 @@ export function codeToName( code ) {
  * @param {string} program
  * @returns {string[]}
  */
-export function getKeywordsFromProgram( program ) {
+function getKeywordsFromProgram( program ) {
   const programLines = program.split( '\n' );
   const firstLine = programLines[ 0 ];
   const secondLine = programLines[ 1 ];
@@ -145,6 +145,34 @@ export function getKeywordsFromProgram( program ) {
   }
 
   return keywords;
+}
+
+/**
+ *
+ * @param {string} program - contents of a paper program, which is generally a JS file
+ * @param {string} filterString - a string representing a list of words to test against the keywords for this sim
+ * @returns {boolean} - true if there is a match OR if there are no words provided on which to filter
+ */
+export function programMatchesFilterString( program, filterString ){
+
+  // Get the keywords that are contained in the program so that they can be used for filtering.
+  const keywords = getKeywordsFromProgram( program.currentCode ).map( keyword => keyword.toLowerCase() );
+
+  // Determine whether any of the words contained in the filter string match any of the keywords in the program.
+  let programMatchesFilterString = false;
+  if ( filterString && filterString.length > 0 ) {
+    const filterWordsFromUser = filterString.match( /\b[a-zA-Z]+\b/g ).map( word => word.toLowerCase() );
+
+    if ( filterWordsFromUser.some( filterWord => keywords.some( keyword => keyword.includes( filterWord ) ) ) ) {
+      programMatchesFilterString = true;
+    }
+  }
+  else {
+
+    // There are no search terms, so the program is included.
+    programMatchesFilterString = true;
+  }
+  return programMatchesFilterString;
 }
 
 export function codeToPrint( code ) {

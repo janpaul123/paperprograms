@@ -1,15 +1,11 @@
 import React from 'react';
-
 import Button from 'react-bootstrap/Button';
 import Modal from 'react-bootstrap/Modal';
 import xhr from 'xhr';
 import { colorNames, commonPaperSizeNames, otherPaperSizeNames, paperSizes } from '../constants';
-
-import { codeToName, codeToPrint, getApiUrl, getKeywordsFromProgram } from '../utils';
-
+import { codeToName, codeToPrint, getApiUrl, programMatchesFilterString } from '../utils';
 import styles from './CameraMain.css';
 import CameraVideo from './CameraVideo.js';
-
 import helloWorld from './helloWorld';
 import { printCalibrationPage, printPage } from './printPdf';
 
@@ -30,7 +26,7 @@ export default class CameraMain extends React.Component {
       isAddingNewSpace: false,
       newSpaceName: '',
       debugPrograms: [],
-      programFilterWords: '',
+      programListFilterString: '',
       showCreateProgramDialog: false
     };
 
@@ -421,38 +417,13 @@ export default class CameraMain extends React.Component {
                 Filter on: <input
                 name='filterProgramsOn'
                 style={{ marginBottom: '10px' }}
-                onChange={e => this.setState( { programFilterWords: e.target.value } )}
+                onChange={e => this.setState( { programListFilterString: e.target.value } )}
               />
               </label>
               <div className={`${styles.sidebarSubSection} ${styles.programList}`}>
                 <div>
                   {this.state.spaceData.programs
-
-                    // TODO: If we keep this filtering function, pull it into a separate helper function for neatness.
-                    //       -jbphet, 2/24/2023.
-                    .filter( program => {
-
-                      // Get the keywords that are contained in the program so that they can be used for filtering.
-                      const keywords = getKeywordsFromProgram( program.currentCode )
-                        .map( keyword => keyword.toLowerCase() );
-
-                      // Determine if the search terms entered by the user match any of the keywords in the program.
-                      let includeThisProgram = false;
-                      if ( this.state.programFilterWords && this.state.programFilterWords.length > 0 ) {
-                        const filterWordsFromUser = this.state.programFilterWords.match( /\b[a-zA-Z]+\b/g )
-                          .map( word => word.toLowerCase() );
-
-                        if ( filterWordsFromUser.some( filterWord => keywords.some( keyword => keyword.includes( filterWord ) ) ) ) {
-                          includeThisProgram = true;
-                        }
-                      }
-                      else {
-
-                        // There are no search terms, so include everything.
-                        includeThisProgram = true;
-                      }
-                      return includeThisProgram;
-                    } )
+                    .filter( program => programMatchesFilterString( program, this.state.programListFilterString ) )
                     .sort( ( programA, programB ) => programA.number - programB.number )
                     .map( program => (
                       <div

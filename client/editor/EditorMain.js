@@ -4,7 +4,7 @@ import React from 'react';
 import MonacoEditor from 'react-monaco-editor';
 import xhr from 'xhr';
 
-import { codeToName, getApiUrl, getKeywordsFromProgram } from '../utils';
+import { codeToName, getApiUrl, programMatchesFilterString } from '../utils';
 import styles from './EditorMain.css';
 
 export default class EditorMain extends React.Component {
@@ -12,7 +12,7 @@ export default class EditorMain extends React.Component {
   constructor( props ) {
     super( props );
     this.state = {
-      programFilterWords: [],
+      programListFilterString: '',
       selectedProgramNumber: '',
       spaceData: { programs: [] },
       code: '',
@@ -181,7 +181,7 @@ export default class EditorMain extends React.Component {
             Filter on: <input
             name='filterProgramsOn'
             style={{ marginBottom: '10px' }}
-            onChange={e => this.setState( { programFilterWords: e.target.value } )}
+            onChange={e => this.setState( { programListFilterString: e.target.value } )}
           />
           </label>
 
@@ -206,29 +206,7 @@ export default class EditorMain extends React.Component {
             >
               <option value={''}>- select -</option>
               {sortBy( this.state.spaceData.programs, 'number' )
-                .filter( program => {
-
-                  // Get the keywords that are contained in the program so that they can be used for filtering.
-                  const keywords = getKeywordsFromProgram( program.currentCode )
-                    .map( keyword => keyword.toLowerCase() );
-
-                  // Determine if the search terms entered by the user match any of the keywords in the program.
-                  let includeThisProgram = false;
-                  if ( this.state.programFilterWords && this.state.programFilterWords.length > 0 ) {
-                    const filterWordsFromUser = this.state.programFilterWords.match( /\b[a-zA-Z]+\b/g )
-                      .map( word => word.toLowerCase() );
-
-                    if ( filterWordsFromUser.some( filterWord => keywords.some( keyword => keyword.includes( filterWord ) ) ) ) {
-                      includeThisProgram = true;
-                    }
-                  }
-                  else {
-
-                    // There are no search terms, so include everything.
-                    includeThisProgram = true;
-                  }
-                  return includeThisProgram;
-                } )
+                .filter( program => programMatchesFilterString( program, this.state.programListFilterString ) )
                 .map( program => {
                   const beingEditedBySomeoneElse =
                     program.editorInfo.claimed &&
