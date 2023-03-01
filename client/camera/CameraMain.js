@@ -391,7 +391,7 @@ export default class CameraMain extends React.Component {
                       inline
                       type='radio'
                       id='radio-1'
-                      label='Simple "Hello World" Program'
+                      label='Create a simple "Hello World" program'
                       name='group1'
                       checked={this.state.programCreateMode === ProgramCreateModes.SIMPLE_HELLO_WORLD}
                       onChange={() => this.state.programCreateMode = ProgramCreateModes.SIMPLE_HELLO_WORLD}
@@ -400,7 +400,7 @@ export default class CameraMain extends React.Component {
                       inline
                       type='radio'
                       id='radio-2'
-                      label='Copy an Existing Program'
+                      label='Copy an existing program'
                       name='group1'
                       checked={this.state.programCreateMode === ProgramCreateModes.COPY_EXISTING}
                       onChange={() => this.state.programCreateMode = ProgramCreateModes.COPY_EXISTING}
@@ -413,18 +413,20 @@ export default class CameraMain extends React.Component {
                       Filter on: <input
                       name='filterCopyProgramListOn'
                       style={{ marginBottom: '10px' }}
+                      value={this.state.copyProgramListFilterString}
                       onChange={e => this.setState( { copyProgramListFilterString: e.target.value } )}
                     />
                     </label>
                     <select
+                      size={10}
                       name="programs"
-                      id="programs"
-                      value={this.selectedProgramToCopy}
+                      id="programsID"
+                      // value={this.selectedProgramToCopy}
                       onChange={event => {
                         this.selectedProgramToCopy = event.target.value;
                       }}
                     >
-                      <option value=''>--Select program to copy--</option>
+                      <option value=''>-- Select program to copy --</option>
                       {this.state.spaceData.programs
                         .filter( program => programMatchesFilterString( program, this.state.copyProgramListFilterString ) )
                         .map( program => {
