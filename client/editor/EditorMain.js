@@ -188,6 +188,7 @@ export default class EditorMain extends React.Component {
           <div className={styles.sidebarSection}>
             <select
               value={this.state.selectedProgramNumber}
+              size={10}
               onChange={event => {
                 if ( event.target.value !== '' ) {
                   this.setState(
@@ -204,7 +205,7 @@ export default class EditorMain extends React.Component {
                 }
               }}
             >
-              <option value={''}>- select -</option>
+              <option value={''}>(none)</option>
               {sortBy( this.state.spaceData.programs, 'number' )
                 .filter( program => programMatchesFilterString( program, this.state.programListFilterString ) )
                 .map( program => {
