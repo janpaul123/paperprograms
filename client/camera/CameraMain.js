@@ -232,6 +232,9 @@ export default class CameraMain extends React.Component {
         if ( error ) {
           console.error( error ); // eslint-disable-line no-console
         }
+        else {
+          alert( `Created program ${codeToName( copiedProgram )}` )
+        }
       }
     );
   }
@@ -417,11 +420,10 @@ export default class CameraMain extends React.Component {
                       onChange={e => this.setState( { copyProgramListFilterString: e.target.value } )}
                     />
                     </label>
-                    <select
-                      size={10}
+                    <Form.Select
+                      htmlSize={10}
                       name="programs"
                       id="programsID"
-                      // value={this.selectedProgramToCopy}
                       onChange={event => {
                         this.selectedProgramToCopy = event.target.value;
                       }}
@@ -437,7 +439,7 @@ export default class CameraMain extends React.Component {
                             {codeToName( program.currentCode )}
                           </option>
                         } )}
-                    </select>
+                    </Form.Select>
                   </> ) : ' '
                 }
               </Modal.Body>
