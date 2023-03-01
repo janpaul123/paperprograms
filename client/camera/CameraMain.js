@@ -13,6 +13,7 @@ import { printCalibrationPage, printPage } from './printPdf';
 const SPACE_DATA_POLLING_PERIOD = 1; // in seconds
 
 export default class CameraMain extends React.Component {
+
   constructor( props ) {
     super( props );
     this.state = {
@@ -27,12 +28,16 @@ export default class CameraMain extends React.Component {
       newSpaceName: '',
       debugPrograms: [],
       programListFilterString: '',
-      showCreateProgramDialog: false,
-      selectedProgramToCopy: ''
+      showCreateProgramDialog: false
     };
 
     // @private {number|null} - id of current timeout, null when no timeout set
     this._timeout = null;
+
+    // @private {string} - ID of the program that the user has selected to copy.  This is a string since that works
+    //                     better with select components, so it must be converted in some cases.  A value of '' (a zero-
+    //                     length string) is used to indicate that no program is selected.
+    this.selectedProgramToCopy = '';
   }
 
   componentDidMount() {
@@ -326,13 +331,13 @@ export default class CameraMain extends React.Component {
    * @private
    */
   _handleCreateNewProgramButtonClicked() {
-    if ( this.state.selectedProgramToCopy !== '' ) {
-      const programNumber = Number( this.state.selectedProgramToCopy );
+    if ( this.selectedProgramToCopy !== '' ) {
+      const programNumber = Number( this.selectedProgramToCopy );
       if ( !isNaN( programNumber ) ) {
         this._createProgramCopy( programNumber );
       }
       else {
-        alert( `Error: Invalid program number ${this.state.selectedProgramToCopy}` );
+        alert( `Error: Invalid program number - ${this.selectedProgramToCopy}` );
       }
     }
     this._hideCreateProgramDialog();
@@ -371,19 +376,16 @@ export default class CameraMain extends React.Component {
                 <select
                   name="programs"
                   id="programs"
-                  value={this.state.selectedProgramToCopy}
+                  value={this.selectedProgramToCopy}
                   onChange={event => {
-
-                    // TODO: Is there a way to save the selected program without putting it in state?  Maybe just have
-                    //       a local class variable?
-                    this.setState( { selectedProgramToCopy: event.target.value } );
+                    this.selectedProgramToCopy = event.target.value;
                   }}
                 >
                   <option value=''>--Select program to copy--</option>
                   {this.state.spaceData.programs.map( program => {
                     return <option
                       key={program.number.toString()}
-                      value={program.number}
+                      value={program.number.toString()}
                     >
                       {codeToName( program.currentCode )}
                     </option>
