@@ -28,6 +28,7 @@ export default class CameraMain extends React.Component {
       newSpaceName: '',
       debugPrograms: [],
       programListFilterString: '',
+      copyProgramListFilterString: '',
       showCreateProgramDialog: false
     };
 
@@ -373,6 +374,13 @@ export default class CameraMain extends React.Component {
                 <Modal.Title>Create New Program</Modal.Title>
               </Modal.Header>
               <Modal.Body>
+                <label>
+                  Filter on: <input
+                  name='filterCopyProgramListOn'
+                  style={{ marginBottom: '10px' }}
+                  onChange={e => this.setState( { copyProgramListFilterString: e.target.value } )}
+                />
+                </label>
                 <select
                   name="programs"
                   id="programs"
@@ -382,14 +390,16 @@ export default class CameraMain extends React.Component {
                   }}
                 >
                   <option value=''>--Select program to copy--</option>
-                  {this.state.spaceData.programs.map( program => {
-                    return <option
-                      key={program.number.toString()}
-                      value={program.number.toString()}
-                    >
-                      {codeToName( program.currentCode )}
-                    </option>
-                  } )}
+                  {this.state.spaceData.programs
+                    .filter( program => programMatchesFilterString( program, this.state.copyProgramListFilterString ) )
+                    .map( program => {
+                      return <option
+                        key={program.number.toString()}
+                        value={program.number.toString()}
+                      >
+                        {codeToName( program.currentCode )}
+                      </option>
+                    } )}
                 </select>
               </Modal.Body>
               <Modal.Footer>
