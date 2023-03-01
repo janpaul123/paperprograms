@@ -338,7 +338,6 @@ export default class CameraMain extends React.Component {
    * @private
    */
   _handleCreateNewProgramButtonClicked() {
-    debugger;
     if ( this.state.programCreateMode === ProgramCreateModes.COPY_EXISTING ) {
       if ( this.selectedProgramToCopy !== '' ) {
         const programNumber = Number( this.selectedProgramToCopy );
