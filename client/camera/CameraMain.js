@@ -293,7 +293,10 @@ export default class CameraMain extends React.Component {
       <div className={styles.root}>
         <div className={styles.appRoot}>
           <>
-            <Modal show={this.state.showCreateProgramDialog} className={styles.dialog}>
+            <Modal
+              show={this.state.showCreateProgramDialog} className={styles.dialog}
+              onHide={() => this.state.showCreateProgramDialog = false}
+            >
               <Modal.Header closeButton>
                 <Modal.Title>Modal heading</Modal.Title>
               </Modal.Header>
