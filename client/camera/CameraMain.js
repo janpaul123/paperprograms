@@ -27,7 +27,8 @@ export default class CameraMain extends React.Component {
       newSpaceName: '',
       debugPrograms: [],
       programListFilterString: '',
-      showCreateProgramDialog: false
+      showCreateProgramDialog: false,
+      selectedProgramToCopy: ''
     };
 
     // @private {number|null} - id of current timeout, null when no timeout set
@@ -181,6 +182,48 @@ export default class CameraMain extends React.Component {
     );
   };
 
+  /**
+   * Create a copy of the specified program and add it to the selected space.  The program will be created with the
+   * existing name with ' - Copy' appended to it.
+   * @param {number} programNumber
+   * @private
+   */
+  _createProgramCopy( programNumber ) {
+
+    // Find the program in the current list.
+    const programToCopy = this.state.spaceData.programs.find( program => program.number === programNumber );
+
+    // Put up a message and bail if the specified program number doesn't exist.
+    if ( !programToCopy ) {
+      alert( `Error: Program ${programNumber} not found.` );
+      return;
+    }
+
+    // Get the individual lines of the program that is being copied.
+    const programLines = programToCopy.currentCode.split( '\n' );
+
+    // Add the ' - Copy' portion to the title.
+    programLines[ 0 ] = programLines[ 0 ] + ' - Copy';
+
+    const copiedProgram = programLines.reduce( ( programSoFar, currentLine, index ) => {
+      programSoFar += currentLine;
+      if ( index < programLines.length ) {
+        programSoFar += '\n';
+      }
+      return programSoFar;
+    }, '' );
+
+    xhr.post(
+      getApiUrl( this.state.selectedSpaceName, '/programs' ),
+      { json: { code: copiedProgram } },
+      error => {
+        if ( error ) {
+          console.error( error ); // eslint-disable-line no-console
+        }
+      }
+    );
+  }
+
   _createDebugProgram( number ) {
     const paperSize = paperSizes[ this.props.config.paperSize ];
     const widthToHeightRatio = paperSize[ 0 ] / paperSize[ 1 ];
@@ -277,6 +320,32 @@ export default class CameraMain extends React.Component {
     return succeeded;
   }
 
+  /**
+   * Handler function for the button in the "Create New Program" dialog that indicates that the user wants to create a
+   * program by copying an existing one.
+   * @private
+   */
+  _handleCreateNewProgramButtonClicked() {
+    if ( this.state.selectedProgramToCopy !== '' ) {
+      const programNumber = Number( this.state.selectedProgramToCopy );
+      if ( !isNaN( programNumber ) ) {
+        this._createProgramCopy( programNumber );
+      }
+      else {
+        alert( `Error: Invalid program number ${this.state.selectedProgramToCopy}` );
+      }
+    }
+    this._hideCreateProgramDialog();
+  }
+
+  /**
+   * Hide the dialog that is used to create new programs.
+   * @private
+   */
+  _hideCreateProgramDialog() {
+    this.state.showCreateProgramDialog = false;
+  }
+
   render() {
     const padding = parseInt( styles.cameraMainPadding );
     const sidebarWidth = parseInt( styles.cameraMainSidebarWidth );
@@ -285,28 +354,54 @@ export default class CameraMain extends React.Component {
       window.location.origin
     ).toString();
 
-    const handleClose = () => {
-      this.state.showCreateProgramDialog = false;
-    }
-
     return (
       <div className={styles.root}>
         <div className={styles.appRoot}>
+
+          {/* The modal dialog used to create a new program by copying an existing program. */}
           <>
             <Modal
               show={this.state.showCreateProgramDialog} className={styles.dialog}
               onHide={() => this.state.showCreateProgramDialog = false}
             >
               <Modal.Header closeButton>
-                <Modal.Title>Modal heading</Modal.Title>
+                <Modal.Title>Create New Program</Modal.Title>
               </Modal.Header>
-              <Modal.Body>Woohoo, you're reading this text in a modal!</Modal.Body>
+              <Modal.Body>
+                <select
+                  name="programs"
+                  id="programs"
+                  value={this.state.selectedProgramToCopy}
+                  onChange={event => {
+
+                    // TODO: Is there a way to save the selected program without putting it in state?  Maybe just have
+                    //       a local class variable?
+                    this.setState( { selectedProgramToCopy: event.target.value } );
+                  }}
+                >
+                  <option value=''>--Select program to copy--</option>
+                  {this.state.spaceData.programs.map( program => {
+                    return <option
+                      key={program.number.toString()}
+                      value={program.number}
+                    >
+                      {codeToName( program.currentCode )}
+                    </option>
+                  } )}
+                </select>
+              </Modal.Body>
               <Modal.Footer>
-                <Button variant="secondary" onClick={handleClose}>
-                  Close
+                <Button
+                  variant="primary"
+                  onClick={this._handleCreateNewProgramButtonClicked.bind( this )}
+                >
+                  Create
                 </Button>
-                <Button variant="primary" onClick={handleClose}>
-                  Save Changes
+                <Button
+                  variant="secondary"
+                  onClick={this._hideCreateProgramDialog.bind( this )}
+                >
+                  Cancel
                 </Button>
               </Modal.Footer>
             </Modal>
