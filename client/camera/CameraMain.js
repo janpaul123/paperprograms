@@ -1,5 +1,6 @@
 import React from 'react';
 import Button from 'react-bootstrap/Button';
+import Form from 'react-bootstrap/Form';
 import Modal from 'react-bootstrap/Modal';
 import xhr from 'xhr';
 import { colorNames, commonPaperSizeNames, otherPaperSizeNames, paperSizes } from '../constants';
@@ -11,6 +12,10 @@ import { printCalibrationPage, printPage } from './printPdf';
 
 // constants
 const SPACE_DATA_POLLING_PERIOD = 1; // in seconds
+const ProgramCreateModes = {
+  SIMPLE_HELLO_WORLD: 'simpleHelloWorld',
+  COPY_EXISTING: 'copyExisting'
+};
 
 export default class CameraMain extends React.Component {
 
@@ -29,14 +34,15 @@ export default class CameraMain extends React.Component {
       debugPrograms: [],
       programListFilterString: '',
       copyProgramListFilterString: '',
-      showCreateProgramDialog: false
+      showCreateProgramDialog: false,
+      programCreateMode: ProgramCreateModes.SIMPLE_HELLO_WORLD
     };
 
     // @private {number|null} - id of current timeout, null when no timeout set
     this._timeout = null;
 
     // @private {string} - ID of the program that the user has selected to copy.  This is a string since that works
-    //                     better with select components, so it must be converted in some cases.  A value of '' (a zero-
+    //                     better with select components, so it must be converted in some cases.  A value of '' (a zero
     //                     length string) is used to indicate that no program is selected.
     this.selectedProgramToCopy = '';
   }
@@ -332,14 +338,20 @@ export default class CameraMain extends React.Component {
    * @private
    */
   _handleCreateNewProgramButtonClicked() {
-    if ( this.selectedProgramToCopy !== '' ) {
-      const programNumber = Number( this.selectedProgramToCopy );
-      if ( !isNaN( programNumber ) ) {
-        this._createProgramCopy( programNumber );
+    debugger;
+    if ( this.state.programCreateMode === ProgramCreateModes.COPY_EXISTING ) {
+      if ( this.selectedProgramToCopy !== '' ) {
+        const programNumber = Number( this.selectedProgramToCopy );
+        if ( !isNaN( programNumber ) ) {
+          this._createProgramCopy( programNumber );
+        }
+        else {
+          alert( `Error: Invalid program number - ${this.selectedProgramToCopy}` );
+        }
       }
-      else {
-        alert( `Error: Invalid program number - ${this.selectedProgramToCopy}` );
-      }
+    }
+    else if ( this.state.programCreateMode === ProgramCreateModes.SIMPLE_HELLO_WORLD ) {
+      this._createHelloWorld();
     }
     this._hideCreateProgramDialog();
   }
@@ -374,33 +386,59 @@ export default class CameraMain extends React.Component {
                 <Modal.Title>Create New Program</Modal.Title>
               </Modal.Header>
               <Modal.Body>
-                <label>
-                  Filter on: <input
-                  name='filterCopyProgramListOn'
-                  style={{ marginBottom: '10px' }}
-                  onChange={e => this.setState( { copyProgramListFilterString: e.target.value } )}
-                />
-                </label>
-                <select
-                  name="programs"
-                  id="programs"
-                  value={this.selectedProgramToCopy}
-                  onChange={event => {
-                    this.selectedProgramToCopy = event.target.value;
-                  }}
-                >
-                  <option value=''>--Select program to copy--</option>
-                  {this.state.spaceData.programs
-                    .filter( program => programMatchesFilterString( program, this.state.copyProgramListFilterString ) )
-                    .map( program => {
-                      return <option
-                        key={program.number.toString()}
-                        value={program.number.toString()}
-                      >
-                        {codeToName( program.currentCode )}
-                      </option>
-                    } )}
-                </select>
+                <Form>
+                  <div key={`default-radio`} className="mb-3">
+                    <Form.Check
+                      inline
+                      type='radio'
+                      id='radio-1'
+                      label='Simple "Hello World" Program'
+                      name='group1'
+                      checked={this.state.programCreateMode === ProgramCreateModes.SIMPLE_HELLO_WORLD}
+                      onChange={() => this.state.programCreateMode = ProgramCreateModes.SIMPLE_HELLO_WORLD}
+                    />
+                    <Form.Check
+                      inline
+                      type='radio'
+                      id='radio-2'
+                      label='Copy an Existing Program'
+                      name='group1'
+                      checked={this.state.programCreateMode === ProgramCreateModes.COPY_EXISTING}
+                      onChange={() => this.state.programCreateMode = ProgramCreateModes.COPY_EXISTING}
+                    />
+                  </div>
+                </Form>
+                {this.state.programCreateMode === ProgramCreateModes.COPY_EXISTING ? (
+                  <>
+                    <label>
+                      Filter on: <input
+                      name='filterCopyProgramListOn'
+                      style={{ marginBottom: '10px' }}
+                      onChange={e => this.setState( { copyProgramListFilterString: e.target.value } )}
+                    />
+                    </label>
+                    <select
+                      name="programs"
+                      id="programs"
+                      value={this.selectedProgramToCopy}
+                      onChange={event => {
+                        this.selectedProgramToCopy = event.target.value;
+                      }}
+                    >
+                      <option value=''>--Select program to copy--</option>
+                      {this.state.spaceData.programs
+                        .filter( program => programMatchesFilterString( program, this.state.copyProgramListFilterString ) )
+                        .map( program => {
+                          return <option
+                            key={program.number.toString()}
+                            value={program.number.toString()}
+                          >
+                            {codeToName( program.currentCode )}
+                          </option>
+                        } )}
+                    </select>
+                  </> ) : ' '
+                }
               </Modal.Body>
               <Modal.Footer>
                 <Button
