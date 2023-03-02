@@ -1,6 +1,7 @@
 /**
- * CreateProgramDialog is a React component that presents a dialog that allows the user to create a new paper program.
- * It allows the user use a simple "Hello World" program, or to search on and select an existing program to copy from.
+ * CreateProgramDialog is a React component that presents a modal dialog that allows the user to create a new paper
+ * program and add it to the current space. It allows the user create a simple "Hello World" program, or to search on
+ * and select an existing program to copy from.
  *
  * @author John Blanco (PhET Interactive Simulations)
  */
@@ -18,12 +19,14 @@ class CreateProgramDialog extends React.Component {
   state = {}
 
   render() {
+
+    const { data, setSearchString, onCreateProgram, onCancel } = this.props;
     return (
       <>
         <Modal
-          show={this.props.data.showCreateProgramDialog}
+          show={data.showCreateProgramDialog}
           className={styles.dialog}
-          onHide={() => this.props.data.showCreateProgramDialog = false}
+          onHide={() => data.showCreateProgramDialog = false}
         >
           <Modal.Header closeButton>
             <Modal.Title>Create New Program</Modal.Title>
@@ -37,8 +40,8 @@ class CreateProgramDialog extends React.Component {
                   id='radio-1'
                   label='Create a simple "Hello World" program'
                   name='group1'
-                  checked={this.props.data.programCreateMode === ProgramCreateModes.SIMPLE_HELLO_WORLD}
-                  onChange={() => this.props.data.programCreateMode = ProgramCreateModes.SIMPLE_HELLO_WORLD}
+                  checked={data.programCreateMode === ProgramCreateModes.SIMPLE_HELLO_WORLD}
+                  onChange={() => data.programCreateMode = ProgramCreateModes.SIMPLE_HELLO_WORLD}
                 />
                 <Form.Check
                   inline
@@ -46,19 +49,19 @@ class CreateProgramDialog extends React.Component {
                   id='radio-2'
                   label='Copy an existing program'
                   name='group1'
-                  checked={this.props.data.programCreateMode === ProgramCreateModes.COPY_EXISTING}
-                  onChange={() => this.props.data.programCreateMode = ProgramCreateModes.COPY_EXISTING}
+                  checked={data.programCreateMode === ProgramCreateModes.COPY_EXISTING}
+                  onChange={() => data.programCreateMode = ProgramCreateModes.COPY_EXISTING}
                 />
               </div>
             </Form>
-            {this.props.data.programCreateMode === ProgramCreateModes.COPY_EXISTING ? (
+            {data.programCreateMode === ProgramCreateModes.COPY_EXISTING ? (
               <>
                 <label>
                   Filter on: <input
                   name='filterCopyProgramListOn'
                   style={{ marginBottom: '10px' }}
-                  value={this.props.data.copyProgramListFilterString}
-                  onChange={e => this.props.setSearchString( e.target.value )}
+                  value={data.copyProgramListFilterString}
+                  onChange={e => setSearchString( e.target.value )}
                 />
                 </label>
                 <Form.Select
@@ -66,12 +69,12 @@ class CreateProgramDialog extends React.Component {
                   name='programs'
                   id='programsID'
                   onChange={event => {
-                    this.props.data.selectedProgramToCopy = event.target.value;
+                    data.selectedProgramToCopy = event.target.value;
                   }}
                 >
                   <option value=''>-- Select program to copy --</option>
-                  {this.props.data.spaceData.programs
-                    .filter( program => programMatchesFilterString( program, this.props.data.copyProgramListFilterString ) )
+                  {data.spaceData.programs
+                    .filter( program => programMatchesFilterString( program, data.copyProgramListFilterString ) )
                     .sort( ( programA, programB ) =>
                       codeToName( programA.currentCode ).localeCompare( codeToName( programB.currentCode ) )
                     )
@@ -91,15 +94,15 @@ class CreateProgramDialog extends React.Component {
           <Modal.Footer>
             <Button
               variant='primary'
-              onClick={this.props.onCreateProgram}
-              disabled={this.props.data.programCreateMode === ProgramCreateModes.COPY_EXISTING &&
-                        this.props.data.selectedProgramToCopy === ''}
+              onClick={onCreateProgram}
+              disabled={data.programCreateMode === ProgramCreateModes.COPY_EXISTING &&
+                        data.selectedProgramToCopy === ''}
             >
               Create
             </Button>
             <Button
               variant='secondary'
-              onClick={this.props.onCancel}
+              onClick={onCancel}
             >
               Cancel
             </Button>
