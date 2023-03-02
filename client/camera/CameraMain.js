@@ -1,18 +1,16 @@
 import React from 'react';
-import Button from 'react-bootstrap/Button';
-import Form from 'react-bootstrap/Form';
-import Modal from 'react-bootstrap/Modal';
 import xhr from 'xhr';
 import { colorNames, commonPaperSizeNames, otherPaperSizeNames, paperSizes } from '../constants';
 import { codeToName, codeToPrint, getApiUrl, programMatchesFilterString } from '../utils';
 import styles from './CameraMain.css';
 import CameraVideo from './CameraVideo.js';
+import CreateProgramDialog from './CreateProgramDialog.js';
 import helloWorld from './helloWorld';
 import { printCalibrationPage, printPage } from './printPdf';
 
 // constants
 const SPACE_DATA_POLLING_PERIOD = 1; // in seconds
-const ProgramCreateModes = {
+export const ProgramCreateModes = {
   SIMPLE_HELLO_WORLD: 'simpleHelloWorld',
   COPY_EXISTING: 'copyExisting'
 };
@@ -184,6 +182,9 @@ export default class CameraMain extends React.Component {
       error => {
         if ( error ) {
           console.error( error ); // eslint-disable-line no-console
+        }
+        else {
+          alert( 'Created "Hello World" program' );
         }
       }
     );
@@ -375,92 +376,12 @@ export default class CameraMain extends React.Component {
         <div className={styles.appRoot}>
 
           {/* The modal dialog used to create a new program by copying an existing program. */}
-          <>
-            <Modal
-              show={this.state.showCreateProgramDialog} className={styles.dialog}
-              onHide={() => this.state.showCreateProgramDialog = false}
-            >
-              <Modal.Header closeButton>
-                <Modal.Title>Create New Program</Modal.Title>
-              </Modal.Header>
-              <Modal.Body>
-                <Form>
-                  <div key={`default-radio`} className="mb-3">
-                    <Form.Check
-                      inline
-                      type='radio'
-                      id='radio-1'
-                      label='Create a simple "Hello World" program'
-                      name='group1'
-                      checked={this.state.programCreateMode === ProgramCreateModes.SIMPLE_HELLO_WORLD}
-                      onChange={() => this.state.programCreateMode = ProgramCreateModes.SIMPLE_HELLO_WORLD}
-                    />
-                    <Form.Check
-                      inline
-                      type='radio'
-                      id='radio-2'
-                      label='Copy an existing program'
-                      name='group1'
-                      checked={this.state.programCreateMode === ProgramCreateModes.COPY_EXISTING}
-                      onChange={() => this.state.programCreateMode = ProgramCreateModes.COPY_EXISTING}
-                    />
-                  </div>
-                </Form>
-                {this.state.programCreateMode === ProgramCreateModes.COPY_EXISTING ? (
-                  <>
-                    <label>
-                      Filter on: <input
-                      name='filterCopyProgramListOn'
-                      style={{ marginBottom: '10px' }}
-                      value={this.state.copyProgramListFilterString}
-                      onChange={e => this.setState( { copyProgramListFilterString: e.target.value } )}
-                    />
-                    </label>
-                    <Form.Select
-                      htmlSize={10}
-                      name="programs"
-                      id="programsID"
-                      onChange={event => {
-                        this.state.selectedProgramToCopy = event.target.value;
-                      }}
-                    >
-                      <option value=''>-- Select program to copy --</option>
-                      {this.state.spaceData.programs
-                        .filter( program => programMatchesFilterString( program, this.state.copyProgramListFilterString ) )
-                        .sort( ( programA, programB ) =>
-                          codeToName( programA.currentCode ).localeCompare( codeToName( programB.currentCode ) )
-                        )
-                        .map( program => {
-                          return <option
-                            key={program.number.toString()}
-                            value={program.number.toString()}
-                          >
-                            {codeToName( program.currentCode )}
-                          </option>
-                        } )
-                      }
-                    </Form.Select>
-                  </> ) : ' '
-                }
-              </Modal.Body>
-              <Modal.Footer>
-                <Button
-                  variant="primary"
-                  onClick={this._handleCreateNewProgramButtonClicked.bind( this )}
-                  disabled={this.state.programCreateMode === ProgramCreateModes.COPY_EXISTING &&
-                            this.state.selectedProgramToCopy === ''}
-                >
-                  Create
-                </Button>
-                <Button
-                  variant="secondary"
-                  onClick={this._hideCreateProgramDialog.bind( this )}
-                >
-                  Cancel
-                </Button>
-              </Modal.Footer>
-            </Modal>
-          </>
+          <CreateProgramDialog
+            data={this.state}
+            onCreateProgram={this._handleCreateNewProgramButtonClicked.bind( this )}
+            onCancel={this._hideCreateProgramDialog.bind( this )}
+            setSearchString={str => this.setState( { copyProgramListFilterString: str } )}
+          />
 
           <div className={styles.video}>
             <CameraVideo
