@@ -35,16 +35,12 @@ export default class CameraMain extends React.Component {
       programListFilterString: '',
       copyProgramListFilterString: '',
       showCreateProgramDialog: false,
-      programCreateMode: ProgramCreateModes.SIMPLE_HELLO_WORLD
+      programCreateMode: ProgramCreateModes.SIMPLE_HELLO_WORLD,
+      selectedProgramToCopy: ''
     };
 
     // @private {number|null} - id of current timeout, null when no timeout set
     this._timeout = null;
-
-    // @private {string} - ID of the program that the user has selected to copy.  This is a string since that works
-    //                     better with select components, so it must be converted in some cases.  A value of '' (a zero
-    //                     length string) is used to indicate that no program is selected.
-    this.selectedProgramToCopy = '';
   }
 
   componentDidMount() {
@@ -120,7 +116,6 @@ export default class CameraMain extends React.Component {
    * @private
    */
   _addNewSpace( spaceName ) {
-    console.log( `request to add new space: spaceName = ${spaceName}` );
 
     xhr.post(
       getApiUrl( spaceName, '/programs' ),
@@ -233,7 +228,7 @@ export default class CameraMain extends React.Component {
           console.error( error ); // eslint-disable-line no-console
         }
         else {
-          alert( `Created program ${codeToName( copiedProgram )}` )
+          alert( `Created program "${codeToName( copiedProgram )}"` )
         }
       }
     );
@@ -342,13 +337,13 @@ export default class CameraMain extends React.Component {
    */
   _handleCreateNewProgramButtonClicked() {
     if ( this.state.programCreateMode === ProgramCreateModes.COPY_EXISTING ) {
-      if ( this.selectedProgramToCopy !== '' ) {
-        const programNumber = Number( this.selectedProgramToCopy );
+      if ( this.state.selectedProgramToCopy !== '' ) {
+        const programNumber = Number( this.state.selectedProgramToCopy );
         if ( !isNaN( programNumber ) ) {
           this._createProgramCopy( programNumber );
         }
         else {
-          alert( `Error: Invalid program number - ${this.selectedProgramToCopy}` );
+          alert( `Error: Invalid program number - ${this.state.selectedProgramToCopy}` );
         }
       }
     }
@@ -364,6 +359,7 @@ export default class CameraMain extends React.Component {
    */
   _hideCreateProgramDialog() {
     this.state.showCreateProgramDialog = false;
+    this.state.selectedProgramToCopy = '';
   }
 
   render() {
@@ -425,12 +421,15 @@ export default class CameraMain extends React.Component {
                       name="programs"
                       id="programsID"
                       onChange={event => {
-                        this.selectedProgramToCopy = event.target.value;
+                        this.state.selectedProgramToCopy = event.target.value;
                       }}
                     >
                       <option value=''>-- Select program to copy --</option>
                       {this.state.spaceData.programs
                         .filter( program => programMatchesFilterString( program, this.state.copyProgramListFilterString ) )
+                        .sort( ( programA, programB ) =>
+                          codeToName( programA.currentCode ).localeCompare( codeToName( programB.currentCode ) )
+                        )
                         .map( program => {
                           return <option
                             key={program.number.toString()}
@@ -438,7 +437,8 @@ export default class CameraMain extends React.Component {
                           >
                             {codeToName( program.currentCode )}
                           </option>
-                        } )}
+                        } )
+                      }
                     </Form.Select>
                   </> ) : ' '
                 }
@@ -447,6 +447,8 @@ export default class CameraMain extends React.Component {
                 <Button
                   variant="primary"
                   onClick={this._handleCreateNewProgramButtonClicked.bind( this )}
+                  disabled={this.state.programCreateMode === ProgramCreateModes.COPY_EXISTING &&
+                            this.state.selectedProgramToCopy === ''}
                 >
                   Create
                 </Button>
