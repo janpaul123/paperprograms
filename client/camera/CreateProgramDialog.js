@@ -16,8 +16,16 @@ import { ProgramCreateModes } from './CameraMain.js';
 
 class CreateProgramDialog extends React.Component {
 
-  state = {}
+  constructor( props ) {
+    super( props );
+    this.state = {};
+  }
 
+  /**
+   * Render the component
+   * @returns {JSX.Element}
+   * @public
+   */
   render() {
 
     const { data, setSearchString, onCreateProgram, onCancel } = this.props;
@@ -72,7 +80,6 @@ class CreateProgramDialog extends React.Component {
                     data.selectedProgramToCopy = event.target.value;
                   }}
                 >
-                  <option value=''>-- Select program to copy --</option>
                   {data.spaceData.programs
                     .filter( program => programMatchesFilterString( program, data.copyProgramListFilterString ) )
                     .sort( ( programA, programB ) =>
