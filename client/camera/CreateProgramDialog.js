@@ -64,10 +64,32 @@ class CreateProgramDialog extends React.Component {
             </Form>
             {data.programCreateMode === ProgramCreateModes.COPY_EXISTING ? (
               <>
+                <p><b>Spaces:</b></p>
+                <Form.Select
+                  id="spacesID"
+                  multiple
+                  onChange={event => {
+                    for ( let option of event.target.options ) {
+                      if ( option.selected ) {
+                        console.log( option.value );
+                      }
+                    }
+                  }}
+                >
+                  {data.availableSpaces.map( spaceName => {
+                    return <option
+                      key={spaceName}
+                      value={spaceName}
+                    >{spaceName}
+                    </option>
+                  } )
+                  }
+                  <option>All spaces (*)</option>
+                </Form.Select>
                 <label>
-                  Filter on: <input
+                  <b>Filter on:</b><input
                   name='filterCopyProgramListOn'
-                  style={{ marginBottom: '10px' }}
+                  style={{ margin: '10px' }}
                   value={data.copyProgramListFilterString}
                   onChange={e => setSearchString( e.target.value )}
                 />
