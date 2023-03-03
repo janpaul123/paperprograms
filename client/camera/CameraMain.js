@@ -148,6 +148,22 @@ export default class CameraMain extends React.Component {
     } );
   }
 
+  // TODO: Should this use async/Promise instead of callback?
+  static getProgram( spaceName, programNumber, callback ) {
+
+    // program.:spaceName.:number.js
+    const getProgramUrl = new URL( 'program', window.location.origin ).toString();
+    const getRequestedProgramUrl = `${getProgramUrl}.${spaceName}.${programNumber}.js`;
+    xhr.get( getRequestedProgramUrl, { json: true }, ( error, response ) => {
+      if ( error ) {
+        console.error( `error adding space: ${error}` ); // eslint-disable-line no-console
+      }
+      else {
+        callback( response.body );
+      }
+    } );
+  }
+
   _updatePageWidth() {
     this.setState( { pageWidth: document.body.clientWidth } );
   };
@@ -423,7 +439,7 @@ export default class CameraMain extends React.Component {
           </div>
           <div className={styles.sidebar}>
             {this.showTestButton ? (
-              <Button onClick={() => console.log( 'Pressed test button' )}>Test Button</Button>
+              <Button onClick={() => CameraMain.getProgram( 'description-experiments', 628, ( program ) => console.log( program ) )}>Test Button</Button>
             ) : ( '' )}
             <div className={`${styles.sidebarSection} ${styles.create}`}>
               <button onClick={() => this.state.showCreateProgramDialog = true}>Create Program</button>
