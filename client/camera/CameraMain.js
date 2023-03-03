@@ -1,4 +1,5 @@
 import React from 'react';
+import Button from 'react-bootstrap/Button';
 import xhr from 'xhr';
 import { colorNames, commonPaperSizeNames, otherPaperSizeNames, paperSizes } from '../constants';
 import { codeToName, codeToPrint, getApiUrl, programMatchesFilterString } from '../utils';
@@ -39,6 +40,11 @@ export default class CameraMain extends React.Component {
 
     // @private {number|null} - id of current timeout, null when no timeout set
     this._timeout = null;
+
+    // Process query parameters
+    const urlSearchParams = new URLSearchParams( window.location.search );
+    const params = Object.fromEntries( urlSearchParams.entries() );
+    this.showTestButton = params.hasOwnProperty( 'showTestButton' );
   }
 
   componentDidMount() {
@@ -416,6 +422,9 @@ export default class CameraMain extends React.Component {
             />
           </div>
           <div className={styles.sidebar}>
+            {this.showTestButton ? (
+              <Button onClick={() => console.log( 'Pressed test button' )}>Test Button</Button>
+            ) : ( '' )}
             <div className={`${styles.sidebarSection} ${styles.create}`}>
               <button onClick={() => this.state.showCreateProgramDialog = true}>Create Program</button>
               <a href={editorUrl} target="_blank" className={styles.editorAnchor}>
