@@ -21,6 +21,47 @@ router.get( '/program.:spaceName.:number.js', ( req, res ) => {
     } );
 } );
 
+/**
+ * Queries the database for program information in the requested spaces.
+ *
+ * TODO: It needs to extract specific information about the programs for the provided spaces like this:
+ * Keywords, title, number
+ *
+ * {
+ *   space: [
+ *     {
+ *       number: 'string'
+ *       title: 'string'
+ *       keywords: []
+ *     },{
+ *       ...
+ *     }
+ *   ]
+ * }
+ *
+ * @param spacesList - A comma separated list of the space names to query, or '*' for all spaces.
+ */
+router.get( '/api/program-summary-list/:spacesList', ( req, res ) => {
+  const { spacesList } = req.params;
+  let summaryQuery = knex.select( [ 'currentCode', 'number' ] ).from( 'programs' );
+
+  const spaces = spacesList.split( ',' );
+  if ( spacesList !== '*' ) {
+    spaces.forEach( ( space, index ) => {
+      if ( index === 0 ) {
+        summaryQuery = summaryQuery.where( { spaceName: space } )
+      }
+      else {
+        summaryQuery = summaryQuery.orWhere( { spaceName: space } )
+      }
+    } )
+  }
+
+  summaryQuery.then( selectResult => {
+    res.json( selectResult );
+  } );
+} );
+
 // Get a list of all the spaces available in the DB.
 router.get( '/api/spaces-list', ( req, res ) => {
   knex

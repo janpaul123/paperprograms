@@ -16,6 +16,8 @@ export const ProgramCreateModes = {
   COPY_EXISTING: 'copyExisting'
 };
 
+const BASE_API_URL = new URL( 'api', window.location.origin ).toString();
+
 export default class CameraMain extends React.Component {
 
   constructor( props ) {
@@ -157,6 +159,40 @@ export default class CameraMain extends React.Component {
     xhr.get( getRequestedProgramUrl, { json: true }, ( error, response ) => {
       if ( error ) {
         console.error( `error adding space: ${error}` ); // eslint-disable-line no-console
+      }
+      else {
+        callback( response.body );
+      }
+    } );
+  }
+
+  /**
+   * Gets programs for the provided spaces from the database and passes them to the provided callback for further work.
+   * Provide an array of the space names, or '*' for all spaces.
+   *
+   * TODO: We want to make this return summary information about the program.
+   * @param {string[] | '*'} spaces
+   * @param callback
+   */
+  static getProgramSummaryList( spaces, callback ) {
+
+    let spacesString = '';
+    if ( Array.isArray( spaces ) ) {
+      spacesString = spaces.join( ',' );
+    }
+    else if ( spaces === '*' ) {
+
+      // handle the wildcard space
+      spacesString = spaces;
+    }
+    else {
+      alert( 'Bad spaces list in getProgramSummaryList' );
+    }
+
+    const getProgramSummaryUrl = `${BASE_API_URL}/program-summary-list/${spacesString}`;
+    xhr.get( getProgramSummaryUrl, { json: true }, ( error, response ) => {
+      if ( error ) {
+        console.error( `error getting program summary list: ${error}` ); // eslint-disable-line no-console
       }
       else {
         callback( response.body );
@@ -439,7 +475,7 @@ export default class CameraMain extends React.Component {
           </div>
           <div className={styles.sidebar}>
             {this.showTestButton ? (
-              <Button onClick={() => CameraMain.getProgram( 'description-experiments', 628, ( program ) => console.log( program ) )}>Test Button</Button>
+              <Button onClick={() => CameraMain.getProgramSummaryList( [ 'taliesin', 'templates' ], ( summaryList ) => console.log( summaryList ) )}>Test Button</Button>
             ) : ( '' )}
             <div className={`${styles.sidebarSection} ${styles.create}`}>
               <button onClick={() => this.state.showCreateProgramDialog = true}>Create Program</button>
