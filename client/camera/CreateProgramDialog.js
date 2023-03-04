@@ -12,13 +12,53 @@ import Form from 'react-bootstrap/Form';
 import Modal from 'react-bootstrap/Modal';
 import { codeToName, programMatchesFilterString } from '../utils.js';
 import styles from './CameraMain.css';
-import { ProgramCreateModes } from './CameraMain.js';
+import CameraMain, { ProgramCreateModes } from './CameraMain.js';
 
 class CreateProgramDialog extends React.Component {
 
   constructor( props ) {
     super( props );
-    this.state = {};
+    this.state = {
+
+      // The name of the space we are going to use to populate templates.
+      // TODO: We want to support multiple source spaces at once, but couldn't get that working with React.
+      sourceSpace: '*',
+
+      // Whether we are selecting from all spaces or a single space. If false, you can select which space to chose from.
+      selectFromAllSpaces: true,
+
+      // List of programs for the selected space.
+      // TODO: This should be summary info instead of full program.
+      programsForSelectedSpace: []
+    };
+
+    this._setSpaceAndRequestPrograms( this.state.sourceSpace )
+  }
+
+  /**
+   * Returns only the subset of programs that match the entered filter.
+   */
+  _getFilteredProgramNames( programs ) {
+    return programs
+      .filter( program => programMatchesFilterString( program, this.props.data.copyProgramListFilterString ) )
+      .sort( ( programA, programB ) =>
+        codeToName( programA.currentCode ).localeCompare( codeToName( programB.currentCode ) )
+      )
+  }
+
+  /**
+   * Makes a request to the database to get all programs in the provided space. Then sets state data on this
+   * component to render that space and its programs.
+   *
+   * @param {string} space - space name or "*" for all spaces.
+   */
+  _setSpaceAndRequestPrograms( space ) {
+    CameraMain.getProgramSummaryList( [ space ], ( summaryList ) => {
+      this.setState( {
+        sourceSpace: space,
+        programsForSelectedSpace: summaryList,
+      } );
+    } );
   }
 
   /**
@@ -41,22 +81,20 @@ class CreateProgramDialog extends React.Component {
           </Modal.Header>
           <Modal.Body>
             <Form>
-              <div key={`default-radio`} className="mb-3">
+              <div key={`create-mode-radio`} className="mb-3">
                 <Form.Check
                   inline
                   type='radio'
-                  id='radio-1'
                   label='Create a simple "Hello World" program'
-                  name='group1'
+                  name='create-mode-group'
                   checked={data.programCreateMode === ProgramCreateModes.SIMPLE_HELLO_WORLD}
                   onChange={() => data.programCreateMode = ProgramCreateModes.SIMPLE_HELLO_WORLD}
                 />
                 <Form.Check
                   inline
                   type='radio'
-                  id='radio-2'
                   label='Copy an existing program'
-                  name='group1'
+                  name='create-mode-group'
                   checked={data.programCreateMode === ProgramCreateModes.COPY_EXISTING}
                   onChange={() => data.programCreateMode = ProgramCreateModes.COPY_EXISTING}
                 />
@@ -65,27 +103,49 @@ class CreateProgramDialog extends React.Component {
             {data.programCreateMode === ProgramCreateModes.COPY_EXISTING ? (
               <>
                 <p><b>Spaces:</b></p>
-                <Form.Select
-                  id="spacesID"
-                  multiple
-                  onChange={event => {
-                    for ( let option of event.target.options ) {
-                      if ( option.selected ) {
-                        console.log( option.value );
-                      }
-                    }
-                  }}
-                >
-                  {data.availableSpaces.map( spaceName => {
-                    return <option
-                      key={spaceName}
-                      value={spaceName}
-                    >{spaceName}
-                    </option>
-                  } )
-                  }
-                  <option>All spaces (*)</option>
-                </Form.Select>
+                <Form>
+                  <div key={`spaces-radio`} className="mb-3">
+                    <Form.Check
+                      inline
+                      type='radio'
+                      label='All Spaces'
+                      name='spaces-radio-group'
+                      checked={this.state.selectFromAllSpaces}
+                      onChange={() => {
+                        this.state.selectFromAllSpaces = true;
+                        this._setSpaceAndRequestPrograms( '*' );
+                      }}
+                    />
+                    <Form.Check
+                      inline
+                      type='radio'
+                      label='Select Space'
+                      name='spaces-radio-group'
+                      checked={!this.state.selectFromAllSpaces}
+                      onChange={() => {
+                        this.state.selectFromAllSpaces = false;
+                        this._setSpaceAndRequestPrograms( this.props.data.availableSpaces[ 0 ] );
+                      }}
+                    />
+                  </div>
+                </Form>
+                {this.state.selectFromAllSpaces ? ' ' :
+                 <Form.Select
+                   id="spacesID"
+                   value={this.state.sourceSpace}
+                   onChange={event => {
+                     this._setSpaceAndRequestPrograms( event.target.value );
+                   }}
+                 >
+                   {data.availableSpaces.map( spaceName => {
+                     return <option
+                       key={spaceName}
+                       value={spaceName}
+                     >{spaceName}
+                     </option>
+                   } )
+                   }
+                 </Form.Select>}
                 <label>
                   <b>Filter on:</b><input
                   name='filterCopyProgramListOn'
@@ -102,11 +162,7 @@ class CreateProgramDialog extends React.Component {
                     data.selectedProgramToCopy = event.target.value;
                   }}
                 >
-                  {data.spaceData.programs
-                    .filter( program => programMatchesFilterString( program, data.copyProgramListFilterString ) )
-                    .sort( ( programA, programB ) =>
-                      codeToName( programA.currentCode ).localeCompare( codeToName( programB.currentCode ) )
-                    )
+                  {this._getFilteredProgramNames( this.state.programsForSelectedSpace )
                     .map( program => {
                       return <option
                         key={program.number.toString()}
