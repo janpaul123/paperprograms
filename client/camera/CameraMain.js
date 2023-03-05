@@ -556,7 +556,7 @@ export default class CameraMain extends React.Component {
               <div className={`${styles.sidebarSubSection} ${styles.programList}`}>
                 <div>
                   {this.state.spaceData.programs
-                    .filter( program => programMatchesFilterString( program, this.state.programListFilterString ) )
+                    .filter( program => programMatchesFilterString( program.currentCode, this.state.programListFilterString ) )
                     .sort( ( programA, programB ) => programA.number - programB.number )
                     .map( program => (
                       <div

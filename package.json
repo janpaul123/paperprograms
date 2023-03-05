@@ -9,6 +9,7 @@
     "dev:docker": "npm run migrate && npm start",
     "createdb": "psql -c \"SELECT 1\" paper_programs_development 2>/dev/null 1>/dev/null || createdb paper_programs_development",
     "migrate": "knex migrate:latest",
+    "rollback": "knex migrate:rollback",
     "start": "node server/entry-server.js",
     "dropdb": "dropdb --if-exists paper_programs_development",
     "heroku-postbuild": "webpack",

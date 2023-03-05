@@ -40,7 +40,7 @@ class CreateProgramDialog extends React.Component {
    */
   _getFilteredProgramNames( programs ) {
     return programs
-      .filter( program => programMatchesFilterString( program, this.props.data.copyProgramListFilterString ) )
+      .filter( program => programMatchesFilterString( program.currentCode, this.props.data.copyProgramListFilterString ) )
       .sort( ( programA, programB ) =>
         codeToName( programA.currentCode ).localeCompare( codeToName( programB.currentCode ) )
       )

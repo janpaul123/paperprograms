@@ -46,6 +46,15 @@ export function clamp( value, min, max ) {
   return Math.max( min, Math.min( max, value ) );
 }
 
+export function isMac() {
+  return navigator.platform.toUpperCase().indexOf( 'MAC' ) >= 0;
+}
+
+// For "Save" buttons, which include hotkey info that depend on platform.
+export function getSaveString() {
+  return `Save (${isMac() ? 'cmd' : 'ctrl'}+s)`;
+}
+
 export function moveAlongVector( amount, vector ) {
   const size = norm( vector );
   return { x: amount * vector.x / size, y: amount * vector.y / size };
@@ -149,14 +158,14 @@ function getKeywordsFromProgram( program ) {
 
 /**
  *
- * @param {string} program - contents of a paper program, which is generally a JS file
+ * @param {string} programCode - contents of a paper program, which is generally a JS file
  * @param {string} filterString - a string representing a list of words to test against the keywords for this sim
  * @returns {boolean} - true if there is a match OR if there are no words provided on which to filter
  */
-export function programMatchesFilterString( program, filterString ){
+export function programMatchesFilterString( programCode, filterString ){
 
   // Get the keywords that are contained in the program so that they can be used for filtering.
-  const keywords = getKeywordsFromProgram( program.currentCode ).map( keyword => keyword.toLowerCase() );
+  const keywords = getKeywordsFromProgram( programCode ).map( keyword => keyword.toLowerCase() );
 
   // Determine whether any of the words contained in the filter string match any of the keywords in the program.
   let programMatchesFilterString = false;

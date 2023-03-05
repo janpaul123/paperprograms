@@ -3,8 +3,8 @@ import randomColor from 'randomcolor';
 import React from 'react';
 import MonacoEditor from 'react-monaco-editor';
 import xhr from 'xhr';
-
-import { codeToName, getApiUrl, programMatchesFilterString } from '../utils';
+import { codeToName, getApiUrl, getSaveString, programMatchesFilterString } from '../utils';
+import CodeSnippetsDialog from './CodeSnippetsDialog.js';
 import styles from './EditorMain.css';
 
 export default class EditorMain extends React.Component {
@@ -17,6 +17,7 @@ export default class EditorMain extends React.Component {
       spaceData: { programs: [] },
       code: '',
       debugInfo: {},
+      showSnippetsDialog: false
     };
   }
 
@@ -155,6 +156,7 @@ export default class EditorMain extends React.Component {
     const isMac = navigator.platform.toUpperCase().indexOf( 'MAC' ) >= 0;
     const errors = this.state.debugInfo.errors || [];
     const logs = this.state.debugInfo.logs || [];
+    const showSnippetsDialog = this.state.showSnippetsDialog;
 
     return (
       <div className={styles.root}>
@@ -173,6 +175,11 @@ export default class EditorMain extends React.Component {
             />
           </div>
         )}
+        {showSnippetsDialog && (
+          <CodeSnippetsDialog
+            onClose={() => this.setState( { showSnippetsDialog: false } )}
+          ></CodeSnippetsDialog>
+        )}
         <div className={styles.sidebar}>
 
           <h2>Edit Program</h2>
@@ -187,6 +194,7 @@ export default class EditorMain extends React.Component {
 
           <div className={styles.sidebarSection}>
             <select
+              className={styles.select}
               value={this.state.selectedProgramNumber}
               size={10}
               onChange={event => {
@@ -207,7 +215,7 @@ export default class EditorMain extends React.Component {
             >
               <option value={''}>(none)</option>
               {sortBy( this.state.spaceData.programs, 'number' )
-                .filter( program => programMatchesFilterString( program, this.state.programListFilterString ) )
+                .filter( program => programMatchesFilterString( program.currentCode, this.state.programListFilterString ) )
                 .map( program => {
                   const beingEditedBySomeoneElse =
                     program.editorInfo.claimed &&
@@ -229,7 +237,7 @@ export default class EditorMain extends React.Component {
 
           {selectedProgram && (
             <div className={styles.sidebarSection}>
-              <button onClick={this._save}>save ({isMac ? 'cmd' : 'ctrl'}+s)</button>
+              <button onClick={this._save}>{getSaveString()}</button>
               {' '}
             </div>
           )}
@@ -291,6 +299,11 @@ export default class EditorMain extends React.Component {
             >
               PhET Library References
             </a>
+          </div>
+
+          <div className={styles.sidebarSection}>
+            <button onClick={()=> {this.setState( { showSnippetsDialog: true });}}>Code Snippets</button>
+            {' '}
           </div>
 
           <div className={styles.sidebarSection}>

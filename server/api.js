@@ -158,6 +158,32 @@ router.post( '/api/spaces/:spaceName/programs', ( req, res ) => {
     } );
 } );
 
+// Create a new snippet
+const maxSnippets = 500;
+router.post( '/api/snippets', ( req, res ) => {
+  const { snippetCode } = req.body;
+  if ( !snippetCode ) {
+    return res.status( 400 ).send( 'Missing "code"' );
+  }
+
+  knex
+    .select( 'number' )
+    .from( 'snippets' )
+    .then( selectResult => {
+      const nextNumber = selectResult.length + 1;
+      if ( nextNumber > maxSnippets ) {
+        return res.status( 400 ).send( `Cannot make any more snippets, max ${maxSnippets}` );
+      }
+
+      knex( 'snippets' )
+        .insert( { number: nextNumber, code: snippetCode } )
+        .then( () => {
+          res.json( { number: nextNumber, snippetCode: snippetCode } )
+        } );
+    } );
+} );
+
+// Save the program with the provided number to the provided space
 router.put( '/api/spaces/:spaceName/programs/:number', ( req, res ) => {
   const { spaceName, number } = req.params;
   const { code } = req.body;
@@ -168,6 +194,33 @@ router.put( '/api/spaces/:spaceName/programs/:number', ( req, res ) => {
   knex( 'programs' )
     .update( { currentCode: code } )
     .where( { spaceName, number } )
+    .then( () => {
+      res.json( {} );
+    } );
+} );
+
+// Get all code snippets in the database
+router.get( '/api/snippets', ( req, res ) => {
+  knex
+    .select( [ 'code', 'number' ] )
+    .from( 'snippets' )
+    .then( selectResult => {
+      res.json( { snippets: selectResult } )
+    } );
+} );
+
+// Save the snippet of the provided number
+router.put( '/api/snippets/:number', ( req, res ) => {
+
+  const { number } = req.params;
+  const { snippetCode } = req.body;
+  if ( !snippetCode ) {
+    return res.status( 400 ).send( 'Missing "snippetCode"' );
+  }
+
+  knex( 'snippets' )
+    .update( { code: snippetCode } )
+    .where( { number } )
     .then( () => {
       res.json( {} );
     } );

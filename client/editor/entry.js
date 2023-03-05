@@ -2,6 +2,9 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import uuidv4 from 'uuid/v4';
 
+// import css to style bootstrap components
+import 'bootstrap/dist/css/bootstrap.min.css';
+
 import EditorMain from './EditorMain';
 
 const element = document.createElement('div');
