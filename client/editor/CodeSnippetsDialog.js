@@ -27,9 +27,6 @@ class CodeSnippetsDialog extends React.Component {
       // to support searching for a specific snippet
       snippetListFilterString: '',
 
-      // current snippet code displayed in the editor
-      snippetCode: '',
-
       // number of the current snippet in the editor
       snippetNumber: null,
 
@@ -79,13 +76,22 @@ class CodeSnippetsDialog extends React.Component {
             </div>
             <select className={styles.snippetSelect} size={5} onChange={event => {
               this.setState( {
-                snippetCode: this._getCodeFromNumber( event.target.value ),
                 snippetNumber: event.target.value
               } );
             }
             }>
               {
-                Object.keys( this.snippets ).filter( key => programMatchesFilterString( this.snippets[ key ], this.state.snippetListFilterString ) )
+                Object.keys( this.snippets ).filter( key => {
+                  const code = this.snippets[ key ];
+                  if ( code ) {
+                    return programMatchesFilterString( code, this.state.snippetListFilterString )
+                  }
+                  else {
+
+                    // only include the empty code if there is no filter
+                    return this.state.snippetListFilterString === '';
+                  }
+                } )
                   .map( key => {
                     return <option
                       key={key}
@@ -214,7 +220,11 @@ class CodeSnippetsDialog extends React.Component {
    * Save the active snippet, updating the database.
    */
   _saveSnippet = () => {
-    const { snippetCode, snippetNumber } = this.state;
+    const { snippetNumber } = this.state;
+    if ( snippetNumber === null ) {
+      throw new Error( 'No snippetNumber, cannot save...' );
+    }
+    const snippetCode = this.snippets[ snippetNumber ];
     const snippetUrl = this._getSnippetApiUrl( snippetNumber );
     xhr.put(
       snippetUrl,
