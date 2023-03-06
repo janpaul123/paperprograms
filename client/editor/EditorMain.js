@@ -171,7 +171,7 @@ export default class EditorMain extends React.Component {
               value={this.state.code}
               onChange={code => this.setState( { code } )}
               editorDidMount={this._onEditorDidMount}
-              options={{ tabSize: 2 }}
+              options={{ tabSize: 2, fontSize:"20px" }}
             />
           </div>
         )}

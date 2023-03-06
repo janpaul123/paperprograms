@@ -113,7 +113,7 @@ class CodeSnippetsDialog extends React.Component {
                   }
                 }
                 editorDidMount={this._onEditorDidMount}
-                options={{ tabSize: 2 }}
+                options={{ tabSize: 2, fontSize:"20px" }}
               />
             </div>
           </Modal.Body>
