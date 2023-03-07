@@ -159,7 +159,15 @@ class CreateProgramDialog extends React.Component {
                   name='programs'
                   id='programsID'
                   onChange={event => {
-                    data.selectedProgramToCopy = event.target.value;
+                    const selectElement = event.target;
+                    data.selectedProgramToCopy = selectElement.value;
+
+                    // We need to access the code to copy. As a quick solution, the code is put on the element
+                    // as a data attribute. Another way could be to save both the number AND the space name (we
+                    // need both to identify the program) and send those to CameraMain to use that data
+                    // to request the code from the database. This works for now because we get all code from the
+                    // database instead of a data summary.
+                    data.programCodeToCopy = selectElement.options[ selectElement.selectedIndex ].dataset.programCode;
                   }}
                 >
                   {this._getFilteredProgramNames( this.state.programsForSelectedSpace )
@@ -167,8 +175,9 @@ class CreateProgramDialog extends React.Component {
                       return <option
                         key={program.number.toString()}
                         value={program.number.toString()}
+                        data-program-code={program.currentCode}
                       >
-                        {codeToName( program.currentCode )}
+                        {`${codeToName( program.currentCode )} - #${program.number}`}
                       </option>
                     } )
                   }

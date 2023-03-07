@@ -37,7 +37,8 @@ export default class CameraMain extends React.Component {
       copyProgramListFilterString: '',
       showCreateProgramDialog: false,
       programCreateMode: ProgramCreateModes.SIMPLE_HELLO_WORLD,
-      selectedProgramToCopy: ''
+      selectedProgramToCopy: '',
+      programCodeToCopy: ''
     };
 
     // @private {number|null} - id of current timeout, null when no timeout set
@@ -249,24 +250,15 @@ export default class CameraMain extends React.Component {
   };
 
   /**
-   * Create a copy of the specified program and add it to the selected space.  The program will be created with the
+   * Create a copy of the provided program code and add it to the current space.  The program will be created with the
    * existing name with ' - Copy' appended to it.
-   * @param {number} programNumber
+   * @param {string} programCodeToCopy
    * @private
    */
-  _createProgramCopy( programNumber ) {
-
-    // Find the program in the current list.
-    const programToCopy = this.state.spaceData.programs.find( program => program.number === programNumber );
-
-    // Put up a message and bail if the specified program number doesn't exist.
-    if ( !programToCopy ) {
-      alert( `Error: Program ${programNumber} not found.` );
-      return;
-    }
+  _createProgramCopyFromCode( programCodeToCopy ) {
 
     // Get the individual lines of the program that is being copied.
-    const programLines = programToCopy.currentCode.split( '\n' );
+    const programLines = programCodeToCopy.split( '\n' );
 
     // Add the ' - Copy' portion to the title.
     programLines[ 0 ] = programLines[ 0 ] + ' - Copy';
@@ -396,14 +388,12 @@ export default class CameraMain extends React.Component {
    */
   _handleCreateNewProgramButtonClicked() {
     if ( this.state.programCreateMode === ProgramCreateModes.COPY_EXISTING ) {
-      if ( this.state.selectedProgramToCopy !== '' ) {
-        const programNumber = Number( this.state.selectedProgramToCopy );
-        if ( !isNaN( programNumber ) ) {
-          this._createProgramCopy( programNumber );
-        }
-        else {
-          alert( `Error: Invalid program number - ${this.state.selectedProgramToCopy}` );
-        }
+
+      if ( this.state.programCodeToCopy !== '' ) {
+        this._createProgramCopyFromCode( this.state.programCodeToCopy );
+      }
+      else {
+        alert( `Error: Invalid program number - ${this.state.selectedProgramToCopy}` );
       }
     }
     else if ( this.state.programCreateMode === ProgramCreateModes.SIMPLE_HELLO_WORLD ) {
