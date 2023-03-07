@@ -137,7 +137,7 @@ function getKeywordsFromProgram( program ) {
   const titleMatchResults = firstLine.match( commentRegEx );
   if ( titleMatchResults && titleMatchResults[ 1 ] ) {
     const titleWords = titleMatchResults[ 1 ].match( wordRegEx );
-    keywords.push( ...titleWords );
+    titleWords && keywords.push( ...titleWords );
   }
 
   // Test the second line to see if it is a comment and is formatted correctly to indicate that it contains keywords and
