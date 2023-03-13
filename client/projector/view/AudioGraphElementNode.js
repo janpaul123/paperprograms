@@ -6,18 +6,18 @@ const WIDTH = 50;
 const CHILD_HORIZONTAL_SPACING = 15;
 const CHILD_VERTICAL_SPACING = 15;
 
-class AudioGraphElementNode extends scenery.Rectangle {
+class AudioGraphElementNode extends phet.scenery.Rectangle {
   static WIDTH = WIDTH;
   static HEIGHT = HEIGHT;
 
   constructor( audioGraphElement, screenView, audioMixerModel ) {
     super( 0, 0, WIDTH, HEIGHT, {
-      fill: new scenery.Color( 255, 217, 102 ),
+      fill: new phet.scenery.Color( 255, 217, 102 ),
       stroke: 'black'
     } );
 
-    this.addChild( new scenery.Text( audioGraphElement.displayName, {
-      font: new sceneryPhet.PhetFont( { size: 24 } ),
+    this.addChild( new phet.scenery.Text( audioGraphElement.displayName, {
+      font: new phet.sceneryPhet.PhetFont( { size: 24 } ),
       center: this.center
     } ) );
 
@@ -57,7 +57,7 @@ class AudioGraphElementNode extends scenery.Rectangle {
     } );
 
     // add a drag listener
-    this.dragListener = new scenery.DragListener( {
+    this.dragListener = new phet.scenery.DragListener( {
       positionProperty: audioGraphElement.positionProperty,
       start: () => {
         if ( audioGraphElement.parent ) {
@@ -111,7 +111,7 @@ class AudioGraphElementNode extends scenery.Rectangle {
         const previousChild = modelChildren[ i - 1 ];
         currentLocalX = currentLocalX + ( this.getLayoutWidthOfSubtree( previousChild ) );
       }
-      child.positionProperty.value = this.localToGlobalPoint( new dot.Vector2( currentLocalX, localY ) )
+      child.positionProperty.value = this.localToGlobalPoint( new phet.dot.Vector2( currentLocalX, localY ) )
     } );
   }
 }

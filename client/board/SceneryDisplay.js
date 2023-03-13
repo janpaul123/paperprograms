@@ -12,7 +12,7 @@ const SceneryDisplay = ( props ) => {
 
     // Create the scenery display.
     const sceneryDisplayDomElement = document.getElementById( 'scenery-display' );
-    const sceneryDisplay = new scenery.Display( props.scene, {
+    const sceneryDisplay = new phet.scenery.Display( props.scene, {
       width: props.width,
       height: props.height,
       backgroundColor: 'rgb(254, 252, 231)',
@@ -23,32 +23,32 @@ const SceneryDisplay = ( props ) => {
     sceneryDisplay.initializeEvents();
 
     // scenery workaround for consistent requestAnimationFrame
-    scenery.Utils.polyfillRequestAnimationFrame();
+    phet.scenery.Utils.polyfillRequestAnimationFrame();
 
     // set up animation - This takes an optional callback( dt ) if needed at some point
     sceneryDisplay.updateOnRequestAnimationFrame();
 
     // a property that indicates if the browser tab is visible
-    const browserTabVisibleProperty = new axon.Property( true );
+    const browserTabVisibleProperty = new phet.axon.Property( true );
     document.addEventListener( 'visibilitychange', () => {
       browserTabVisibleProperty.set( document.visibilityState === 'visible' );
     }, false );
 
     // initialize Voicing
-    scenery.voicingManager.initialize( scenery.Display.userGestureEmitter, {
+    phet.scenery.voicingManager.initialize( phet.scenery.Display.userGestureEmitter, {
 
       // Voicing is only allowed when this tab is visible
       speechAllowedProperty: browserTabVisibleProperty
     } );
-    scenery.voicingUtteranceQueue.enabled = true;
-    scenery.voicingManager.enabledProperty.value = true; // TODO: Why can't this use a setter?
-    scenery.voicingManager.respectResponseCollectorProperties = false;
+    phet.scenery.voicingUtteranceQueue.enabled = true;
+    phet.scenery.voicingManager.enabledProperty.value = true; // TODO: Why can't this use a setter?
+    phet.scenery.voicingManager.respectResponseCollectorProperties = false;
 
     // All responses are enabled by default
-    utteranceQueue.responseCollector.nameResponsesEnabledProperty.value = true;
-    utteranceQueue.responseCollector.objectResponsesEnabledProperty.value = true;
-    utteranceQueue.responseCollector.contextResponsesEnabledProperty.value = true;
-    utteranceQueue.responseCollector.hintResponsesEnabledProperty.value = true;
+    phet.utteranceQueue.responseCollector.nameResponsesEnabledProperty.value = true;
+    phet.utteranceQueue.responseCollector.objectResponsesEnabledProperty.value = true;
+    phet.utteranceQueue.responseCollector.contextResponsesEnabledProperty.value = true;
+    phet.utteranceQueue.responseCollector.hintResponsesEnabledProperty.value = true;
 
   }, [] );
 

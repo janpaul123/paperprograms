@@ -13,14 +13,14 @@ import papyrus from './papyrus.js';
 import SceneryDisplay from './SceneryDisplay.js';
 
 // constants
-const DISPLAY_SIZE = new dot.Dimension2( 640, 480 );
+const DISPLAY_SIZE = new phet.dot.Dimension2( 640, 480 );
 
 // Create the root element for React.
 const simDisplayDiv = document.getElementById( 'sim-display' );
 document.body.appendChild( simDisplayDiv );
 
 // Create the root of the scene graph.
-const scene = new scenery.Node();
+const scene = new phet.scenery.Node();
 
 // Render the scene graph.  Once this is done it updates itself, so there is no other React-based rendering of this
 // component.
@@ -30,14 +30,14 @@ ReactDOM.render(
 );
 
 // Initialize sound production.
-const TRUE_PROPERTY = new axon.BooleanProperty( true );
-const FALSE_PROPERTY = new axon.BooleanProperty( false );
-tambo.soundManager.enabledProperty.value = true;
-tambo.soundManager.initialize( TRUE_PROPERTY, TRUE_PROPERTY, TRUE_PROPERTY, TRUE_PROPERTY, FALSE_PROPERTY );
+const TRUE_PROPERTY = new phet.axon.BooleanProperty( true );
+const FALSE_PROPERTY = new phet.axon.BooleanProperty( false );
+phet.tambo.soundManager.enabledProperty.value = true;
+phet.tambo.soundManager.initialize( TRUE_PROPERTY, TRUE_PROPERTY, TRUE_PROPERTY, TRUE_PROPERTY, FALSE_PROPERTY );
 
 // The model of our sim design board, with all model Properties from paper programs. It is observable so that view
 // elements and controllers can update/reconstruct themselves when the model changes.
-const modelProperty = new axon.Property( {} );
+const modelProperty = new phet.axon.Property( {} );
 
 // timestamp of the last update of paper program information
 let lastUpdateTime = 0;
@@ -78,11 +78,11 @@ const pointsEqual = ( points1, points2 ) => {
  * @param {string} pathToAudioFile
  */
 const createAndLoadWrappedAudioBuffer = pathToAudioFile => {
-  const wrappedAudioBuffer = new tambo.WrappedAudioBuffer();
+  const wrappedAudioBuffer = new phet.tambo.WrappedAudioBuffer();
 
   window.fetch( pathToAudioFile )
     .then( response => response.arrayBuffer() )
-    .then( arrayBuffer => tambo.phetAudioContext.decodeAudioData( arrayBuffer ) )
+    .then( arrayBuffer => phet.tambo.phetAudioContext.decodeAudioData( arrayBuffer ) )
     .then( audioBuffer => {
       wrappedAudioBuffer.audioBufferProperty.value = audioBuffer;
     } );

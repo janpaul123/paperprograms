@@ -201,7 +201,7 @@ export default class Program extends React.Component {
         // please send the file index, x, y, displayName string, and a nullable webAudioNodeType
         const newGraphElement = new AudioGraphElement(
           audioData.soundFileIndex,
-          new dot.Vector2( audioData.x, audioData.y ),
+          new phet.dot.Vector2( audioData.x, audioData.y ),
           audioData.displayName,
           {
             webAudioNodeType: audioData.webAudioNodeType

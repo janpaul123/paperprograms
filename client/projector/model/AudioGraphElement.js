@@ -23,7 +23,7 @@ class AudioGraphElement {
     this.soundFileIndex = soundFileIndex;
     this.displayName = displayName;
 
-    this.positionProperty = new dot.Vector2Property( initialPosition );
+    this.positionProperty = new phet.dot.Vector2Property( initialPosition );
 
     this.playableAudio = soundFileIndex ? AudioGraphSoundView.INDEX_TO_FILE_MAP.get( soundFileIndex ) : null;
 
@@ -31,8 +31,8 @@ class AudioGraphElement {
 
     this.webAudioNodeType = options.webAudioNodeType;
 
-    this.modelBoundsProperty = new axon.DerivedProperty( [ this.positionProperty ], position => {
-      return new dot.Bounds2( position.x, position.y, position.x + AudioGraphElementNode.WIDTH, position.y + AudioGraphElementNode.HEIGHT );
+    this.modelBoundsProperty = new phet.axon.DerivedProperty( [ this.positionProperty ], position => {
+      return new phet.dot.Bounds2( position.x, position.y, position.x + AudioGraphElementNode.WIDTH, position.y + AudioGraphElementNode.HEIGHT );
     } );
 
     // All of the audio effect nodes from the root to THIS leaf in the graph
@@ -43,7 +43,7 @@ class AudioGraphElement {
       this.collectedAudioNodeTypes.push( this.webAudioNodeType );
     }
 
-    this.childAddedEmitter = new axon.Emitter();
+    this.childAddedEmitter = new phet.axon.Emitter();
     this.childRemovedEmitter = new axon.Emitter();
 
     this.childAddedEmitter.addListener( addedChild=> {

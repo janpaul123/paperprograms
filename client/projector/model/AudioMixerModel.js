@@ -8,8 +8,8 @@ class AudioMixerModel {
     // what does this do?
     this.rootLevelElements = [];
 
-    this.rootElementAddedEmitter = new axon.Emitter();
-    this.rootElementRemovedEmitter = new axon.Emitter();
+    this.rootElementAddedEmitter = new phet.axon.Emitter();
+    this.rootElementRemovedEmitter = new phet.axon.Emitter();
   }
 
   addRootLevelElement( audioElement ) {

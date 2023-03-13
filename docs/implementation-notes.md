@@ -47,9 +47,9 @@ Let's create a Papyrus model that represents these attributes! As of 2/20/23, Pa
     const model = sharedData.modelProperty.value;
     
     // (2)
-    model.cakeTypeProperty = new axon.Property( "Chocolate" );
-    model.icingTypeProperty = new axon.Property( "Buttercream" );
-    model.sprinklesProperty = new axon.Property( "Confetti" );
+    model.cakeTypeProperty = new phet.axon.Property( "Chocolate" );
+    model.icingTypeProperty = new phet.axon.Property( "Buttercream" );
+    model.sprinklesProperty = new phet.axon.Property( "Confetti" );
   };
 
   // (3)
