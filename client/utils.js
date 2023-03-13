@@ -162,26 +162,34 @@ function getKeywordsFromProgram( program ) {
  * @param {string} filterString - a string representing a list of words to test against the keywords for this sim
  * @returns {boolean} - true if there is a match OR if there are no words provided on which to filter
  */
-export function programMatchesFilterString( programCode, filterString ){
+export function programMatchesFilterString( programCode, filterString ) {
 
   // Get the keywords that are contained in the program so that they can be used for filtering.
   const keywords = getKeywordsFromProgram( programCode ).map( keyword => keyword.toLowerCase() );
 
-  // Determine whether any of the words contained in the filter string match any of the keywords in the program.
-  let programMatchesFilterString = false;
-  if ( filterString && filterString.length > 0 ) {
-    const filterWordsFromUser = filterString.match( /\b[a-zA-Z]+\b/g ).map( word => word.toLowerCase() );
+  // Extract the individual words from the filter string.
+  const filterWordsFromUser = filterString.match( /\b[a-zA-Z]+\b/g ) || [];
 
-    if ( filterWordsFromUser.some( filterWord => keywords.some( keyword => keyword.includes( filterWord ) ) ) ) {
-      programMatchesFilterString = true;
+  // Determine whether the filter words match the keywords.  All of the filter words must be matched for this to be
+  // considered an overall match.
+  let numberOfMatchedFilterWords = 0;
+  filterWordsFromUser.forEach( ( filterWord, index ) => {
+    const lowerCaseFilterWord = filterWord.toLowerCase();
+    const isLastFilterWord = index === filterWordsFromUser.length - 1;
+    if ( !isLastFilterWord && keywords.includes( lowerCaseFilterWord ) ) {
+      numberOfMatchedFilterWords++;
     }
-  }
-  else {
+    else if ( isLastFilterWord ) {
 
-    // There are no search terms, so the program is included.
-    programMatchesFilterString = true;
-  }
-  return programMatchesFilterString;
+      // The last filter word entered by the user only has to match partially, since this may allow them to see what
+      // they are looking for before the entire word is entered.  This leads to smoother behavior of the UI elements.
+      if ( keywords.reduce( ( previouslyMatched, keyword ) => previouslyMatched || keyword.includes( lowerCaseFilterWord ), false ) ) {
+        numberOfMatchedFilterWords++;
+      }
+    }
+  } );
+
+  return numberOfMatchedFilterWords === filterWordsFromUser.length;
 }
 
 export function codeToPrint( code ) {
