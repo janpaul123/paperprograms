@@ -9,6 +9,7 @@
 
 import React from 'react';
 import ReactDOM from 'react-dom';
+import papyrus from './papyrus.js';
 import SceneryDisplay from './SceneryDisplay.js';
 
 // constants
@@ -94,6 +95,61 @@ const createAndLoadWrappedAudioBuffer = pathToAudioFile => {
 if ( !createAndLoadWrappedAudioBuffer ) {
   console.warn( 'createAndLoadWrappedAudioBuffer not defined' );
 }
+
+// Emits events when model components are added or removed, to be used in program code. Emits with
+// {string} - name of the model component
+// {*} - Reference to the component being added or removed
+papyrus.modelComponentAddedEmitter = new window.phet.axon.Emitter();
+papyrus.modelComponentRemovedEmitter = new window.phet.axon.Emitter();
+
+/**
+ * Adds a model component to the model Object with the provided name. Emits events so client code can observe
+ * changes to the model.
+ * @param {string} componentName
+ * @param {*} componentObject - any model component (Property, or object with multiple Properties and values)
+ */
+papyrus.addModelComponent = ( componentName, componentObject ) => {
+  const existingModel = modelProperty.value;
+  if ( existingModel[ componentName ] === undefined ) {
+
+    // Update the model Property, which is also our map for name -> component
+    modelProperty.value = {
+      [ componentName ]: componentObject,
+
+      // spread operator copies existing model into a new object
+      ...existingModel
+    }
+
+    papyrus.modelComponentAddedEmitter.emit( componentName, componentObject );
+  }
+  else {
+    console.warn( `Model already has component with name ${componentName}` );
+  }
+}
+
+/**
+ * Remove a component with the provided name from the model. Updates the global modelProperty which is our map
+ * of all model components and also emits a separate Emitter.
+ * @param {string} componentName
+ */
+papyrus.removeModelComponent = componentName => {
+  const existingModel = modelProperty.value;
+  const componentObject = existingModel[ componentName ];
+
+  if ( componentObject === undefined ) {
+    console.warn( `Model does not have component with name ${componentName}` );
+  }
+  else {
+
+    // delete the object from the global model and then reassign to trigger a Property change
+    const objectCopy = { ...existingModel };
+    delete objectCopy[ componentName ];
+    modelProperty.value = objectCopy;
+
+    // emit events, passing the componentObject through so that client can dispose of various objects
+    papyrus.modelComponentRemovedEmitter.emit( componentName, componentObject )
+  }
+};
 
 // Update the sim design board based on changes to the paper programs.
 const updateBoard = presentPaperProgramInfo => {
