@@ -44,6 +44,13 @@ const SceneryDisplay = ( props ) => {
     phet.scenery.voicingManager.enabledProperty.value = true; // TODO: Why can't this use a setter?
     phet.scenery.voicingManager.respectResponseCollectorProperties = false;
 
+    // Set the first voice according to PhET's preferred english voices
+    phet.scenery.voicingManager.voicesProperty.link( voices => {
+      if ( voices.length > 0 ) {
+        phet.scenery.voicingManager.voiceProperty.value = phet.scenery.voicingManager.getEnglishPrioritizedVoices()[ 0 ];
+      }
+    } );
+
     // All responses are enabled by default
     phet.utteranceQueue.responseCollector.nameResponsesEnabledProperty.value = true;
     phet.utteranceQueue.responseCollector.objectResponsesEnabledProperty.value = true;
