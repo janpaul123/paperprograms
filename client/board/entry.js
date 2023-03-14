@@ -147,7 +147,10 @@ papyrus.removeModelComponent = componentName => {
     modelProperty.value = objectCopy;
 
     // emit events, passing the componentObject through so that client can dispose of various objects
-    papyrus.modelComponentRemovedEmitter.emit( componentName, componentObject )
+    papyrus.modelComponentRemovedEmitter.emit( componentName, componentObject );
+
+    // dispose the component when we are done with it, if supported
+    componentObject.dispose && componentObject.dispose();
   }
 };
 
