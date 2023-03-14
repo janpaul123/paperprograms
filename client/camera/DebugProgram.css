@@ -20,6 +20,10 @@
   color: black;
 }
 
+:local(.programNumber) {
+  margin-left: 30px;
+}
+
 :local(.resizeHandle) {
   position: absolute;
   right: 0px;
