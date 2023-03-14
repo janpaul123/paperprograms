@@ -9,7 +9,7 @@
 
 import React from 'react';
 import ReactDOM from 'react-dom';
-import papyrus from './papyrus.js';
+import paperLand from './paperLand.js';
 import SceneryDisplay from './SceneryDisplay.js';
 
 // constants
@@ -99,8 +99,8 @@ if ( !createAndLoadWrappedAudioBuffer ) {
 // Emits events when model components are added or removed, to be used in program code. Emits with
 // {string} - name of the model component
 // {*} - Reference to the component being added or removed
-papyrus.modelComponentAddedEmitter = new window.phet.axon.Emitter();
-papyrus.modelComponentRemovedEmitter = new window.phet.axon.Emitter();
+paperLand.modelComponentAddedEmitter = new window.phet.axon.Emitter();
+paperLand.modelComponentRemovedEmitter = new window.phet.axon.Emitter();
 
 /**
  * Adds a model component to the model Object with the provided name. Emits events so client code can observe
@@ -108,7 +108,7 @@ papyrus.modelComponentRemovedEmitter = new window.phet.axon.Emitter();
  * @param {string} componentName
  * @param {*} componentObject - any model component (Property, or object with multiple Properties and values)
  */
-papyrus.addModelComponent = ( componentName, componentObject ) => {
+paperLand.addModelComponent = ( componentName, componentObject ) => {
   const existingModel = modelProperty.value;
   if ( existingModel[ componentName ] === undefined ) {
 
@@ -120,7 +120,7 @@ papyrus.addModelComponent = ( componentName, componentObject ) => {
       ...existingModel
     }
 
-    papyrus.modelComponentAddedEmitter.emit( componentName, componentObject );
+    paperLand.modelComponentAddedEmitter.emit( componentName, componentObject );
   }
   else {
     console.warn( `Model already has component with name ${componentName}` );
@@ -132,7 +132,7 @@ papyrus.addModelComponent = ( componentName, componentObject ) => {
  * of all model components and also emits a separate Emitter.
  * @param {string} componentName
  */
-papyrus.removeModelComponent = componentName => {
+paperLand.removeModelComponent = componentName => {
   const existingModel = modelProperty.value;
   const componentObject = existingModel[ componentName ];
 
@@ -147,7 +147,7 @@ papyrus.removeModelComponent = componentName => {
     modelProperty.value = objectCopy;
 
     // emit events, passing the componentObject through so that client can dispose of various objects
-    papyrus.modelComponentRemovedEmitter.emit( componentName, componentObject );
+    paperLand.modelComponentRemovedEmitter.emit( componentName, componentObject );
 
     // dispose the component when we are done with it, if supported
     componentObject.dispose && componentObject.dispose();
