@@ -32,31 +32,31 @@ const allSounds = [
 const INDEX_TO_FILE_MAP = new Map();
 
 // In seconds, how long all tracks should play after there has been some change in shape.
-const ALL_TRACKS_PLAY_TIME = 4;
+// const ALL_TRACKS_PLAY_TIME = 4;
 
 // In seconds, how long tracks fade in or fade out when sound transitions between playing and stopped.
-const FADE_TIME = 1;
+// const FADE_TIME = 1;
 
 // The maximum output level for all tracks of this sound design. Applied to this SoundGenerator, so that all tracks
 // connected to this one will be limited by this output level.
-const MAX_OUTPUT_LEVEL = 0.5;
+// const MAX_OUTPUT_LEVEL = 0.5;
 
 // Range of output levels for individual sound clips under this sound view.
-const OUTPUT_LEVEL_RANGE = new phet.dot.Range( 0, 1 );
+// const OUTPUT_LEVEL_RANGE = new phet.dot.Range( 0, 1 );
 
 // linear maps that determine output level from remaining fade time
-const REMAINING_FADE_IN_TIME_TO_GAIN = new phet.dot.LinearFunction( FADE_TIME, 0, 0, MAX_OUTPUT_LEVEL );
-const REMAINING_FADE_OUT_TIME_TO_GAIN = new phet.dot.LinearFunction( FADE_TIME, 0, MAX_OUTPUT_LEVEL, 0 );
+// const REMAINING_FADE_IN_TIME_TO_GAIN = new phet.dot.LinearFunction( FADE_TIME, 0, 0, MAX_OUTPUT_LEVEL );
+// const REMAINING_FADE_OUT_TIME_TO_GAIN = new phet.dot.LinearFunction( FADE_TIME, 0, MAX_OUTPUT_LEVEL, 0 );
 
 // For the state of the sound view, indicating how sound is currently behaving.
-class PlayingState extends phet.phetCore.EnumerationValue {
-  static PLAYING = new PlayingState();
-  static STOPPED = new PlayingState();
-  static FADING_IN = new PlayingState();
-  static FADING_OUT = new PlayingState();
-
-  static enumeration = new phet.phetCore.Enumeration( PlayingState );
-}
+// class PlayingState extends phet.phetCore.EnumerationValue {
+//   static PLAYING = new PlayingState();
+//   static STOPPED = new PlayingState();
+//   static FADING_IN = new PlayingState();
+//   static FADING_OUT = new PlayingState();
+//
+//   static enumeration = new phet.phetCore.Enumeration( PlayingState );
+// }
 
 let AUDIO_CLIPS = null;
 
