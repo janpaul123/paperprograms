@@ -74,7 +74,7 @@ const pointsEqual = ( points1, points2 ) => {
  * Create an instance of WrappedAudioBuffer and return it, and start the process of decoding the audio file from the
  * provided path and load it into the buffer when complete.  Instances of WrappedAudioBuffer are often needed for
  * creating sounds using the tambo library.
- * TODO: Move this into a namespace like window.papyrus or window.phet.papyrus if retained.
+ * TODO: Move this into a namespace like window.paperLand or window.phet.paperLand if retained.
  * @param {string} pathToAudioFile
  */
 const createAndLoadWrappedAudioBuffer = pathToAudioFile => {
