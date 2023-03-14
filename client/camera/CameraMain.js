@@ -285,7 +285,7 @@ export default class CameraMain extends React.Component {
     );
   }
 
-  _createDebugProgram( number ) {
+  _createDebugProgram( number, programName ) {
     const paperSize = paperSizes[ this.props.config.paperSize ];
     const widthToHeightRatio = paperSize[ 0 ] / paperSize[ 1 ];
     const height = 0.2;
@@ -294,6 +294,7 @@ export default class CameraMain extends React.Component {
     const debugPrograms = this.state.debugPrograms;
     const newProgram = {
       number,
+      programName,
       points: [
         { x: 0.0, y: 0.0 },
         { x: width, y: 0.0 },
@@ -577,7 +578,7 @@ export default class CameraMain extends React.Component {
                             className={styles.programListIcon}
                             onClick={event => {
                               event.stopPropagation();
-                              this._createDebugProgram( program.number );
+                              this._createDebugProgram( program.number, codeToName( program.currentCode ) );
                             }}
                           >
                             <img src={"media/images/eye.svg"}/>
