@@ -1,4 +1,5 @@
 !.eslintrc.js
 !.importjs.js
+dist/
 node_modules/
 www/

@@ -114,7 +114,7 @@ export default class CameraMain extends React.Component {
       this._pollSpaceUrl.bind( this ),
       Math.max( 0, SPACE_DATA_POLLING_PERIOD * 1000 - elapsedTimeMs )
     );
-  };
+  }
 
   /**
    * Add a new space to the DB.  Since the DB doesn't REALLY have separate spaces, this is done be adding an initial
@@ -144,7 +144,7 @@ export default class CameraMain extends React.Component {
 
     const addSpaceUrl = new URL( 'api/add-space', window.location.origin ).toString();
     const addRequestedSpaceUrl = `${addSpaceUrl}/${spaceName}`;
-    xhr.get( addRequestedSpaceUrl, { json: true }, ( error, response ) => {
+    xhr.get( addRequestedSpaceUrl, { json: true }, error => {
       if ( error ) {
         console.error( `error adding space: ${error}` ); // eslint-disable-line no-console
       }
@@ -203,7 +203,7 @@ export default class CameraMain extends React.Component {
 
   _updatePageWidth() {
     this.setState( { pageWidth: document.body.clientWidth } );
-  };
+  }
 
   _print( program ) {
     printPage(
@@ -213,11 +213,11 @@ export default class CameraMain extends React.Component {
       this.props.config.paperSize
     );
     this._markPrinted( program, true );
-  };
+  }
 
   _printCalibration() {
     printCalibrationPage( this.props.config.paperSize );
-  };
+  }
 
   _markPrinted( program, printed ) {
     xhr.post(
@@ -232,7 +232,7 @@ export default class CameraMain extends React.Component {
         }
       }
     );
-  };
+  }
 
   _createHelloWorld() {
     xhr.post(
@@ -247,7 +247,7 @@ export default class CameraMain extends React.Component {
         }
       }
     );
-  };
+  }
 
   /**
    * Create a copy of the provided program code and add it to the current space.  The program will be created with the
@@ -304,7 +304,7 @@ export default class CameraMain extends React.Component {
     };
     debugPrograms.push( newProgram );
     this.setState( { debugPrograms } );
-  };
+  }
 
   _programsChange( programsToRender ) {
     this.props.onProgramsChange(
@@ -328,7 +328,7 @@ export default class CameraMain extends React.Component {
         } )
         .filter( Boolean )
     );
-  };
+  }
 
   _handleNewSpaceNameChange( event ) {
     this.setState( { newSpaceName: event.target.value } );

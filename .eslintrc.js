@@ -1,9 +1,8 @@
 module.exports = {
   parser: 'babel-eslint',
-  extends: ['eslint:recommended', 'prettier'],
-  plugins: ['prettier', 'react'],
+  extends: ['eslint:recommended'],
+  plugins: ['react'],
   rules: {
-    'prettier/prettier': ['error', { singleQuote: true, trailingComma: 'es5', printWidth: 100 }],
 
     // Per https://stackoverflow.com/a/46809082
     'react/jsx-uses-react': 'error',
@@ -14,5 +13,10 @@ module.exports = {
   env: {
     browser: true,
     node: true,
+    es6: true
   },
+  globals: {
+    _: true,
+    phet: true
+  }
 };
