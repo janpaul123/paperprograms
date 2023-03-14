@@ -1,7 +1,0 @@
-If you get an error about the server: pg_ctl -D "C:\Program Files\PostgreSQL\9.6\data" stop
-
-Had to go into windows services by running "Services"
-    Search for postgresql-x64-15 and make sure the services is running
-
-I ended up reinstalling postgres after getting an error like
-"Is the server running?"
