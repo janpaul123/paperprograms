@@ -1,9 +1,66 @@
-const helloWorld = `// Hello world
+const helloWorld = `// Hello World Template
+// Keywords: start, begin, new, hello world
+// =============================== //
+// Program Dependencies: N/A
+// Recommended Programs: General Template (templates)
+// Program Description: Example program with functioning Board and Projector code!
+// !!!UPDATE ME WITH A BETTER BOARD EXAMPLE!!!
 
 importScripts('paper.js');
 
 (async () => {
-  // Get a canvas object for this paper.
+
+  //----------------------------------------------------------------------
+  // Board code
+  //----------------------------------------------------------------------
+
+  // Get the paper number of this piece of paper (which should not change).
+  const myPaperNumber = await paper.get('number');
+
+  // Called when the program is detected or changed.
+  const onProgramAdded = ( paperProgramNumber, scratchpad, sharedData ) => {
+    const wrappedAudioBuffer = createAndLoadWrappedAudioBuffer( 'media/sounds/loonCall.mp3' );
+
+    const soundClip = new phet.tambo.SoundClip( wrappedAudioBuffer );
+    phet.tambo.soundManager.addSoundGenerator( soundClip );
+    setTimeout( () => {
+      soundClip.play();
+      console.log( 'Just played sound clip, did you hear it?' );
+    }, 1000 );
+    
+    // Assign the sound to the scratchpad so that we can remove it later
+    scratchpad.soundClip = soundClip;
+  };
+
+  // Called when the paper positions change.
+  // const onProgramChangedPosition = ( paperProgramNumber, positionPoints, scratchPad, sharedData ) => {
+    
+    // Behavior that changes with paper position here.
+    // Global model for all programs
+    // const model = sharedData.modelProperty.value;
+  // };
+
+  // Called when the program is changed or no longer detected.
+  const onProgramRemoved = ( paperProgramNumber, scratchpad, sharedData ) => {
+    phet.tambo.soundManager.removeSoundGenerator( scratchpad.soundClip );
+    scratchpad.soundClip = null;
+  };
+
+  // Add the state change handler defined above as data for this paper.
+  await paper.set('data', {
+    paperPlaygroundData: {
+      updateTime: Date.now(),
+      eventHandlers: {
+        onProgramAdded: onProgramAdded.toString(),
+        onProgramRemoved: onProgramRemoved.toString()
+      }
+    }
+  } );
+
+  //----------------------------------------------------------------------
+  // Projector code
+  //----------------------------------------------------------------------
+
   const canvas = await paper.get('canvas');
 
   // Draw "Hello world" on the canvas.
@@ -19,9 +76,6 @@ importScripts('paper.js');
   // projection surface.
   const supporterCanvas = await paper.get('supporterCanvas');
   const supporterCtx = supporterCanvas.getContext('2d');
-
-  // Get the paper number of this piece of paper (which should not change).
-  const myPaperNumber = await paper.get('number');
 
   // Repeat every 100 milliseconds.
   setInterval(async () => {
