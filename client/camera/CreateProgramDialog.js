@@ -56,7 +56,7 @@ class CreateProgramDialog extends React.Component {
     CameraMain.getProgramSummaryList( [ space ], ( summaryList ) => {
       this.setState( {
         sourceSpace: space,
-        programsForSelectedSpace: summaryList,
+        programsForSelectedSpace: summaryList
       } );
     } );
   }

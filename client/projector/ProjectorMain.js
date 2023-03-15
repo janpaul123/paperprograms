@@ -15,7 +15,7 @@ export default class ProjectorMain extends React.Component {
     navigator.mediaDevices
       .getUserMedia({
         audio: false,
-        video: cameraVideoConstraints,
+        video: cameraVideoConstraints
       })
       .then(stream => {
         this._videoCapture = new ImageCapture(stream.getVideoTracks()[0]);
@@ -26,7 +26,7 @@ export default class ProjectorMain extends React.Component {
 
     const outputCorners = this.props.knobPoints.map(({ x, y }) => ({
       x: x * cameraImage.width,
-      y: y * cameraImage.height,
+      y: y * cameraImage.height
     }));
 
     const inputSize = projectorSize();
@@ -34,7 +34,7 @@ export default class ProjectorMain extends React.Component {
       { x: 0, y: 0 },
       { x: inputSize.width - 1, y: 0 },
       { x: inputSize.width - 1, y: inputSize.height - 1 },
-      { x: 0, y: inputSize.height - 1 },
+      { x: 0, y: inputSize.height - 1 }
     ];
 
     const a = forwardProjectionMatrixForPoints(outputCorners);
@@ -64,9 +64,9 @@ export default class ProjectorMain extends React.Component {
           topRight: mult(program.points[1], multPoint),
           bottomRight: mult(program.points[2], multPoint),
           bottomLeft: mult(program.points[3], multPoint),
-          center: mult(centerPoint, multPoint),
+          center: mult(centerPoint, multPoint)
         },
-        data: this.props.dataByProgramNumber[program.number] || {},
+        data: this.props.dataByProgramNumber[program.number] || {}
       };
 
       programsToRenderByNumber[program.number] = program;
@@ -74,7 +74,7 @@ export default class ProjectorMain extends React.Component {
 
     const markers = this.props.markers.map(data => ({
       ...data,
-      position: mult(data.position, multPoint),
+      position: mult(data.position, multPoint)
     }));
 
     return (
@@ -96,8 +96,8 @@ export default class ProjectorMain extends React.Component {
                   ...this.props.dataByProgramNumber,
                   [program.number]: {
                     ...this.props.dataByProgramNumber[program.number],
-                    ...data,
-                  },
+                    ...data
+                  }
                 },
                 callback
               );

@@ -13,7 +13,7 @@ function matrixToCssTransform( matrix ) {
     matrix.get( 0, 0 ), matrix.get( 1, 0 ), 0, matrix.get( 2, 0 ),
     matrix.get( 0, 1 ), matrix.get( 1, 1 ), 0, matrix.get( 2, 1 ),
     0, 0, 1, 0,
-    matrix.get( 0, 2 ), matrix.get( 1, 2 ), 0, matrix.get( 2, 2 ),
+    matrix.get( 0, 2 ), matrix.get( 1, 2 ), 0, matrix.get( 2, 2 )
   ];
   return `matrix3d(${values.join( ',' )})`;
 }
@@ -28,7 +28,7 @@ function getCanvasSizeMatrix( width, height ) {
       { x: 0, y: 0 },
       { x: width, y: 0 },
       { x: width, y: height },
-      { x: 0, y: height },
+      { x: 0, y: height }
     ] ).adjugate();
   return canvasSizeMatrixes[ key ];
 }
@@ -45,7 +45,7 @@ export default class Program extends React.Component {
       showSupporterCanvasById: {},
       iframe: null,
       paperRatio: this.props.paperRatio,
-      debugData: { logs: [] },
+      debugData: { logs: [] }
     };
   }
 
@@ -71,7 +71,7 @@ export default class Program extends React.Component {
       if ( sendData.name === 'number' ) {
         this._worker.postMessage( {
           messageId,
-          receiveData: { object: this._program().number.toString() },
+          receiveData: { object: this._program().number.toString() }
         } );
       }
       else if ( sendData.name === 'canvas' ) {
@@ -84,7 +84,7 @@ export default class Program extends React.Component {
           this[ `_canvasAvailableCallback_${programNumber}` ] = canvas => {
             const offscreen = canvas.transferControlToOffscreen();
             this._worker.postMessage( { messageId, receiveData: { object: offscreen } }, [
-              offscreen,
+              offscreen
             ] );
             delete this[ `_canvasAvailableCallback_${programNumber}` ];
           };
@@ -96,9 +96,9 @@ export default class Program extends React.Component {
                 height:
                   sendData.data.height ||
                   ( sendData.data.width ? sendData.data.width : defaultCanvasWidth ) *
-                  this.state.paperRatio,
-              },
-            },
+                  this.state.paperRatio
+              }
+            }
           } );
         }
       }
@@ -112,15 +112,15 @@ export default class Program extends React.Component {
           this[ `_supporterCanvasAvailableCallback_${supporterCanvasId}` ] = canvas => {
             const offscreen = canvas.transferControlToOffscreen();
             this._worker.postMessage( { messageId, receiveData: { object: offscreen } }, [
-              offscreen,
+              offscreen
             ] );
             delete this[ `_supporterCanvasAvailableCallback_${supporterCanvasId}` ];
           };
           this.setState( {
             showSupporterCanvasById: {
               ...this.state.showSupporterCanvasById,
-              [ supporterCanvasId ]: true,
-            },
+              [ supporterCanvasId ]: true
+            }
           } );
         }
       }
@@ -135,7 +135,7 @@ export default class Program extends React.Component {
           this._worker.postMessage(
             {
               messageId,
-              receiveData: { object },
+              receiveData: { object }
             },
             [ object.cameraImage ]
           );
@@ -164,7 +164,7 @@ export default class Program extends React.Component {
       lineNumber: error.lineno,
       columnNumber: error.colno,
       filename: error.filename,
-      timestamp: Date.now(),
+      timestamp: Date.now()
     };
     if ( logData.filename.match( /\/program\..*/ ) ) {
       logData.filename = 'program';
@@ -215,9 +215,9 @@ export default class Program extends React.Component {
             zIndex: 3,
             boxShadow: program.editorInfo.claimed
                        ? `0 0 0 1px ${randomColor( {
-                seed: program.editorInfo.editorId,
+                seed: program.editorInfo.editorId
               } )} inset`
-                       : '',
+                       : ''
           }}
         />
         {Object.keys( this.state.canvasSizeByProgramNumber ).map( programNumberString => {
@@ -246,7 +246,7 @@ export default class Program extends React.Component {
                   height
                 ),
                 transformOrigin: '0 0 0',
-                zIndex: programNumber === program.number ? 1 : 2,
+                zIndex: programNumber === program.number ? 1 : 2
               }}
             />
           );
@@ -268,7 +268,7 @@ export default class Program extends React.Component {
               top: 0,
               width: this.props.width,
               height: this.props.height,
-              zIndex: 2,
+              zIndex: 2
             }}
           />
         ) )}
@@ -286,7 +286,7 @@ export default class Program extends React.Component {
       height: iframeHeight,
       transform: this._getCssTransform( this._program(), iframeWidth, iframeHeight ),
       transformOrigin: '0 0 0',
-      zIndex: 1,
+      zIndex: 1
     };
 
     return <iframe key="iframe" src={this.state.iframe.src} style={{ ...iframeStyle }}/>;

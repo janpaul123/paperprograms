@@ -20,7 +20,7 @@ export default class CameraVideo extends React.Component {
       navigator.mediaDevices
         .getUserMedia({
           audio: false,
-          video: cameraVideoConstraints,
+          video: cameraVideoConstraints
         })
         .then(stream => {
           const video = this._videoInput;
@@ -88,7 +88,7 @@ export default class CameraVideo extends React.Component {
         displayMat,
         scaleFactor: this.props.config.scaleFactor,
         allBlobsAreKeyPoints: this.props.allowSelectingDetectedPoints,
-        debugPrograms: this.props.debugPrograms,
+        debugPrograms: this.props.debugPrograms
       });
       this._dataToRemember = dataToRemember;
       this.setState({ keyPoints });
@@ -113,7 +113,7 @@ export default class CameraVideo extends React.Component {
           style={{
             position: 'relative',
             width,
-            height,
+            height
           }}
           ref={el => (this._zoomSurface = el)}
         >
@@ -124,7 +124,7 @@ export default class CameraVideo extends React.Component {
               transform: `translate(${x}px, ${y}px) scale(${k})`,
               transformOrigin: '0 0',
               width,
-              height,
+              height
             }}
             ref={el => (this._canvas = el)}
           />
@@ -134,7 +134,7 @@ export default class CameraVideo extends React.Component {
               transform: `translate(${x}px, ${y}px) scale(${k})`,
               transformOrigin: '0 0',
               width,
-              height,
+              height
             }}
           >
             {this.props.debugPrograms.map(program => {
@@ -163,7 +163,7 @@ export default class CameraVideo extends React.Component {
                   const knobPoints = this.props.config.knobPoints.slice();
                   knobPoints[position] = {
                     x: (newPoint.x - x) / k / width,
-                    y: (newPoint.y - y) / k / height,
+                    y: (newPoint.y - y) / k / height
                   };
                   this.props.onConfigChange({ ...this.props.config, knobPoints });
                 }}
@@ -182,7 +182,7 @@ export default class CameraVideo extends React.Component {
                     transform: `translate(${px}px, ${py}px) scale(${k})`,
                     transformOrigin: '0 0',
                     width: point.size / this.state.videoWidth * width,
-                    height: point.size / this.state.videoHeight * height,
+                    height: point.size / this.state.videoHeight * height
                   }}
                   onClick={() => {
                     this.props.onSelectPoint({ color: point.avgColor, size: point.size });

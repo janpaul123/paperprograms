@@ -70,7 +70,7 @@ export default class EditorMain extends React.Component {
           this.setState( {
             selectedProgramNumber: '',
             code: '',
-            debugInfo: {},
+            debugInfo: {}
           } );
         }
         else {
@@ -89,7 +89,7 @@ export default class EditorMain extends React.Component {
     xhr.put(
       getApiUrl( this.props.spaceName, `/programs/${selectedProgramNumber}` ),
       {
-        json: { code },
+        json: { code }
       },
       error => {
         if ( error ) {
@@ -114,7 +114,7 @@ export default class EditorMain extends React.Component {
             code,
             selectedProgramNumber: body.number,
             spaceData: body.spaceData,
-            debugInfo: {},
+            debugInfo: {}
           } );
         }
       }
@@ -126,7 +126,7 @@ export default class EditorMain extends React.Component {
       this.setState(
         {
           code: this._selectedProgram( this.state.selectedProgramNumber ).originalCode,
-          debugInfo: {},
+          debugInfo: {}
         },
         () => {
           this._save();
@@ -202,7 +202,7 @@ export default class EditorMain extends React.Component {
                     {
                       selectedProgramNumber: event.target.value,
                       code: this._selectedProgram( event.target.value ).currentCode,
-                      debugInfo: {},
+                      debugInfo: {}
                     },
                     () => this._pollDebugUrl()
                   );

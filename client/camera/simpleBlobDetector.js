@@ -35,7 +35,7 @@ const defaultParams = {
   maxConvexity: 1000000,
 
   faster: false,
-  scaleFactor: 4,
+  scaleFactor: 4
 };
 
 function findBlobs(binaryImage, params) {
@@ -63,13 +63,13 @@ function findBlobs(binaryImage, params) {
       center = {
         confidence: 1,
         location: { x: x + width / 2, y: y + height / 2 },
-        radius: (width + height) / 4,
+        radius: (width + height) / 4
       };
     } else {
       moms = cv.moments(contour);
       center = {
         confidence: 1,
-        location: { x: moms.m10 / moms.m00, y: moms.m01 / moms.m00 },
+        location: { x: moms.m10 / moms.m00, y: moms.m01 / moms.m00 }
       };
     }
 

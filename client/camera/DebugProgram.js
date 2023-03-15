@@ -17,7 +17,7 @@ export default class CameraMain extends React.Component {
       program: props.program,
       grabbed: false,
       grabbedOffset: { x: 0, y: 0 },
-      resizing: false,
+      resizing: false
     };
   }
 
@@ -106,7 +106,7 @@ export default class CameraMain extends React.Component {
           left: `${tl.x * 100}%`,
           top: `${tl.y * 100}%`,
           width: `${width * 100}%`,
-          height: `${height * 100}%`,
+          height: `${height * 100}%`
         }}
       >
         <h3 className={styles.programNumber}>#{this.state.program.number}</h3>

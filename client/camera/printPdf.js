@@ -48,7 +48,7 @@ function drawPagePatterns( { canvas, patterns, width, height, circleRadius, circ
     y: m,
     angle: 90,
     circleRadius,
-    circleDistance,
+    circleDistance
   } );
   drawLPattern( {
     canvas,
@@ -57,7 +57,7 @@ function drawPagePatterns( { canvas, patterns, width, height, circleRadius, circ
     y: height - m,
     angle: 180,
     circleRadius,
-    circleDistance,
+    circleDistance
   } );
   drawLPattern( {
     canvas,
@@ -66,7 +66,7 @@ function drawPagePatterns( { canvas, patterns, width, height, circleRadius, circ
     y: height - m,
     angle: 270,
     circleRadius,
-    circleDistance,
+    circleDistance
   } );
 }
 
@@ -156,7 +156,7 @@ export function printPage( number, name, paperSize ) {
     patterns: generatePatterns( { number, allColors } ),
     title: name,
     metadata: `${number} @ ${new Date().toISOString().split( 'T' )[ 0 ]}`,
-    paperSize,
+    paperSize
   } );
 
   saveCanvas( canvas, `${name}-${number}.png` );

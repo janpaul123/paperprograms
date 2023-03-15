@@ -1,5 +1,5 @@
 module.exports = {
   aliases: {
-    styles: './{filename}.css',
-  },
+    styles: './{filename}.css'
+  }
 };

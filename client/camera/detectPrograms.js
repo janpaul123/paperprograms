@@ -14,7 +14,7 @@ import {
   mult,
   norm,
   projectPoint,
-  shrinkPoints,
+  shrinkPoints
 } from '../utils';
 import { code8400 } from '../dotCodes';
 import { colorNames, cornerNames } from '../constants';
@@ -28,7 +28,7 @@ function keyPointToAvgColor(keyPoint, videoMat) {
     x,
     y,
     width: keyPoint.size,
-    height: keyPoint.size,
+    height: keyPoint.size
   });
 
   const circleMask = cv.Mat.zeros(keyPoint.size, keyPoint.size, cv.CV_8UC1);
@@ -53,14 +53,14 @@ function keyPointToAvgColor(keyPoint, videoMat) {
     videoMat.ptr(
       clamp(y + keyPoint.size + 1, 0, videoMat.rows),
       clamp(x + keyPoint.size + 1, 0, videoMat.cols)
-    ),
+    )
   ];
 
   const whiteMax = [
     Math.max(corners[0][0], corners[1][0], corners[2][0], corners[3][0]),
     Math.max(corners[0][1], corners[1][1], corners[2][1], corners[3][1]),
     Math.max(corners[0][2], corners[1][2], corners[2][2], corners[3][2]),
-    255,
+    255
   ];
 
   // Normalize to the white colour.
@@ -68,7 +68,7 @@ function keyPointToAvgColor(keyPoint, videoMat) {
     clamp(circleMean[0] / whiteMax[0] * 255, 0, 255),
     clamp(circleMean[1] / whiteMax[1] * 255, 0, 255),
     clamp(circleMean[2] / whiteMax[2] * 255, 0, 255),
-    255,
+    255
   ];
 }
 
@@ -92,7 +92,7 @@ function shapeToCornerNum(colorIndexes) {
 function knobPointsToROI(knobPoints, videoMat) {
   const clampedKnobPoints = knobPoints.map(point => ({
     x: clamp(point.x, 0, 1),
-    y: clamp(point.y, 0, 1),
+    y: clamp(point.y, 0, 1)
   }));
   const minX = Math.min(...clampedKnobPoints.map(point => point.x * videoMat.cols));
   const minY = Math.min(...clampedKnobPoints.map(point => point.y * videoMat.rows));
@@ -159,7 +159,7 @@ export default function detectPrograms({
   displayMat,
   scaleFactor,
   allBlobsAreKeyPoints,
-  debugPrograms = [],
+  debugPrograms = []
 }) {
   const startTime = Date.now();
   const paperDotSizes = config.paperDotSizes;
@@ -193,7 +193,7 @@ export default function detectPrograms({
     minArea: 25,
     filterByInertia: false,
     faster: true,
-    scaleFactor,
+    scaleFactor
   });
 
   clippedVideoMat.delete();
@@ -341,7 +341,7 @@ export default function detectPrograms({
             magnitude: norm(diffVec),
             // Once we see two corners for real, mark them as not mirrored, so
             // we won't override this when mirroring angles/magnitudes.
-            mirrored: false,
+            mirrored: false
           };
         }
       }
@@ -358,7 +358,7 @@ export default function detectPrograms({
         ) {
           vectorsBetweenCorners[id][otherSide] = {
             ...vectorsBetweenCorners[id][thisSide],
-            mirrored: true,
+            mirrored: true
           };
         }
       }
@@ -374,7 +374,7 @@ export default function detectPrograms({
           potentialPoints[j] = potentialPoints[j] || [];
           potentialPoints[j].push({
             x: points[i].x + magnitude * Math.cos(newAngle),
-            y: points[i].y + magnitude * Math.sin(newAngle),
+            y: points[i].y + magnitude * Math.sin(newAngle)
           });
         }
       }
@@ -399,7 +399,7 @@ export default function detectPrograms({
       const programToRender = {
         points: scaledPoints,
         number: id,
-        projectionMatrix: forwardProjectionMatrixForPoints(scaledPoints).adjugate(),
+        projectionMatrix: forwardProjectionMatrixForPoints(scaledPoints).adjugate()
       };
       programsToRender.push(programToRender);
 
@@ -430,7 +430,7 @@ export default function detectPrograms({
     const debugProgram = {
       points: scaledPoints,
       number,
-      projectionMatrix: forwardProjectionMatrixForPoints(scaledPoints).adjugate(),
+      projectionMatrix: forwardProjectionMatrixForPoints(scaledPoints).adjugate()
     };
     programsToRender.push(debugProgram);
   });
@@ -443,7 +443,7 @@ export default function detectPrograms({
       0: 'red',
       1: 'green',
       2: 'blue',
-      3: 'black',
+      3: 'black'
     }[colorIndex];
 
     // find out on which paper the marker is
@@ -477,7 +477,7 @@ export default function detectPrograms({
       size,
       position: markerPosition,
       color: avgColor,
-      colorName,
+      colorName
     };
   });
 
@@ -488,6 +488,6 @@ export default function detectPrograms({
     programsToRender,
     markers,
     dataToRemember: { vectorsBetweenCorners },
-    framerate: Math.round(1000 / (Date.now() - startTime)),
+    framerate: Math.round(1000 / (Date.now() - startTime))
   };
 }

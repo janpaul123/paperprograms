@@ -8,7 +8,7 @@ export default class Whisker extends EventEmitter {
     direction = 'up',
     whiskerLength = 0.7,
     requiredData = [],
-    color = 'rgb(255, 0, 0)',
+    color = 'rgb(255, 0, 0)'
   }) {
     super();
     this.direction = direction;
@@ -23,7 +23,7 @@ export default class Whisker extends EventEmitter {
 
     Promise.all([
       paper.get('supporterCanvas', { id: uniqueId('whiskerCanvas') }),
-      paperNumber,
+      paperNumber
     ]).then(([canvas, number]) => {
       if (this._destroyed) {
         return;
@@ -52,11 +52,11 @@ export default class Whisker extends EventEmitter {
 
     const whiskerStart = {
       x: (segment[0].x + segment[1].x) / 2,
-      y: (segment[0].y + segment[1].y) / 2,
+      y: (segment[0].y + segment[1].y) / 2
     };
     const whiskerEnd = {
       x: whiskerStart.x + (segment[1].y - segment[0].y) * this.whiskerLength,
-      y: whiskerStart.y - (segment[1].x - segment[0].x) * this.whiskerLength,
+      y: whiskerStart.y - (segment[1].x - segment[0].x) * this.whiskerLength
     };
 
     if (

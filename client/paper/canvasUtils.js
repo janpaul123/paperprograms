@@ -23,7 +23,7 @@ export function fillQuadTex(ctx, src, dst, opts) {
     */
     p(r - pad, c - pad * 2), // extra diagonal padding
     p(r - pad, c + 1 + pad),
-    p(r + 1 + pad * 2, c + 1 + pad), // extra diagonal padding
+    p(r + 1 + pad * 2, c + 1 + pad) // extra diagonal padding
   ];
   const botTri = (r, c, p) => [
     /*
@@ -35,7 +35,7 @@ export function fillQuadTex(ctx, src, dst, opts) {
     */
     p(r + 1 + pad, c + 1 + pad),
     p(r + 1 + pad, c - pad),
-    p(r - pad, c - pad),
+    p(r - pad, c - pad)
   ];
 
   // clip to erase the external padding

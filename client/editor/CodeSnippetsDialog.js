@@ -216,7 +216,7 @@ class CodeSnippetsDialog extends React.Component {
     xhr.put(
       snippetUrl,
       {
-        json: { snippetCode: snippetCode },
+        json: { snippetCode: snippetCode }
       },
       error => {
         if ( error ) {

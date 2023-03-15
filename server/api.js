@@ -107,12 +107,12 @@ function getSpaceData( req, callback ) {
             claimUrl: `/api/spaces/${spaceName}/programs/${program.number}/claim`,
             editorInfo: {
               ...editorInfo,
-              claimed: !!( editorInfo.time && editorInfo.time + editorHandleDuration > Date.now() ),
+              claimed: !!( editorInfo.time && editorInfo.time + editorHandleDuration > Date.now() )
             },
-            codeHasChanged: program.currentCode !== program.originalCode,
+            codeHasChanged: program.currentCode !== program.originalCode
           };
         } ),
-        spaceName,
+        spaceName
       } );
     } );
 }
@@ -281,7 +281,7 @@ router.post( '/api/spaces/:spaceName/programs/:number/claim', ( req, res ) => {
           .then( () => {
             res.json( {
               debugInfo: JSON.parse( selectResult[ 0 ].debugInfo || '{}' ),
-              editorInfo,
+              editorInfo
             } );
           } );
       }

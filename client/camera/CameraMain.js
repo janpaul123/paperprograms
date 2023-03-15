@@ -298,8 +298,8 @@ export default class CameraMain extends React.Component {
         { x: 0.0, y: 0.0 },
         { x: width, y: 0.0 },
         { x: width, y: height },
-        { x: 0.0, y: height },
-      ],
+        { x: 0.0, y: height }
+      ]
     };
     debugPrograms.push( newProgram );
     this.setState( { debugPrograms } );
@@ -322,7 +322,7 @@ export default class CameraMain extends React.Component {
             debugUrl: programWithData.debugUrl,
             claimUrl: programWithData.claimUrl,
             editorInfo: programWithData.editorInfo,
-            codeHasChanged: programWithData.codeHasChanged,
+            codeHasChanged: programWithData.codeHasChanged
           };
         } )
         .filter( Boolean )
@@ -555,7 +555,7 @@ export default class CameraMain extends React.Component {
                           styles.programListItem,
                           program.printed
                           ? styles.programListItemPrinted
-                          : styles.programListItemNotPrinted,
+                          : styles.programListItemNotPrinted
                         ].join( ' ' )}
                       >
                         <span className={styles.programListItemContent}>
@@ -637,13 +637,13 @@ export default class CameraMain extends React.Component {
                     key={colorIndex}
                     className={[
                       styles.colorListItem,
-                      this.state.selectedColorIndex === colorIndex && styles.colorListItemSelected,
+                      this.state.selectedColorIndex === colorIndex && styles.colorListItemSelected
                     ].join( ' ' )}
                     style={{ background: `rgb(${color.slice( 0, 3 ).join( ',' )})` }}
                     onClick={() =>
                       this.setState( state => ( {
                         selectedColorIndex:
-                          state.selectedColorIndex === colorIndex ? -1 : colorIndex,
+                          state.selectedColorIndex === colorIndex ? -1 : colorIndex
                       } ) )
                     }
                   >
@@ -663,7 +663,7 @@ export default class CameraMain extends React.Component {
                   onChange={() =>
                     this.props.onConfigChange( {
                       ...this.props.config,
-                      freezeDetection: !this.props.config.freezeDetection,
+                      freezeDetection: !this.props.config.freezeDetection
                     } )
                   }
                 />
@@ -682,7 +682,7 @@ export default class CameraMain extends React.Component {
                   onChange={event => {
                     this.props.onConfigChange( {
                       ...this.props.config,
-                      scaleFactor: event.target.valueAsNumber,
+                      scaleFactor: event.target.valueAsNumber
                     } );
                   }}
                 />
@@ -700,7 +700,7 @@ export default class CameraMain extends React.Component {
                   onChange={() =>
                     this.props.onConfigChange( {
                       ...this.props.config,
-                      showOverlayKeyPointCircles: !this.props.config.showOverlayKeyPointCircles,
+                      showOverlayKeyPointCircles: !this.props.config.showOverlayKeyPointCircles
                     } )
                   }
                 />{' '}
@@ -714,7 +714,7 @@ export default class CameraMain extends React.Component {
                   onChange={() =>
                     this.props.onConfigChange( {
                       ...this.props.config,
-                      showOverlayKeyPointText: !this.props.config.showOverlayKeyPointText,
+                      showOverlayKeyPointText: !this.props.config.showOverlayKeyPointText
                     } )
                   }
                 />{' '}
@@ -728,7 +728,7 @@ export default class CameraMain extends React.Component {
                   onChange={() =>
                     this.props.onConfigChange( {
                       ...this.props.config,
-                      showOverlayComponentLines: !this.props.config.showOverlayComponentLines,
+                      showOverlayComponentLines: !this.props.config.showOverlayComponentLines
                     } )
                   }
                 />{' '}
@@ -742,7 +742,7 @@ export default class CameraMain extends React.Component {
                   onChange={() =>
                     this.props.onConfigChange( {
                       ...this.props.config,
-                      showOverlayShapeId: !this.props.config.showOverlayShapeId,
+                      showOverlayShapeId: !this.props.config.showOverlayShapeId
                     } )
                   }
                 />{' '}
@@ -756,7 +756,7 @@ export default class CameraMain extends React.Component {
                   onChange={() =>
                     this.props.onConfigChange( {
                       ...this.props.config,
-                      showOverlayProgram: !this.props.config.showOverlayProgram,
+                      showOverlayProgram: !this.props.config.showOverlayProgram
                     } )
                   }
                 />{' '}

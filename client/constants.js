@@ -11,8 +11,8 @@ export const cameraVideoConstraints = {
     { minWidth: 1024 },
     { minWidth: 1280 },
     { minWidth: 1920 },
-    { minWidth: 2560 },
-  ],
+    { minWidth: 2560 }
+  ]
 };
 
 export const paperSizes = {
@@ -63,7 +63,7 @@ export const paperSizes = {
   FOLIO: [612.0, 936.0],
   TABLOID: [792.0, 1224.0],
   LEGAL: [612.0, 1008.0],
-  LETTER: [612.0, 792.0],
+  LETTER: [612.0, 792.0]
 };
 
 export const commonPaperSizeNames = ['A4', 'A5', 'LEGAL', 'LETTER'];
@@ -111,5 +111,5 @@ export const otherPaperSizeNames = [
   'SRA4',
   'EXECUTIVE',
   'FOLIO',
-  'TABLOID',
+  'TABLOID'
 ];

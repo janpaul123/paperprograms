@@ -11,12 +11,12 @@ const element = document.createElement('div');
 document.body.appendChild(element);
 
 const defaultConfig = {
-  editorId: uuidv4(),
+  editorId: uuidv4()
 };
 
 localStorage.paperProgramsEditorConfig = JSON.stringify({
   ...defaultConfig,
-  ...JSON.parse(localStorage.paperProgramsEditorConfig || '{}'),
+  ...JSON.parse(localStorage.paperProgramsEditorConfig || '{}')
 });
 
 ReactDOM.render(

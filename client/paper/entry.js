@@ -60,7 +60,7 @@ import Whisker from './whisker';
           resolve();
         };
       });
-    },
+    }
   };
 
   const supporterCanvasesById = {};
@@ -125,7 +125,7 @@ import Whisker from './whisker';
       lineNumber: 0,
       columnNumber: 0,
       filename: 'program',
-      timestamp: Date.now(),
+      timestamp: Date.now()
     };
 
     try {
@@ -185,13 +185,13 @@ import Whisker from './whisker';
     paperNumber,
     requiredData,
     callback,
-    whiskerPointCallback,
+    whiskerPointCallback
   } = {}) => {
     const whisker = new Whisker({
       direction,
       whiskerLength,
       paperNumber,
-      requiredData,
+      requiredData
     });
 
     if (callback) {
