@@ -232,7 +232,8 @@ const updateBoard = presentPaperProgramInfo => {
 
   // Run removal handlers for any paper programs that have disappeared.
   const presentPaperProgramNumbers = presentPaperProgramInfo.map( info => Number( info.number ) );
-  for ( let [ paperProgramNumber, eventHandlers ] of mapOfProgramNumbersToEventHandlers ) {
+
+  mapOfProgramNumbersToEventHandlers.forEach( ( eventHandlers, paperProgramNumber ) => {
     if ( !presentPaperProgramNumbers.includes( paperProgramNumber ) ) {
 
       // This paper program has disappeared.  Run its removal method and clear its data.
@@ -246,7 +247,7 @@ const updateBoard = presentPaperProgramInfo => {
       mapOfProgramNumbersToEventHandlers.delete( paperProgramNumber );
       mapOfProgramNumbersToScratchpadObjects.delete( paperProgramNumber );
     }
-  }
+  } );
 }
 
 // Handle changes to local storage.  This is how paper programs communicate with the sim design board.

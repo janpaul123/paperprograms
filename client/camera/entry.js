@@ -49,11 +49,11 @@ localStorage.paperProgramsConfig = JSON.stringify(
   } )
 );
 
-if ( !localStorage.hasOwnProperty( 'paperProgramsProgramsToRender' ) ) {
+if ( localStorage.paperProgramsProgramsToRender === undefined ) {
   localStorage.paperProgramsProgramsToRender = JSON.stringify( [] );
 }
 
-if ( !localStorage.hasOwnProperty( 'paperProgramsMarkers' ) ) {
+if ( localStorage.paperProgramsMarkers === undefined ) {
   localStorage.paperProgramsMarkers = JSON.stringify( [] );
 }
 

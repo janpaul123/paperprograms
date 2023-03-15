@@ -1,9 +1,5 @@
 import globalAudioContext from './globalAudioContext.js';
 
-// could pull this from source.buffer.duration, but not all elements will have a source.buffer.
-// all are the same and pulling out makes this easier
-const LOOP_DURATION = 16;
-
 class PlayableAudio {
   constructor( arrayBuffer ) {
     this.arrayBuffer = arrayBuffer;
@@ -116,7 +112,7 @@ class PlayableAudio {
     // this.source.loop = true;
 
     // relative to the global audio context so that ALL clips are in the same time frame
-    const currentTime = globalAudioContext.currentTime;
+    // const currentTime = globalAudioContext.currentTime;
 
     // update the AudioNodes based on the provided information
 

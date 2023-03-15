@@ -70,7 +70,7 @@ function drawPagePatterns( { canvas, patterns, width, height, circleRadius, circ
   } );
 }
 
-function drawPage( { patterns, title, code, metadata, paperSize } ) {
+function drawPage( { patterns, title, metadata, paperSize } ) {
 
   const dimensions = paperSizes[ paperSize ];
   const canvas = document.createElement( 'canvas' );
@@ -113,7 +113,6 @@ function drawPage( { patterns, title, code, metadata, paperSize } ) {
   const codeMargin = 10;
   canvasContext.font = `${11}px Courier`;
   const codeMarginTotal = margin + circleRadius * 2 + codeMargin;
-  // canvasContext.fillText( code, codeMargin, codeMarginTotal );
   canvasContext.fillText( 'Code would go here, but we need to figure out linewrap...', codeMarginTotal, codeMarginTotal );
 
   return canvas;

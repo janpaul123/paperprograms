@@ -153,7 +153,6 @@ export default class EditorMain extends React.Component {
 
   render() {
     const selectedProgram = this._selectedProgram( this.state.selectedProgramNumber );
-    const isMac = navigator.platform.toUpperCase().indexOf( 'MAC' ) >= 0;
     const errors = this.state.debugInfo.errors || [];
     const logs = this.state.debugInfo.logs || [];
     const showSnippetsDialog = this.state.showSnippetsDialog;

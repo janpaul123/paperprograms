@@ -225,10 +225,6 @@ export default class Program extends React.Component {
         const parentElement = programNumberToElementMap[ relationData.parentProgramNumber ];
         const childElement = programNumberToElementMap[ relationData.childProgramNumber ];
 
-        if ( !parentElement ) {
-
-        }
-
         console.log( childElement, parentElement, programNumberToElementMap );
         if ( childElement && parentElement && childElement.parent === null ) {
 

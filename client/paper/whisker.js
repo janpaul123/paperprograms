@@ -1,4 +1,4 @@
-/*global paper, Promise*/
+/*global paper*/
 import EventEmitter from 'events';
 import uniqueId from 'lodash/uniqueId';
 

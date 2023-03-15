@@ -47,7 +47,7 @@ export default class CameraMain extends React.Component {
     // Process query parameters
     const urlSearchParams = new URLSearchParams( window.location.search );
     const params = Object.fromEntries( urlSearchParams.entries() );
-    this.showTestButton = params.hasOwnProperty( 'showTestButton' );
+    this.showTestButton = params.showTestButton !== undefined;
   }
 
   componentDidMount() {

@@ -3,7 +3,6 @@
 const HEIGHT = 80;
 const WIDTH = 50;
 
-const CHILD_HORIZONTAL_SPACING = 15;
 const CHILD_VERTICAL_SPACING = 15;
 
 class AudioGraphElementNode extends phet.scenery.Rectangle {
@@ -32,7 +31,7 @@ class AudioGraphElementNode extends phet.scenery.Rectangle {
     } );
 
     // add a listener so that whenever this model gets a new child, create and add a new AudioGraphElementNode
-    audioGraphElement.childAddedEmitter.addListener( addedElement => {
+    audioGraphElement.childAddedEmitter.addListener( () => {
 
       // The new Node is added to the ScreenView by the creator, we do not add a new Node here
       this.layoutAncestors();
@@ -66,9 +65,6 @@ class AudioGraphElementNode extends phet.scenery.Rectangle {
           // this element is now a root level element
           audioMixerModel.addRootLevelElement( audioGraphElement );
         }
-      },
-      drag: ( event, listener ) => {
-
       },
       end: () => {
 

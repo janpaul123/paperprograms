@@ -133,19 +133,6 @@ class CodeSnippetsDialog extends React.Component {
   };
 
   /**
-   * Get the code string from the provided snippet number. Empty string if number is not in our list.
-   */
-  _getCodeFromNumber( snippetNumber ) {
-    for ( const key in this.snippets ) {
-      if ( key.toString() === snippetNumber ) {
-        return this.snippets[ key ];
-      }
-    }
-
-    return '';
-  }
-
-  /**
    * Get the name of the snippet by reading the first line of code.
    */
   _getNameFromSnippet( code, number ) {

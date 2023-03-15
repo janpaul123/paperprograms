@@ -44,7 +44,7 @@ class AudioGraphElement {
     }
 
     this.childAddedEmitter = new phet.axon.Emitter();
-    this.childRemovedEmitter = new axon.Emitter();
+    this.childRemovedEmitter = new phet.axon.Emitter();
 
     this.childAddedEmitter.addListener( addedChild=> {
 

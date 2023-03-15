@@ -58,11 +58,6 @@ class AudioMixerModel {
     }
     return callbackValue
   }
-
-  // in seconds
-  step( dt ) {
-
-  }
 }
 
 export default AudioMixerModel;
