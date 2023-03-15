@@ -191,14 +191,3 @@ export function programMatchesFilterString( programCode, filterString ) {
 
   return numberOfMatchedFilterWords === filterWordsFromUser.length;
 }
-
-export function codeToPrint( code ) {
-  let lines = code.split( '\n' );
-  let i = 0;
-  for ( ; i < lines.length; i++ ) {
-    if ( !lines[ i ].match( commentRegex ) && lines[ i ].trim().length !== 0 ) {
-      break;
-    }
-  }
-  return lines.slice( i ).join( '\n' );
-}

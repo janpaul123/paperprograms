@@ -2,7 +2,7 @@ import React from 'react';
 import Button from 'react-bootstrap/Button';
 import xhr from 'xhr';
 import { colorNames, commonPaperSizeNames, otherPaperSizeNames, paperSizes } from '../constants';
-import { codeToName, codeToPrint, getApiUrl, programMatchesFilterString } from '../utils';
+import { codeToName, getApiUrl, programMatchesFilterString } from '../utils';
 import styles from './CameraMain.css';
 import CameraVideo from './CameraVideo.js';
 import CreateProgramDialog from './CreateProgramDialog.js';
@@ -209,7 +209,6 @@ export default class CameraMain extends React.Component {
     printPage(
       program.number,
       codeToName( program.currentCode ),
-      codeToPrint( program.originalCode ),
       this.props.config.paperSize
     );
     this._markPrinted( program, true );
