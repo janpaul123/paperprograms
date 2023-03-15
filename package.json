@@ -61,9 +61,9 @@
     "xhr": "^2.4.1"
   },
   "devDependencies": {
-    "babel-eslint": "^8.2.2",
-    "eslint": "^8.26.0",
-    "eslint-plugin-react": "^7.7.0",
+    "@babel/eslint-parser": "~7.19.1",
+    "eslint": "^8.28.0",
+    "eslint-plugin-react": "^7.31.11",
     "nodemon": "^1.17.1",
     "webpack-dev-middleware": "^6.0.1",
     "webpack-dev-server": "^4.11.1"
