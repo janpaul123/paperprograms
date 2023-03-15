@@ -9,7 +9,6 @@ import { forwardProjectionMatrixForPoints, mult } from '../utils';
 import styles from './Program.css';
 
 function matrixToCssTransform( matrix ) {
-  // prettier-ignore
   const values = [
     matrix.get( 0, 0 ), matrix.get( 1, 0 ), 0, matrix.get( 2, 0 ),
     matrix.get( 0, 1 ), matrix.get( 1, 1 ), 0, matrix.get( 2, 1 ),
