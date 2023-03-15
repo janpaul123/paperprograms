@@ -5,28 +5,8 @@ import React from 'react';
 import xhr from 'xhr';
 
 import { forwardProjectionMatrixForPoints, mult } from '../utils';
-import AudioGraphElement from './model/AudioGraphElement.js';
 
-import AudioMixerModel from './model/AudioMixerModel.js';
 import styles from './Program.css';
-import AudioGraphSoundView from './view/AudioGraphSoundView.js';
-
-const audioMixerModel = new AudioMixerModel();
-
-const soundView = new AudioGraphSoundView()
-soundView.init();
-
-const initListener = () => {
-  AudioGraphSoundView.INDEX_TO_FILE_MAP.forEach( value => {
-
-    // start playing all audio in response to user input
-    value.play();
-  } );
-
-  console.log( 'sounds ready!' );
-  window.removeEventListener( 'click', initListener );
-};
-window.addEventListener( 'click', initListener );
 
 function matrixToCssTransform( matrix ) {
   // prettier-ignore
@@ -40,8 +20,6 @@ function matrixToCssTransform( matrix ) {
 }
 
 const canvasSizeMatrixes = [];
-
-const programNumberToElementMap = {};
 
 function getCanvasSizeMatrix( width, height ) {
   const key = `${width},${height}`;
@@ -81,30 +59,6 @@ export default class Program extends React.Component {
 
   componentWillUnmount() {
     this._worker.terminate();
-
-    const releasedElement = programNumberToElementMap[ this._program().number ];
-    // console.log( 'unmounting' );
-
-    if ( releasedElement ) {
-
-      // remove all children from this element
-      releasedElement.getChildren().forEach( childElement => {
-        releasedElement.removeChild( childElement );
-      } );
-
-      // remove it from the root
-      if ( !releasedElement.parent && audioMixerModel.hasChild( releasedElement ) ) {
-        audioMixerModel.removeRootLevelElement( releasedElement );
-      }
-
-      // stop playing music
-      if ( releasedElement.playableAudio ) {
-        releasedElement.playableAudio.setOutputLevel( 0 );
-      }
-
-      // unmount may happen multiple times? Need to clear so we don't try to remove again
-      programNumberToElementMap[ this._program().number ] = null;
-    }
   }
 
   _program = () => {
@@ -194,84 +148,6 @@ export default class Program extends React.Component {
         this.props.onDataChange( sendData.data, () => {
           this._worker.postMessage( { messageId } );
         } );
-      }
-      if ( sendData.name === 'audio' ) {
-        const audioData = sendData.data;
-
-        // please send the file index, x, y, displayName string, and a nullable webAudioNodeType
-        const newGraphElement = new AudioGraphElement(
-          audioData.soundFileIndex,
-          new phet.dot.Vector2( audioData.x, audioData.y ),
-          audioData.displayName,
-          {
-            webAudioNodeType: audioData.webAudioNodeType
-          } );
-
-        // save a reference so it can be removed later
-        programNumberToElementMap[ this._program().number ] = newGraphElement;
-
-        // add the element to the root of the model
-        audioMixerModel.addRootLevelElement( newGraphElement );
-
-        if ( newGraphElement.playableAudio ) {
-          newGraphElement.playableAudio.setOutputLevel( 1 );
-        }
-
-        this._worker.postMessage( { messageId } );
-      }
-      else if ( sendData.name === 'audioGraphAdd' ) {
-        const relationData = sendData.data;
-
-        const parentElement = programNumberToElementMap[ relationData.parentProgramNumber ];
-        const childElement = programNumberToElementMap[ relationData.childProgramNumber ];
-
-        console.log( childElement, parentElement, programNumberToElementMap );
-        if ( childElement && parentElement && childElement.parent === null ) {
-
-          if ( audioMixerModel.hasChild( childElement ) ) {
-
-            // may not have the child yet
-            audioMixerModel.removeRootLevelElement( childElement );
-          }
-          parentElement.addChild( childElement );
-        }
-
-        this._worker.postMessage( { messageId } );
-      }
-      else if ( sendData.name === 'audioGraphUpdateConnections' ) {
-        const element = programNumberToElementMap[ sendData.data.programNumber ];
-        if ( element ) {
-
-          // whenever we move, try to update connections if necesssary because whiskers may not have triggered
-          // certain behaviors
-          const parentElement = element.parent || element;
-          // console.log( parentElement, element.getChildren() );
-          parentElement.traverseSubtree( childElement => {
-            if ( childElement.playableAudio ) {
-              console.log( childElement.collectedAudioNodeTypes );
-              childElement.playableAudio.updateConnections( childElement.collectedAudioNodeTypes );
-            }
-            return false;
-          } );
-        }
-
-        this._worker.postMessage( { messageId } );
-      }
-      else if ( sendData.name === 'audioGraphRemove' ) {
-        const relationData = sendData.data;
-
-        const parentElement = programNumberToElementMap[ relationData.parentProgramNumber ];
-        const childElement = programNumberToElementMap[ relationData.childProgramNumber ];
-
-        // the unmount may have removed things already for us
-        if ( parentElement && childElement && childElement.parent === parentElement ) {
-          parentElement.removeChild( childElement );
-
-          // this element is now a root level element
-          audioMixerModel.addRootLevelElement( childElement );
-
-          // console.log( `removing child ${childElement.soundFileIndex}` );
-        }
       }
       else if ( sendData.name === 'iframe' ) {
         this.setState( { iframe: sendData.data } );
