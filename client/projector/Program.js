@@ -246,7 +246,7 @@ export default class Program extends React.Component {
                   height
                 ),
                 transformOrigin: '0 0 0',
-                zIndex: programNumber == program.number ? 1 : 2,
+                zIndex: programNumber === program.number ? 1 : 2,
               }}
             />
           );
