@@ -110,11 +110,6 @@ function drawPage( { patterns, title, metadata, paperSize } ) {
   canvasContext.font = `${metadataSize}px`;
   canvasContext.fillText( metadata, textLeft, metadataTop, textWidth );
 
-  const codeMargin = 10;
-  canvasContext.font = `${11}px Courier`;
-  const codeMarginTotal = margin + circleRadius * 2 + codeMargin;
-  canvasContext.fillText( 'Code would go here, but we need to figure out linewrap...', codeMarginTotal, codeMarginTotal );
-
   return canvas;
 }
 
