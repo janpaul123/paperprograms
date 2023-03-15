@@ -278,7 +278,7 @@ export default class CameraMain extends React.Component {
           console.error( error ); // eslint-disable-line no-console
         }
         else {
-          alert( `Created program "${codeToName( copiedProgram )}"` )
+          alert( `Created program "${codeToName( copiedProgram )}"` );
         }
       }
     );
@@ -350,7 +350,7 @@ export default class CameraMain extends React.Component {
     if ( isValid && spaceName.match( /[^A-Za-z0-9\-_]+/ ) !== null ) {
       isValid = false;
       errorMessage = 'Invalid characters in space name.';
-      errorMessage += '\n\nNames can contain upper- and lower-case letters, numbers, dashes, and/or underscores.'
+      errorMessage += '\n\nNames can contain upper- and lower-case letters, numbers, dashes, and/or underscores.';
     }
     if ( isValid && this.state.availableSpaces.includes( spaceName ) ) {
       isValid = false;
@@ -493,7 +493,7 @@ export default class CameraMain extends React.Component {
                     {this.state.availableSpaces.map( ( option, index ) => {
                       return <option key={index}>
                         {option}
-                      </option>
+                      </option>;
                     } )}
                   </select>
                 </div>

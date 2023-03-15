@@ -60,6 +60,6 @@ const SceneryDisplay = ( props ) => {
   }, [] );
 
   return <div id='scenery-display'></div>;
-}
+};
 
 export default SceneryDisplay;

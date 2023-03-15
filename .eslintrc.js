@@ -4,6 +4,8 @@ module.exports = {
   plugins: ['react'],
   rules: {
 
+    'semi': 'error',
+
     // Per https://stackoverflow.com/a/46809082
     'react/jsx-uses-react': 'error',
     'react/jsx-uses-vars': 'error',

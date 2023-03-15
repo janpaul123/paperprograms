@@ -49,12 +49,12 @@ router.get( '/api/program-summary-list/:spacesList', ( req, res ) => {
   if ( spacesList !== '*' ) {
     spaces.forEach( ( space, index ) => {
       if ( index === 0 ) {
-        summaryQuery = summaryQuery.where( { spaceName: space } )
+        summaryQuery = summaryQuery.where( { spaceName: space } );
       }
       else {
-        summaryQuery = summaryQuery.orWhere( { spaceName: space } )
+        summaryQuery = summaryQuery.orWhere( { spaceName: space } );
       }
-    } )
+    } );
   }
 
   summaryQuery.then( selectResult => {
@@ -178,7 +178,7 @@ router.post( '/api/snippets', ( req, res ) => {
       knex( 'snippets' )
         .insert( { number: nextNumber, code: snippetCode } )
         .then( () => {
-          res.json( { number: nextNumber, snippetCode: snippetCode } )
+          res.json( { number: nextNumber, snippetCode: snippetCode } );
         } );
     } );
 } );
@@ -205,7 +205,7 @@ router.get( '/api/snippets', ( req, res ) => {
     .select( [ 'code', 'number' ] )
     .from( 'snippets' )
     .then( selectResult => {
-      res.json( { snippets: selectResult } )
+      res.json( { snippets: selectResult } );
     } );
 } );
 
@@ -273,7 +273,6 @@ router.post( '/api/spaces/:spaceName/programs/:number/claim', ( req, res ) => {
       ) {
         res.status( 400 );
         res.json( {} );
-        return;
       }
       else {
         knex( 'programs' )

@@ -68,7 +68,7 @@ const pointsEqual = ( points1, points2 ) => {
          points1[ 1 ].x === points2[ 1 ].x && points1[ 1 ].y === points2[ 1 ].y &&
          points1[ 2 ].x === points2[ 2 ].x && points1[ 2 ].y === points2[ 2 ].y &&
          points1[ 3 ].x === points2[ 3 ].x && points1[ 3 ].y === points2[ 3 ].y;
-}
+};
 
 /**
  * Create an instance of WrappedAudioBuffer and return it, and start the process of decoding the audio file from the
@@ -118,14 +118,14 @@ paperLand.addModelComponent = ( componentName, componentObject ) => {
 
       // spread operator copies existing model into a new object
       ...existingModel
-    }
+    };
 
     paperLand.modelComponentAddedEmitter.emit( componentName, componentObject );
   }
   else {
     console.warn( `Model already has component with name ${componentName}` );
   }
-}
+};
 
 /**
  * Remove a component with the provided name from the model. Updates the global modelProperty which is our map
@@ -248,7 +248,7 @@ const updateBoard = presentPaperProgramInfo => {
       mapOfProgramNumbersToScratchpadObjects.delete( paperProgramNumber );
     }
   } );
-}
+};
 
 // Handle changes to local storage.  This is how paper programs communicate with the sim design board.
 // Note: Through experimentation, we (PhET devs) found that this is called every second even if nothing changes as long

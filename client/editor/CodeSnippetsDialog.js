@@ -16,7 +16,7 @@ import { getSaveString, programMatchesFilterString } from '../utils';
 import styles from './EditorMain.css';
 
 const NEW_SNIPPET_CODE = '// New Snippet\n//\n// Add new code here!';
-const SELECT_SNIPPET_STRING = '// Select a snippet or create a new one.'
+const SELECT_SNIPPET_STRING = '// Select a snippet or create a new one.';
 
 class CodeSnippetsDialog extends React.Component {
 
@@ -84,7 +84,7 @@ class CodeSnippetsDialog extends React.Component {
                 Object.keys( this.snippets ).filter( key => {
                   const code = this.snippets[ key ];
                   if ( code ) {
-                    return programMatchesFilterString( code, this.state.snippetListFilterString )
+                    return programMatchesFilterString( code, this.state.snippetListFilterString );
                   }
                   else {
 
@@ -97,7 +97,7 @@ class CodeSnippetsDialog extends React.Component {
                       key={key}
                       value={key}
                     >{this._getNameFromSnippet( this.snippets[ key ], key )}
-                    </option>
+                    </option>;
                   } )}
             </select>
             <div className={styles.snippetEditor}>
@@ -176,10 +176,10 @@ class CodeSnippetsDialog extends React.Component {
 
           this.setState( {
             numberOfSnippets: this.snippets.length
-          } )
+          } );
         }
       }
-    )
+    );
   }
 
   /**
@@ -197,11 +197,11 @@ class CodeSnippetsDialog extends React.Component {
           this.snippets[ response.body.number ] = response.body.snippetCode;
           this.setState( {
             numberOfSnippets: Object.keys( this.snippets ).length
-          } )
+          } );
         }
       }
     );
-  }
+  };
 
   /**
    * Save the active snippet, updating the database.

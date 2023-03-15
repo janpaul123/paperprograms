@@ -32,7 +32,7 @@ class CreateProgramDialog extends React.Component {
       programsForSelectedSpace: []
     };
 
-    this._setSpaceAndRequestPrograms( this.state.sourceSpace )
+    this._setSpaceAndRequestPrograms( this.state.sourceSpace );
   }
 
   /**
@@ -43,7 +43,7 @@ class CreateProgramDialog extends React.Component {
       .filter( program => programMatchesFilterString( program.currentCode, this.props.data.copyProgramListFilterString ) )
       .sort( ( programA, programB ) =>
         codeToName( programA.currentCode ).localeCompare( codeToName( programB.currentCode ) )
-      )
+      );
   }
 
   /**
@@ -142,7 +142,7 @@ class CreateProgramDialog extends React.Component {
                        key={spaceName}
                        value={spaceName}
                      >{spaceName}
-                     </option>
+                     </option>;
                    } )
                    }
                  </Form.Select>}
@@ -178,7 +178,7 @@ class CreateProgramDialog extends React.Component {
                         data-program-code={program.currentCode}
                       >
                         {`${codeToName( program.currentCode )} - #${program.number}`}
-                      </option>
+                      </option>;
                     } )
                   }
                 </Form.Select>
