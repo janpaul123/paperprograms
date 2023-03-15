@@ -17,7 +17,7 @@ const soundView = new AudioGraphSoundView()
 soundView.init();
 
 const initListener = () => {
-  AudioGraphSoundView.INDEX_TO_FILE_MAP.forEach( ( value, key ) => {
+  AudioGraphSoundView.INDEX_TO_FILE_MAP.forEach( value => {
 
     // start playing all audio in response to user input
     value.play();
