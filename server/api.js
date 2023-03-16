@@ -77,6 +77,7 @@ router.get( '/api/spaces-list', ( req, res ) => {
 router.get( '/api/add-space/:newSpaceName', ( req, res ) => {
   console.log( `req.params.newSpaceName = ${req.params.newSpaceName}` );
   res.json( req.params );
+
   // knex
   //   .distinct()
   //   .from('programs')
@@ -128,7 +129,7 @@ router.post( '/api/spaces/:spaceName/programs', ( req, res ) => {
   const { spaceName } = req.params;
   const { code } = req.body;
   if ( !code ) {
-    return res.status( 400 ).send( 'Missing "code"' );
+    res.status( 400 ).send( 'Missing "code"' );
   }
 
   knex
@@ -144,12 +145,14 @@ router.post( '/api/spaces/:spaceName/programs', ( req, res ) => {
         }
       }
       if ( potentialNumbers.length === 0 ) {
-        return res.status( 400 ).send( 'No more available numbers' );
+        res.status( 400 ).send( 'No more available numbers' );
       }
       const number = potentialNumbers[ Math.floor( Math.random() * potentialNumbers.length ) ];
 
       knex( 'programs' )
-        .insert( { spaceName, number, originalCode: code, currentCode: code } )
+        .insert( {
+          spaceName, number, originalCode: code, currentCode: code
+        } )
         .then( () => {
           getSpaceData( req, spaceData => {
             res.json( { number, spaceData } );
@@ -163,7 +166,7 @@ const maxSnippets = 500;
 router.post( '/api/snippets', ( req, res ) => {
   const { snippetCode } = req.body;
   if ( !snippetCode ) {
-    return res.status( 400 ).send( 'Missing "code"' );
+    res.status( 400 ).send( 'Missing "code"' );
   }
 
   knex
@@ -172,7 +175,7 @@ router.post( '/api/snippets', ( req, res ) => {
     .then( selectResult => {
       const nextNumber = selectResult.length + 1;
       if ( nextNumber > maxSnippets ) {
-        return res.status( 400 ).send( `Cannot make any more snippets, max ${maxSnippets}` );
+        res.status( 400 ).send( `Cannot make any more snippets, max ${maxSnippets}` );
       }
 
       knex( 'snippets' )
@@ -183,12 +186,12 @@ router.post( '/api/snippets', ( req, res ) => {
     } );
 } );
 
-// Save the program with the provided number to the provided space
+// Save the program with the provided number to the provided space.
 router.put( '/api/spaces/:spaceName/programs/:number', ( req, res ) => {
   const { spaceName, number } = req.params;
   const { code } = req.body;
   if ( !code ) {
-    return res.status( 400 ).send( 'Missing "code"' );
+    res.status( 400 ).send( 'Missing "code"' );
   }
 
   knex( 'programs' )
@@ -215,7 +218,7 @@ router.put( '/api/snippets/:number', ( req, res ) => {
   const { number } = req.params;
   const { snippetCode } = req.body;
   if ( !snippetCode ) {
-    return res.status( 400 ).send( 'Missing "snippetCode"' );
+    res.status( 400 ).send( 'Missing "snippetCode"' );
   }
 
   knex( 'snippets' )
@@ -230,7 +233,7 @@ router.post( '/api/spaces/:spaceName/programs/:number/markPrinted', ( req, res )
   const { spaceName, number } = req.params;
   const { printed } = req.body;
   if ( printed === undefined ) {
-    return res.status( 400 ).send( 'Missing "printed"' );
+    res.status( 400 ).send( 'Missing "printed"' );
   }
 
   knex( 'programs' )
@@ -263,7 +266,7 @@ router.post( '/api/spaces/:spaceName/programs/:number/claim', ( req, res ) => {
     .where( { spaceName, number } )
     .then( selectResult => {
       if ( selectResult.length === 0 ) {
-        return res.status( 404 );
+        res.status( 404 );
       }
       const editorInfo = JSON.parse( selectResult[ 0 ].editorInfo || '{}' );
       if (

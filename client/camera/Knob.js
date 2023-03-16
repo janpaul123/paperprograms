@@ -6,20 +6,23 @@ export default class Knob extends React.Component {
   componentDidMount() {
     this._attachDragger();
   }
+
   _attachDragger = () => {
     const dragger = d3
       .drag()
-      .subject(() => {
+      .subject( () => {
+
         // drag origin
         const { x, y } = this.props;
         return { x, y };
-      })
-      .on('drag', () => {
+      } )
+      .on( 'drag', () => {
         const { x, y } = d3.event;
-        this.props.onChange({ x, y });
-      });
-    d3.select(this._el).call(dragger);
+        this.props.onChange( { x, y } );
+      } );
+    d3.select( this._el ).call( dragger );
   };
+
   render() {
     const { x, y } = this.props;
     return (
@@ -28,7 +31,7 @@ export default class Knob extends React.Component {
         style={{
           transform: `translate(${x}px,${y}px)`
         }}
-        ref={el => (this._el = el)}
+        ref={el => ( this._el = el )}
       >
         {this.props.label}
       </div>

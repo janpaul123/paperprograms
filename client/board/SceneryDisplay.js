@@ -4,7 +4,7 @@
 
 import React, { useEffect } from 'react';
 
-const SceneryDisplay = ( props ) => {
+const SceneryDisplay = props => {
 
   // This useEffect hook runs once after the component is rendered.  Effectively, this creates a Scenery display and
   // adds it to the div that was created when this element was initially rendered.

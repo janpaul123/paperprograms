@@ -1,4 +1,4 @@
-import { paperSizes } from '../constants.js';
+import clientConstants from '../clientConstants';
 
 import { code8400 } from '../dotCodes';
 
@@ -10,8 +10,10 @@ import { code8400 } from '../dotCodes';
 // 0
 // with `x,y` in the middle of dot (2); `angle` rotating clock-wards; with
 // radius `circleRadius`; spaced out by `circleDistance`.
-function drawLPattern( { canvas, pattern, x, y, angle, circleRadius, circleDistance } ) {
-  const canvasContext = canvas.getContext( "2d" );
+function drawLPattern( {
+  canvas, pattern, x, y, angle, circleRadius, circleDistance
+} ) {
+  const canvasContext = canvas.getContext( '2d' );
 
   canvasContext.save();
 
@@ -38,9 +40,13 @@ function drawCircle( canvasContext, x, y, radius, fillColor ) {
 
 // Draws four patterns, with `patterns` specified top-left first, then
 // clock-wards. Will stay in the bounds of (0,0) to (width,height).
-function drawPagePatterns( { canvas, patterns, width, height, circleRadius, circleDistance, margin } ) {
+function drawPagePatterns( {
+  canvas, patterns, width, height, circleRadius, circleDistance, margin
+} ) {
   const m = margin + circleRadius;
-  drawLPattern( { canvas, pattern: patterns[ 0 ], x: m, y: m, angle: 0, circleRadius, circleDistance } );
+  drawLPattern( {
+    canvas, pattern: patterns[ 0 ], x: m, y: m, angle: 0, circleRadius, circleDistance
+  } );
   drawLPattern( {
     canvas,
     pattern: patterns[ 1 ],
@@ -70,11 +76,13 @@ function drawPagePatterns( { canvas, patterns, width, height, circleRadius, circ
   } );
 }
 
-function drawPage( { patterns, title, metadata, paperSize } ) {
+function drawPage( {
+  patterns, title, metadata, paperSize
+} ) {
 
-  const dimensions = paperSizes[ paperSize ];
+  const dimensions = clientConstants.paperSizes[ paperSize ];
   const canvas = document.createElement( 'canvas' );
-  const canvasContext = canvas.getContext( "2d" );
+  const canvasContext = canvas.getContext( '2d' );
 
   const width = dimensions[ 0 ];
   const height = dimensions[ 1 ];
@@ -89,7 +97,9 @@ function drawPage( { patterns, title, metadata, paperSize } ) {
   const circleRadius = 20;
   const circleDistance = 20;
   const margin = 10;
-  drawPagePatterns( { canvas, patterns, circleRadius, circleDistance, margin, width, height } );
+  drawPagePatterns( {
+    canvas, patterns, circleRadius, circleDistance, margin, width, height
+  } );
 
   canvasContext.fillStyle = 'black';
   const textMargin = 10;
@@ -118,11 +128,11 @@ function drawCalibrationPage( { allColors, paperSize } ) {
   const circleRadius = 20;
   const circleDistance = 20;
 
-  const dimensions = paperSizes[ paperSize ];
+  const dimensions = clientConstants.paperSizes[ paperSize ];
   const canvas = document.createElement( 'canvas' );
   canvas.width = dimensions[ 0 ];
   canvas.height = dimensions[ 1 ];
-  const canvasContext = canvas.getContext( "2d" );
+  const canvasContext = canvas.getContext( '2d' );
 
   // fill the background with white so it can be seen (hopefully this doesn't take ink to print??)
   canvasContext.beginPath();
@@ -167,11 +177,11 @@ export function printPage( number, name, paperSize ) {
 function saveCanvas( canvas, fileNameString ) {
   const link = document.createElement( 'a' );
   link.setAttribute( 'download', fileNameString );
-  link.setAttribute( 'href', canvas.toDataURL( "image/png" ).replace( "image/png", "image/octet-stream" ) );
+  link.setAttribute( 'href', canvas.toDataURL( 'image/png' ).replace( 'image/png', 'image/octet-stream' ) );
   link.click();
 }
 
 export function printCalibrationPage( paperSize ) {
   const calibrationCanvas = drawCalibrationPage( { allColors, paperSize } );
-  saveCanvas( calibrationCanvas, "calibration-page.png" );
+  saveCanvas( calibrationCanvas, 'calibration-page.png' );
 }

@@ -51,7 +51,7 @@ class CodeSnippetsDialog extends React.Component {
       <>
         <Modal
           show={true}
-          size="xl"
+          size='xl'
           className={styles.dialog}
           onHide={onClose}
         >
@@ -63,10 +63,10 @@ class CodeSnippetsDialog extends React.Component {
               <div>
                 <label>
                   Filter on: <input
-                  name='filterSnippetsOn'
-                  style={{ marginBottom: '10px' }}
-                  onChange={e => this.setState( { snippetListFilterString: e.target.value } )}
-                />
+                    name='filterSnippetsOn'
+                    style={{ marginBottom: '10px' }}
+                    onChange={e => this.setState( { snippetListFilterString: e.target.value } )}
+                  />
                 </label>
               </div>
               <div>
@@ -102,8 +102,8 @@ class CodeSnippetsDialog extends React.Component {
             </select>
             <div className={styles.snippetEditor}>
               <MonacoEditor
-                language="javascript"
-                theme="vs-dark"
+                language='javascript'
+                theme='vs-dark'
                 value={this.state.snippetNumber === null ? SELECT_SNIPPET_STRING : this.snippets[ this.state.snippetNumber ]}
                 onChange={
                   code => {
@@ -113,7 +113,7 @@ class CodeSnippetsDialog extends React.Component {
                   }
                 }
                 editorDidMount={this._onEditorDidMount}
-                options={{ tabSize: 2, fontSize:"20px" }}
+                options={{ tabSize: 2, fontSize: '20px' }}
               />
             </div>
           </Modal.Body>
@@ -129,6 +129,8 @@ class CodeSnippetsDialog extends React.Component {
    * Adds hotkey to save the snippet.
    */
   _onEditorDidMount = ( editor, monaco ) => {
+
+    // eslint-disable-next-line no-bitwise
     editor.addCommand( monaco.KeyMod.CtrlCmd | monaco.KeyCode.KEY_S, this._saveSnippet );
   };
 
@@ -191,7 +193,7 @@ class CodeSnippetsDialog extends React.Component {
       { json: { snippetCode: NEW_SNIPPET_CODE } },
       ( error, response ) => {
         if ( error ) {
-          console.error( error ); // eslint-disable-line no-console
+          console.error( error );
         }
         else {
           this.snippets[ response.body.number ] = response.body.snippetCode;
@@ -221,7 +223,7 @@ class CodeSnippetsDialog extends React.Component {
       error => {
         if ( error ) {
           console.error( error );
-        } // eslint-disable-line no-console
+        }
       }
     );
   };

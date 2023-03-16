@@ -1,14 +1,14 @@
-exports.up = function(knex) {
-  return knex.schema.table('programs', function(table) {
+exports.up = function( knex ) {
+  return knex.schema.table( 'programs', table => {
     table
-      .text('editorInfo')
+      .text( 'editorInfo' )
       .notNullable()
-      .defaultTo('');
-  });
+      .defaultTo( '' );
+  } );
 };
 
-exports.down = function(knex) {
-  return knex.schema.table('programs', function(table) {
-    table.dropColumn('editorInfo');
-  });
+exports.down = function( knex ) {
+  return knex.schema.table( 'programs', table => {
+    table.dropColumn( 'editorInfo' );
+  } );
 };

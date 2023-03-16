@@ -53,7 +53,7 @@ class CreateProgramDialog extends React.Component {
    * @param {string} space - space name or "*" for all spaces.
    */
   _setSpaceAndRequestPrograms( space ) {
-    CameraMain.getProgramSummaryList( [ space ], ( summaryList ) => {
+    CameraMain.getProgramSummaryList( [ space ], summaryList => {
       this.setState( {
         sourceSpace: space,
         programsForSelectedSpace: summaryList
@@ -68,27 +68,29 @@ class CreateProgramDialog extends React.Component {
    */
   render() {
 
-    const { data, setSearchString, onCreateProgram, onCancel } = this.props;
+    const {
+      data, setSearchString, onCreateProgram, onCancel
+    } = this.props;
     return (
       <>
         <Modal
           show={data.showCreateProgramDialog}
           className={styles.dialog}
-          onHide={() => data.showCreateProgramDialog = false}
+          onHide={() => {data.showCreateProgramDialog = false;}}
         >
           <Modal.Header closeButton>
             <Modal.Title>Create New Program</Modal.Title>
           </Modal.Header>
           <Modal.Body>
             <Form>
-              <div key={`create-mode-radio`} className="mb-3">
+              <div key={'create-mode-radio'} className='mb-3'>
                 <Form.Check
                   inline
                   type='radio'
                   label='Create a simple "Hello World" program'
                   name='create-mode-group'
                   checked={data.programCreateMode === ProgramCreateModes.SIMPLE_HELLO_WORLD}
-                  onChange={() => data.programCreateMode = ProgramCreateModes.SIMPLE_HELLO_WORLD}
+                  onChange={() => {data.programCreateMode = ProgramCreateModes.SIMPLE_HELLO_WORLD;}}
                 />
                 <Form.Check
                   inline
@@ -96,7 +98,7 @@ class CreateProgramDialog extends React.Component {
                   label='Copy an existing program'
                   name='create-mode-group'
                   checked={data.programCreateMode === ProgramCreateModes.COPY_EXISTING}
-                  onChange={() => data.programCreateMode = ProgramCreateModes.COPY_EXISTING}
+                  onChange={() => {data.programCreateMode = ProgramCreateModes.COPY_EXISTING;}}
                 />
               </div>
             </Form>
@@ -104,7 +106,7 @@ class CreateProgramDialog extends React.Component {
               <>
                 <p><b>Spaces:</b></p>
                 <Form>
-                  <div key={`spaces-radio`} className="mb-3">
+                  <div key={'spaces-radio'} className='mb-3'>
                     <Form.Check
                       inline
                       type='radio'
@@ -112,7 +114,7 @@ class CreateProgramDialog extends React.Component {
                       name='spaces-radio-group'
                       checked={this.state.selectFromAllSpaces}
                       onChange={() => {
-                        this.state.selectFromAllSpaces = true;
+                        this.setState( { selectFromAllSpaces: true } );
                         this._setSpaceAndRequestPrograms( '*' );
                       }}
                     />
@@ -123,7 +125,7 @@ class CreateProgramDialog extends React.Component {
                       name='spaces-radio-group'
                       checked={!this.state.selectFromAllSpaces}
                       onChange={() => {
-                        this.state.selectFromAllSpaces = false;
+                        this.setState( { selectFromAllSpaces: false } );
                         this._setSpaceAndRequestPrograms( this.props.data.availableSpaces[ 0 ] );
                       }}
                     />
@@ -131,7 +133,7 @@ class CreateProgramDialog extends React.Component {
                 </Form>
                 {this.state.selectFromAllSpaces ? ' ' :
                  <Form.Select
-                   id="spacesID"
+                   id='spacesID'
                    value={this.state.sourceSpace}
                    onChange={event => {
                      this._setSpaceAndRequestPrograms( event.target.value );
@@ -147,12 +149,13 @@ class CreateProgramDialog extends React.Component {
                    }
                  </Form.Select>}
                 <label>
-                  <b>Filter on:</b><input
-                  name='filterCopyProgramListOn'
-                  style={{ margin: '10px' }}
-                  value={data.copyProgramListFilterString}
-                  onChange={e => setSearchString( e.target.value )}
-                />
+                  <b>Filter on:</b>
+                  <input
+                    name='filterCopyProgramListOn'
+                    style={{ margin: '10px' }}
+                    value={data.copyProgramListFilterString}
+                    onChange={e => setSearchString( e.target.value )}
+                  />
                 </label>
                 <Form.Select
                   htmlSize={10}

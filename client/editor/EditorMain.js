@@ -3,7 +3,9 @@ import randomColor from 'randomcolor';
 import React from 'react';
 import MonacoEditor from 'react-monaco-editor';
 import xhr from 'xhr';
-import { codeToName, getApiUrl, getSaveString, programMatchesFilterString } from '../utils';
+import {
+  codeToName, getApiUrl, getSaveString, programMatchesFilterString
+} from '../utils';
 import CodeSnippetsDialog from './CodeSnippetsDialog.js';
 import styles from './EditorMain.css';
 
@@ -31,7 +33,7 @@ export default class EditorMain extends React.Component {
     const beginTimeMs = Date.now();
     xhr.get( getApiUrl( this.props.spaceName, '' ), { json: true }, ( error, response ) => {
       if ( error ) {
-        console.error( error ); // eslint-disable-line no-console
+        console.error( error );
       }
       else {
         this.setState( { spaceData: response.body } );
@@ -64,7 +66,7 @@ export default class EditorMain extends React.Component {
       const { editorId } = this.props.editorConfig;
       xhr.post( program.claimUrl, { json: { editorId } }, ( error, response ) => {
         if ( error ) {
-          console.error( error ); // eslint-disable-line no-console
+          console.error( error );
         }
         else if ( response.statusCode === 400 ) {
           this.setState( {
@@ -94,7 +96,7 @@ export default class EditorMain extends React.Component {
       error => {
         if ( error ) {
           console.error( error );
-        } // eslint-disable-line no-console
+        }
       }
     );
   };
@@ -106,7 +108,7 @@ export default class EditorMain extends React.Component {
       { json: { code } },
       ( error, response ) => {
         if ( error ) {
-          console.error( error ); // eslint-disable-line no-console
+          console.error( error );
         }
         else {
           const { body } = response;
@@ -138,6 +140,8 @@ export default class EditorMain extends React.Component {
 
   _onEditorDidMount = ( editor, monaco ) => {
     editor.focus();
+
+    // eslint-disable-next-line no-bitwise
     editor.addCommand( monaco.KeyMod.CtrlCmd | monaco.KeyCode.KEY_S, this._save );
   };
 
@@ -165,12 +169,12 @@ export default class EditorMain extends React.Component {
         {selectedProgram && (
           <div className={styles.editor}>
             <MonacoEditor
-              language="javascript"
-              theme="vs-dark"
+              language='javascript'
+              theme='vs-dark'
               value={this.state.code}
               onChange={code => this.setState( { code } )}
               editorDidMount={this._onEditorDidMount}
-              options={{ tabSize: 2, fontSize:"20px" }}
+              options={{ tabSize: 2, fontSize: '20px' }}
             />
           </div>
         )}
@@ -185,10 +189,10 @@ export default class EditorMain extends React.Component {
 
           <label>
             Filter on: <input
-            name='filterProgramsOn'
-            style={{ marginBottom: '10px' }}
-            onChange={e => this.setState( { programListFilterString: e.target.value } )}
-          />
+              name='filterProgramsOn'
+              style={{ marginBottom: '10px' }}
+              onChange={e => this.setState( { programListFilterString: e.target.value } )}
+            />
           </label>
 
           <div className={styles.sidebarSection}>
@@ -243,38 +247,38 @@ export default class EditorMain extends React.Component {
 
           {selectedProgram &&
            errors.length > 0 && (
-             <div className={styles.sidebarSection}>
+            <div className={styles.sidebarSection}>
                errors:{' '}
-               {errors.map( ( error, index ) => (
-                 <div key={index} className={styles.logline}>
-                   <strong>
+              {errors.map( ( error, index ) => (
+                <div key={index} className={styles.logline}>
+                  <strong>
                      error[{error.filename}:{error.lineNumber}:{error.columnNumber}]:
-                   </strong>{' '}
-                   {error.message}
-                 </div>
-               ) )}
-             </div>
-           )}
+                  </strong>{' '}
+                  {error.message}
+                </div>
+              ) )}
+            </div>
+          )}
 
           {selectedProgram &&
            logs.length > 0 && (
-             <div className={styles.sidebarSection}>
-               {logs.map( ( logLine, index ) => (
-                 <div key={index} className={styles.logline}>
-                   <strong>
-                     {logLine.name}[{logLine.filename}:{logLine.lineNumber}:{logLine.columnNumber}]:
-                   </strong>{' '}
-                   {logLine.args.join( ', ' )}
-                 </div>
-               ) )}
-             </div>
-           )}
+            <div className={styles.sidebarSection}>
+              {logs.map( ( logLine, index ) => (
+                <div key={index} className={styles.logline}>
+                  <strong>
+                    {logLine.name}[{logLine.filename}:{logLine.lineNumber}:{logLine.columnNumber}]:
+                  </strong>{' '}
+                  {logLine.args.join( ', ' )}
+                </div>
+              ) )}
+            </div>
+          )}
 
           <div className={styles.sidebarSection}>
             <a
-              href="https://github.com/janpaul123/paperprograms/blob/master/docs/api.md"
-              target="_blank"
-              className={styles.link}
+              href='https://github.com/janpaul123/paperprograms/blob/master/docs/api.md'
+              target='_blank'
+              className={styles.link} rel='noreferrer'
             >
               Paper API Reference
             </a>
@@ -282,9 +286,9 @@ export default class EditorMain extends React.Component {
 
           <div className={styles.sidebarSection}>
             <a
-              href="https://learnxinyminutes.com/docs/javascript/"
-              target="_blank"
-              className={styles.link}
+              href='https://learnxinyminutes.com/docs/javascript/'
+              target='_blank'
+              className={styles.link} rel='noreferrer'
             >
               JavaScript Reference
             </a>
@@ -292,16 +296,16 @@ export default class EditorMain extends React.Component {
 
           <div className={styles.sidebarSection}>
             <a
-              href="https://github.com/phetsims/phet-info/blob/master/doc/phet-development-overview.md#source-code-and-dependencies"
-              target="_blank"
-              className={styles.link}
+              href='https://github.com/phetsims/phet-info/blob/master/doc/phet-development-overview.md#source-code-and-dependencies'
+              target='_blank'
+              className={styles.link} rel='noreferrer'
             >
               PhET Library References
             </a>
           </div>
 
           <div className={styles.sidebarSection}>
-            <button onClick={()=> {this.setState( { showSnippetsDialog: true });}}>Code Snippets</button>
+            <button onClick={() => {this.setState( { showSnippetsDialog: true } );}}>Code Snippets</button>
             {' '}
           </div>
 

@@ -1,8 +1,8 @@
 {
   "name": "paperprograms",
-  "version": "0.0.1",
-  "description": "Run Javascript on pieces of paper!",
-  "author": "Jan Paul Posma <j@npaulpos.ma>",
+  "version": "0.0.2",
+  "description": "Co-design environment for accessible educational simulations.",
+  "author": "Jan Paul Posma <j@npaulpos.ma>, PhET Interactive Simulations <phethelp@colorado.edu>",
   "license": "MIT",
   "scripts": {
     "dev": "npm run createdb && npm run migrate && npm start",
@@ -14,7 +14,7 @@
     "dropdb": "dropdb --if-exists paper_programs_development",
     "heroku-postbuild": "webpack",
     "test": "npm run lint",
-    "lint": "eslint .",
+    "lint": "eslint . --rulesdir ../chipper/eslint/rules",
     "lint-fix": "eslint . --fix"
   },
   "engines": {

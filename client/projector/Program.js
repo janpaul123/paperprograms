@@ -215,8 +215,8 @@ export default class Program extends React.Component {
             zIndex: 3,
             boxShadow: program.editorInfo.claimed
                        ? `0 0 0 1px ${randomColor( {
-                seed: program.editorInfo.editorId
-              } )} inset`
+                         seed: program.editorInfo.editorId
+                       } )} inset`
                        : ''
           }}
         />
@@ -289,6 +289,6 @@ export default class Program extends React.Component {
       zIndex: 1
     };
 
-    return <iframe key="iframe" src={this.state.iframe.src} style={{ ...iframeStyle }}/>;
+    return <iframe key='iframe' src={this.state.iframe.src} style={{ ...iframeStyle }}/>;
   }
 }

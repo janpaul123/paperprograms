@@ -1,7 +1,7 @@
 import React from 'react';
 import Button from 'react-bootstrap/Button';
 import xhr from 'xhr';
-import { colorNames, commonPaperSizeNames, otherPaperSizeNames, paperSizes } from '../constants';
+import clientConstants from '../clientConstants.js';
 import { codeToName, getApiUrl, programMatchesFilterString } from '../utils';
 import styles from './CameraMain.css';
 import CameraVideo from './CameraVideo.js';
@@ -65,7 +65,7 @@ export default class CameraMain extends React.Component {
     const spacesListUrl = new URL( 'api/spaces-list', window.location.origin ).toString();
     xhr.get( spacesListUrl, { json: true }, ( error, response ) => {
       if ( error ) {
-        console.error( error ); // eslint-disable-line no-console
+        console.error( error );
       }
       else {
         if ( Array.isArray( response.body ) ) {
@@ -96,7 +96,7 @@ export default class CameraMain extends React.Component {
     const spaceUrl = getApiUrl( this.state.selectedSpaceName );
     xhr.get( spaceUrl, { json: true }, ( error, response ) => {
       if ( error ) {
-        console.error( error ); // eslint-disable-line no-console
+        console.error( error );
       }
       else {
         this.setState( { spaceData: response.body }, () => {
@@ -129,7 +129,7 @@ export default class CameraMain extends React.Component {
       { json: { code: helloWorld } },
       error => {
         if ( error ) {
-          console.error( error ); // eslint-disable-line no-console
+          console.error( error );
         }
         else {
 
@@ -146,7 +146,7 @@ export default class CameraMain extends React.Component {
     const addRequestedSpaceUrl = `${addSpaceUrl}/${spaceName}`;
     xhr.get( addRequestedSpaceUrl, { json: true }, error => {
       if ( error ) {
-        console.error( `error adding space: ${error}` ); // eslint-disable-line no-console
+        console.error( `error adding space: ${error}` );
       }
     } );
   }
@@ -159,7 +159,7 @@ export default class CameraMain extends React.Component {
     const getRequestedProgramUrl = `${getProgramUrl}.${spaceName}.${programNumber}.js`;
     xhr.get( getRequestedProgramUrl, { json: true }, ( error, response ) => {
       if ( error ) {
-        console.error( `error adding space: ${error}` ); // eslint-disable-line no-console
+        console.error( `error adding space: ${error}` );
       }
       else {
         callback( response.body );
@@ -193,7 +193,7 @@ export default class CameraMain extends React.Component {
     const getProgramSummaryUrl = `${BASE_API_URL}/program-summary-list/${spacesString}`;
     xhr.get( getProgramSummaryUrl, { json: true }, ( error, response ) => {
       if ( error ) {
-        console.error( `error getting program summary list: ${error}` ); // eslint-disable-line no-console
+        console.error( `error getting program summary list: ${error}` );
       }
       else {
         callback( response.body );
@@ -224,7 +224,7 @@ export default class CameraMain extends React.Component {
       { json: { printed } },
       ( error, response ) => {
         if ( error ) {
-          console.error( error ); // eslint-disable-line no-console
+          console.error( error );
         }
         else {
           this.setState( { spaceData: response.body } );
@@ -239,7 +239,7 @@ export default class CameraMain extends React.Component {
       { json: { code: helloWorld } },
       error => {
         if ( error ) {
-          console.error( error ); // eslint-disable-line no-console
+          console.error( error );
         }
         else {
           alert( 'Created "Hello World" program' );
@@ -275,7 +275,7 @@ export default class CameraMain extends React.Component {
       { json: { code: copiedProgram } },
       error => {
         if ( error ) {
-          console.error( error ); // eslint-disable-line no-console
+          console.error( error );
         }
         else {
           alert( `Created program "${codeToName( copiedProgram )}"` );
@@ -285,7 +285,7 @@ export default class CameraMain extends React.Component {
   }
 
   _createDebugProgram( number, programName ) {
-    const paperSize = paperSizes[ this.props.config.paperSize ];
+    const paperSize = clientConstants.paperSizes[ this.props.config.paperSize ];
     const widthToHeightRatio = paperSize[ 0 ] / paperSize[ 1 ];
     const height = 0.2;
     const width = height * widthToHeightRatio;
@@ -307,25 +307,23 @@ export default class CameraMain extends React.Component {
 
   _programsChange( programsToRender ) {
     this.props.onProgramsChange(
-      programsToRender
-        .map( program => {
-          const programWithData = this.state.spaceData.programs.find(
-            program2 => program2.number.toString() === program.number.toString()
-          );
-          if ( !programWithData ) {
-            return;
-          }
-          return {
-            ...program,
-            currentCodeUrl: programWithData.currentCodeUrl,
-            currentCodeHash: programWithData.currentCodeHash,
-            debugUrl: programWithData.debugUrl,
-            claimUrl: programWithData.claimUrl,
-            editorInfo: programWithData.editorInfo,
-            codeHasChanged: programWithData.codeHasChanged
-          };
-        } )
-        .filter( Boolean )
+      programsToRender.map( program => {
+        const programWithData = this.state.spaceData.programs.find(
+          program2 => program2.number.toString() === program.number.toString()
+        );
+        if ( !programWithData ) {
+          return null;
+        }
+        return {
+          ...program,
+          currentCodeUrl: programWithData.currentCodeUrl,
+          currentCodeHash: programWithData.currentCodeHash,
+          debugUrl: programWithData.debugUrl,
+          claimUrl: programWithData.claimUrl,
+          editorInfo: programWithData.editorInfo,
+          codeHasChanged: programWithData.codeHasChanged
+        };
+      } ).filter( Boolean )
     );
   }
 
@@ -407,13 +405,16 @@ export default class CameraMain extends React.Component {
    * @private
    */
   _hideCreateProgramDialog() {
-    this.state.showCreateProgramDialog = false;
-    this.state.selectedProgramToCopy = '';
+
+    // this.state.showCreateProgramDialog = false;
+    // this.state.selectedProgramToCopy = '';
+    this.setState( { showCreateProgramDialog: false } );
+    this.setState( { selectedProgramToCopy: '' } );
   }
 
   render() {
-    const padding = parseInt( styles.cameraMainPadding );
-    const sidebarWidth = parseInt( styles.cameraMainSidebarWidth );
+    const padding = parseInt( styles.cameraMainPadding, 10 );
+    const sidebarWidth = parseInt( styles.cameraMainSidebarWidth, 10 );
     const editorUrl = new URL(
       `editor.html?${this.state.spaceData.spaceName}`,
       window.location.origin
@@ -465,11 +466,11 @@ export default class CameraMain extends React.Component {
           </div>
           <div className={styles.sidebar}>
             {this.showTestButton ? (
-              <Button onClick={() => CameraMain.getProgramSummaryList( [ 'taliesin', 'templates' ], ( summaryList ) => console.log( summaryList ) )}>Test Button</Button>
+              <Button onClick={() => CameraMain.getProgramSummaryList( [ 'taliesin', 'templates' ], summaryList => console.log( summaryList ) )}>Test Button</Button>
             ) : ( '' )}
             <div className={`${styles.sidebarSection} ${styles.create}`}>
-              <button onClick={() => this.state.showCreateProgramDialog = true}>Create Program</button>
-              <a href={editorUrl} target="_blank" className={styles.editorAnchor}>
+              <button onClick={() => { this.setState( { showCreateProgramDialog: true } ); }}>Create Program</button>
+              <a href={editorUrl} target='_blank' className={styles.editorAnchor} rel='noreferrer'>
                 Open Editor
               </a>
             </div>
@@ -477,10 +478,10 @@ export default class CameraMain extends React.Component {
               <h3 className={styles.sidebarSubSection}>Space</h3>
               <div>
                 <div>
-                  <label htmlFor="spaces">Select a Space:</label>
+                  <label htmlFor='spaces'>Select a Space:</label>
                   <select
-                    name="spaces"
-                    id="spaces"
+                    name='spaces'
+                    id='spaces'
                     value={this.state.selectedSpaceName}
                     onChange={event => {
                       this.setState( { selectedSpaceName: event.target.value } );
@@ -508,15 +509,15 @@ export default class CameraMain extends React.Component {
                         <label>
                           Name:&nbsp;
                           <input
-                            type="text"
+                            type='text'
                             onChange={this._handleNewSpaceNameChange.bind( this )}
                           />
                         </label>
                         <br/>
-                        <button type="submit">
+                        <button type='submit'>
                           Confirm
                         </button>
-                        <button type="button" onClick={() => this.setState( { isAddingNewSpace: false } )}>
+                        <button type='button' onClick={() => this.setState( { isAddingNewSpace: false } )}>
                           Cancel
                         </button>
                       </form>
@@ -536,12 +537,12 @@ export default class CameraMain extends React.Component {
             </div>
             <div className={styles.sidebarSection}>
               <h3>Programs</h3>
-              <label>
-                Filter on: <input
-                name='filterProgramsOn'
-                style={{ marginBottom: '10px' }}
-                onChange={e => this.setState( { programListFilterString: e.target.value } )}
-              />
+              <label>Filter on:
+                <input
+                  name='filterProgramsOn'
+                  style={{ marginBottom: '10px' }}
+                  onChange={e => this.setState( { programListFilterString: e.target.value } )}
+                />
               </label>
               <div className={`${styles.sidebarSubSection} ${styles.programList}`}>
                 <div>
@@ -570,7 +571,7 @@ export default class CameraMain extends React.Component {
                             this._print( program );
                           }}
                         >
-                          <img src={"media/images/printer.svg"}/>
+                          <img src={'media/images/printer.svg'}/>
                         </span>
                         {this.state.debugPrograms.find( p => p.number === program.number ) === undefined ? (
                           <span
@@ -580,7 +581,7 @@ export default class CameraMain extends React.Component {
                               this._createDebugProgram( program.number, codeToName( program.currentCode ) );
                             }}
                           >
-                            <img src={"media/images/eye.svg"}/>
+                            <img src={'media/images/eye.svg'}/>
                           </span>
                         ) : (
                            ''
@@ -603,8 +604,8 @@ export default class CameraMain extends React.Component {
                     this.props.onConfigChange( { ...this.props.config, paperSize } );
                   }}
                 >
-                  <optgroup label="Common">
-                    {commonPaperSizeNames.map( name => {
+                  <optgroup label='Common'>
+                    {clientConstants.commonPaperSizeNames.map( name => {
                       return (
                         <option key={name} value={name}>
                           {name}
@@ -612,8 +613,8 @@ export default class CameraMain extends React.Component {
                       );
                     } )}
                   </optgroup>
-                  <optgroup label="Other">
-                    {otherPaperSizeNames.map( name => {
+                  <optgroup label='Other'>
+                    {clientConstants.otherPaperSizeNames.map( name => {
                       return (
                         <option key={name} value={name}>
                           {name}
@@ -647,7 +648,7 @@ export default class CameraMain extends React.Component {
                       } ) )
                     }
                   >
-                    <strong>{colorNames[ colorIndex ]}</strong>
+                    <strong>{clientConstants.colorNames[ colorIndex ]}</strong>
                   </div>
                 ) )}
               </div>
@@ -657,8 +658,8 @@ export default class CameraMain extends React.Component {
               <h3 className={styles.headerWithOption}>Detection</h3>
               <div className={styles.optionWithHeader}>
                 <input
-                  type="checkbox"
-                  name="freezeDetection"
+                  type='checkbox'
+                  name='freezeDetection'
                   checked={this.props.config.freezeDetection}
                   onChange={() =>
                     this.props.onConfigChange( {
@@ -667,17 +668,17 @@ export default class CameraMain extends React.Component {
                     } )
                   }
                 />
-                <label htmlFor="freezeDetection">pause</label>
+                <label htmlFor='freezeDetection'>pause</label>
               </div>
 
               <div className={styles.sidebarSubSection}>
                 <span>Accuracy</span>
                 <input
-                  name="scaleFactor"
-                  type="range"
-                  min="1"
-                  max="10"
-                  step="1"
+                  name='scaleFactor'
+                  type='range'
+                  min='1'
+                  max='10'
+                  step='1'
                   value={this.props.config.scaleFactor}
                   onChange={event => {
                     this.props.onConfigChange( {
@@ -695,7 +696,7 @@ export default class CameraMain extends React.Component {
               <h4>Overlays</h4>
               <div className={styles.sidebarSubSection}>
                 <input
-                  type="checkbox"
+                  type='checkbox'
                   checked={this.props.config.showOverlayKeyPointCircles}
                   onChange={() =>
                     this.props.onConfigChange( {
@@ -709,7 +710,7 @@ export default class CameraMain extends React.Component {
 
               <div className={styles.sidebarSubSection}>
                 <input
-                  type="checkbox"
+                  type='checkbox'
                   checked={this.props.config.showOverlayKeyPointText}
                   onChange={() =>
                     this.props.onConfigChange( {
@@ -723,7 +724,7 @@ export default class CameraMain extends React.Component {
 
               <div className={styles.sidebarSubSection}>
                 <input
-                  type="checkbox"
+                  type='checkbox'
                   checked={this.props.config.showOverlayComponentLines}
                   onChange={() =>
                     this.props.onConfigChange( {
@@ -737,7 +738,7 @@ export default class CameraMain extends React.Component {
 
               <div className={styles.sidebarSubSection}>
                 <input
-                  type="checkbox"
+                  type='checkbox'
                   checked={this.props.config.showOverlayShapeId}
                   onChange={() =>
                     this.props.onConfigChange( {
@@ -751,7 +752,7 @@ export default class CameraMain extends React.Component {
 
               <div className={styles.sidebarSubSection}>
                 <input
-                  type="checkbox"
+                  type='checkbox'
                   checked={this.props.config.showOverlayProgram}
                   onChange={() =>
                     this.props.onConfigChange( {
