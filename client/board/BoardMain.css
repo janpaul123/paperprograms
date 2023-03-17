@@ -1,0 +1,45 @@
+/* Parent for entire board, centers all content in the page */
+:local(.boardContainer) {
+  display: flex;
+  justify-content: center;
+}
+
+/* Parent flex for UI components (sim, controls, logging) */
+:local(.uiContainer) {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 20px;
+}
+
+/* Styling for the sim display */
+:local(.simDisplayPanel) {
+  background-color: #330033;
+  padding: 4px;
+}
+
+/* Parent for all paper-land specific controls */
+:local(.paperLandControlsPanel) {
+  background-color: rgb(254, 252, 231);
+  border-style: solid;
+  border-color: #330033;
+  padding: 8px;
+  border-width: 4px;
+  width: 50%;
+}
+
+/* Contents of the controls */
+:local(.paperLandControlsContent) {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+
+  color: black;
+}
+
+/* Inline display for value readouts */
+:local(.inlineValue) {
+  display: inline;
+  padding-left: 14px;
+}

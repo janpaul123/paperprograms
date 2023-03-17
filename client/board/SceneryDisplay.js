@@ -16,6 +16,12 @@ const SceneryDisplay = props => {
       width: props.width,
       height: props.height,
       backgroundColor: 'rgb(254, 252, 231)',
+
+      // In order to support UI controls outside the Display (other react components), scenery can
+      // only add event listeners to its DOM element. However, that means that some scenery features
+      // like supporting drag events outside the display will not work well.
+      listenToOnlyElement: true,
+
       container: sceneryDisplayDomElement
     } );
 

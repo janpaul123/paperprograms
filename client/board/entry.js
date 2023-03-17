@@ -9,23 +9,40 @@
 
 import React from 'react';
 import ReactDOM from 'react-dom';
+import styles from './BoardMain.css';
 import paperLand from './paperLand.js';
+import PaperLandControls from './PaperLandControls.js';
 import SceneryDisplay from './SceneryDisplay.js';
 
 // constants
 const DISPLAY_SIZE = new phet.dot.Dimension2( 640, 480 );
 
 // Create the root element for React.
-const simDisplayDiv = document.getElementById( 'sim-display' );
+const simDisplayDiv = document.getElementById( 'board-root-element' );
 document.body.appendChild( simDisplayDiv );
 
 // Create the root of the scene graph.
 const scene = new phet.scenery.Node();
 
+// The amount of movement required for a program to be considered "moved" and trigger events
+// related to changing positions. Value is normalized, so a value of 0.2 means it has to move
+// 20% of the screen in either X or Y dimensions.
+let positionInterval = 0;
+const updatePositionInterval = newValue => positionInterval = newValue;
+
 // Render the scene graph.  Once this is done it updates itself, so there is no other React-based rendering of this
 // component.
 ReactDOM.render(
-  <SceneryDisplay scene={scene} width={DISPLAY_SIZE.width} height={DISPLAY_SIZE.height}/>,
+  <div className={styles.boardContainer}>
+    <div className={styles.uiContainer}>
+      <div className={styles.simDisplayPanel}>
+        <SceneryDisplay scene={scene} width={DISPLAY_SIZE.width} height={DISPLAY_SIZE.height}/>
+      </div>
+      <div className={styles.paperLandControlsPanel}>
+        <PaperLandControls initialPositionInterval={positionInterval} updatePositionInterval={updatePositionInterval}></PaperLandControls>
+      </div>
+    </div>
+  </div>,
   simDisplayDiv
 );
 
@@ -62,12 +79,19 @@ const sharedData = {
   displaySize: DISPLAY_SIZE
 };
 
-// Helper function to compare two sets of paper program position points.
-const pointsEqual = ( points1, points2 ) => {
-  return points1[ 0 ].x === points2[ 0 ].x && points1[ 0 ].y === points2[ 0 ].y &&
-         points1[ 1 ].x === points2[ 1 ].x && points1[ 1 ].y === points2[ 1 ].y &&
-         points1[ 2 ].x === points2[ 2 ].x && points1[ 2 ].y === points2[ 2 ].y &&
-         points1[ 3 ].x === points2[ 3 ].x && points1[ 3 ].y === points2[ 3 ].y;
+// Returns true when both x and y of the provided points are equal within threshold.
+const arePointsEqual = ( firstPoint, secondPoint, threshold ) => {
+  return phet.dot.Utils.equalsEpsilon( firstPoint.x, secondPoint.x, threshold ) &&
+         phet.dot.Utils.equalsEpsilon( firstPoint.y, secondPoint.y, threshold );
+};
+
+// Helper function to compare two sets of paper program position points. Points can differ within threshold and
+// still be considered equal. Point values are normalized, so a threshold of 0.05 means "5% in both x and y".
+const areAllPointsEqual = ( points1, points2, threshold ) => {
+  return arePointsEqual( points1[ 0 ], points2[ 0 ], threshold ) &&
+         arePointsEqual( points1[ 1 ], points2[ 1 ], threshold ) &&
+         arePointsEqual( points1[ 2 ], points2[ 2 ], threshold ) &&
+         arePointsEqual( points1[ 3 ], points2[ 3 ], threshold );
 };
 
 /**
@@ -166,7 +190,7 @@ const updateBoard = presentPaperProgramInfo => {
     const previousPaperProgramPoints = mapOfPaperProgramNumbersToPreviousPoints.get( paperProgramNumber );
     const currentPaperProgramPoints = paperProgramInstanceInfo.points;
     let paperProgramHasMoved = previousPaperProgramPoints === undefined ||
-                               !pointsEqual( previousPaperProgramPoints, currentPaperProgramPoints );
+                               !areAllPointsEqual( previousPaperProgramPoints, currentPaperProgramPoints, positionInterval );
     const programSpecificData = dataByProgramNumber[ paperProgramNumber ];
 
     // If this paper program contains data that is intended for use by the sim design board, and that data has changed
@@ -226,8 +250,11 @@ const updateBoard = presentPaperProgramInfo => {
       );
     }
 
-    // Update the paper program points for the next time through this loop.
-    mapOfPaperProgramNumbersToPreviousPoints.set( paperProgramNumber, currentPaperProgramPoints );
+    // Update the paper program points for the next time through this loop. Only saved if there is sufficient
+    // movement to trigger the next movement event.
+    if ( paperProgramHasMoved ) {
+      mapOfPaperProgramNumbersToPreviousPoints.set( paperProgramNumber, currentPaperProgramPoints );
+    }
   } );
 
   // Run removal handlers for any paper programs that have disappeared.
