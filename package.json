@@ -5,17 +5,17 @@
   "author": "Jan Paul Posma <j@npaulpos.ma>, PhET Interactive Simulations <phethelp@colorado.edu>",
   "license": "MIT",
   "scripts": {
+    "createdb": "psql -c \"SELECT 1\" paper_programs_development 2>/dev/null 1>/dev/null || createdb paper_programs_development",
     "dev": "npm run createdb && npm run migrate && npm start",
     "dev:docker": "npm run migrate && npm start",
-    "createdb": "psql -c \"SELECT 1\" paper_programs_development 2>/dev/null 1>/dev/null || createdb paper_programs_development",
+    "dropdb": "dropdb --if-exists paper_programs_development",
+    "heroku-postbuild": "webpack",
+    "lint": "eslint . --rulesdir ../chipper/eslint/rules",
+    "lint-fix": "eslint . --fix",
     "migrate": "knex migrate:latest",
     "rollback": "knex migrate:rollback",
     "start": "node server/entry-server.js",
-    "dropdb": "dropdb --if-exists paper_programs_development",
-    "heroku-postbuild": "webpack",
-    "test": "npm run lint",
-    "lint": "eslint . --rulesdir ../chipper/eslint/rules",
-    "lint-fix": "eslint . --fix"
+    "test": "npm run lint"
   },
   "engines": {
     "node": "9.3.x",
