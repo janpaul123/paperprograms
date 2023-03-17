@@ -28,7 +28,7 @@ const scene = new phet.scenery.Node();
 // related to changing positions. Value is normalized, so a value of 0.2 means it has to move
 // 20% of the screen in either X or Y dimensions.
 let positionInterval = 0;
-const updatePositionInterval = newValue => positionInterval = newValue;
+const updatePositionInterval = newValue => { positionInterval = newValue; };
 
 // Render the scene graph.  Once this is done it updates itself, so there is no other React-based rendering of this
 // component.
