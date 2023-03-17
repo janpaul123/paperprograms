@@ -9,6 +9,9 @@ router.use( require( 'nocache' )() );
 
 const knex = require( 'knex' )( require( '../knexfile' )[ process.env.NODE_ENV || 'development' ] );
 
+/**
+ * Get the current code for the specified space name and program number.
+ */
 router.get( '/program.:spaceName.:number.js', ( req, res ) => {
   const { spaceName, number } = req.params;
   knex
