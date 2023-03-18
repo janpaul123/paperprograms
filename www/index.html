@@ -1,74 +1,50 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>Paper Land - Launch Page</title>
-</head>
-<style>
-  body {
-    background-color: linen;
-    font-family: Arial, sans-serif;
-    font-size: large;
-    color: #2E4152;
-    text-align: center;
-  }
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Paper Playground</title>
+        <link rel="stylesheet" href="styles.css">
+    </head>
+    <body>
+      <main id="main">
+        <h1 id="title">Paper Playground</h1>
+        <p id="subtitle">Interactive Interaction Design</p>
+        <section id="tribute-info">
+          <h3 id="headline">To run the tool, open the three pages below in order:</h3>
+          <ol>
+            <li>
+              <a href="localhost:3000/camera.html" target="_blank"><strong class="page">Camera</strong></a> - Configure your paper detection, change spaces (sets of programs), and access the program editor here! 
+            </li>
+            <li>
+              <a href="localhost:3000/projector.html" target="_blank"><strong class="page">Projector</strong></a> - Required for code execution. Open before Design Board. Optionally, this window can be used to verify program recognition or display simple canvas graphics or audio. 
+            </li>
+            <li>
+              <a href="localhost:3000/board.html" target="_blank"><strong class="page">Design Board</strong></a> - Interactive Design Board. The multimodal components you create in your programs will appear here!
+            </li>
+          </ol>
 
-  h1 {
-    margin: 40px;
-  }
+          <blockquote>
+            <p>
+            Instructions and tutorials for use are currently under construction. 
+            The best documentation at this time is <a href="https://github.com/phetsims/paper-land/blob/master/docs/tutorial.md">
+            the original paperprograms tutorial.md</a>. Documentation updates coming soon!
+            </p>
+          </blockquote>
 
-  p {
-    margin: 15px 0 15px 0;
-  }
+          <div name="img-div" id="img-div">
+              <img src="og-image.jpg" id="image" alt="Papers with overlaid projections from code associated with the papers."/>
+              <figcaption name="img-caption" id="img-caption">Papers linked to JavaScript programs edited and executed in real time!</figcaption>
+          </div>
 
-  .section-desc {
-    font-size: small;
-  }
-
-  a, a:visited, a:active {
-    color: blue;
-  }
-
-  a:hover {
-    color: white;
-  }
-
-  footer p {
-    font-size: 0.7rem;
-    margin: auto;
-  }
-</style>
-
-<body>
-<h1>Paper Playground</h1>
-<p>Open all three links:</p>
-<p>
-  <a href="./camera.html" target="_blank">Camera</a>
-</p>
-<p class="section-desc">Detect or Preview Programs. Create or select playspaces. Print papers. Open program editor.</p>
-<p>
-  <a href="./projector.html" target="_blank">Projector</a>
-</p>
-<p class="section-desc">MUST BE OPEN TO FOR BOARD TO RUN. See code displayed specifically to the Projector window.
-  Verify programs are detected.</p>
-<p>
-  <a href="./board.html" target="_blank">Design Board</a>
-</p>
-<p class="section-desc">Display and change interactive web components instantiated from your Programs.</p>
-<p>The <strong>Editor</strong> is opened from Camera. Currently, the Editor is tied to the Playspace you are creating
-  Programs in.</p>
-
-</body>
-
-<footer>
-  <p>
-    This tool was adapted from <a href="https://paperprograms.org/" target="_blank">Paper Programs</a> by Jan Paul,
-    which was inspired by the work at <a href="https://dynamicland.org" target="_blank">Dynamicland</a>.
-  </p>
-  <p>
-    Find the Paper Playground source code and documentation in the <a href="https://github.com/phetsims/paper-land"
-                                                                      target="_blank">paper-land GitHub repository</a>.
-  </p>
-</footer>
-
+          <p>
+            This tool was adapted from <a href="https://paperprograms.org/" target="_blank">Paper Programs</a> by Jan Paul Posma,
+            which was inspired by the work at <a href="https://dynamicland.org" target="_blank">Dynamicland</a>.
+          </p>
+          <p>
+            Find the Paper Playground source code and documentation in the <a href="https://github.com/phetsims/paper-land"
+                                                                              target="_blank">paper-land GitHub repository</a>.
+          </p>
+        </main>
+    </body>
 </html>

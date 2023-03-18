@@ -1,20 +1,18 @@
-# Paper Programs
+# Paper Playground
 
-**Run Javascript on pieces of paper!**
+## This project is currently under construction. More details coming soon!
 
-- See [the website](https://paperprograms.org) for an overview.
-- See [the tutorial on Youtube](https://www.youtube.com/watch?v=pkwSoJrVWAY) for comprehensive installation instructions.
-- If you want to run this locally, see below.
+For the best documentation currently available, see the wonderful project this was based on:
+- [Paper Programs]](https://paperprograms.org)
 
-## Local installation
-Make sure to have [Node.js](https://nodejs.org) and [PostgreSQL](https://postgresql.org) installed first. Checkout the repo and run in a terminal:
+## Coming soon:
+- Description and project goals!
+- Updated tutorial!
+- CONTRIBUTING.md and how to help out!
 
-```sh
-npm install
-npm run dev
-```
-
-This will create a new database, and start all necessary processes. Then go to [localhost:3000](http://localhost:3000) to get started.
+## Want to chat?
+- Make a post in this repository's Discussions tab!
+- Reach out to brett.fiedler@colorado.edu
 
 ## License
-[MIT](https://en.wikipedia.org/wiki/MIT_License)
+This software is licensed under the MIT liscense. See the [LICENSE](https://github.com/phetsims/paper-land/blob/master/LICENSE) in this repository.
