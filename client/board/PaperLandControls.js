@@ -28,8 +28,9 @@ export default function PaperLandControls( props ) {
         step={POSITION_INTERVAL_STEP}
         value={positionInterval}
         onChange={event => {
-          setPositionInterval( event.target.value );
-          props.updatePositionInterval( positionInterval );
+          const newValue = event.target.value;
+          setPositionInterval( newValue );
+          props.updatePositionInterval( newValue );
         }}
       />
     </div>

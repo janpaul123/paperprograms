@@ -24,11 +24,36 @@ document.body.appendChild( simDisplayDiv );
 // Create the root of the scene graph.
 const scene = new phet.scenery.Node();
 
+// The object in localStorage on page load
+const storedBoardConfig = JSON.parse( localStorage.boardConfig || '{}' );
+
+// Defaults for the board configuration, if values are not saved to local storage
+const defaultBoardConfig = {
+  positionInterval: 0
+};
+
+// Combined config with localStorage overriding defaults. This will change during runtime as new values
+// are set.
+const boardConfigObject = {
+  ...defaultBoardConfig,
+  ...storedBoardConfig
+};
+
+// Populate with defaults.
+localStorage.boardConfig = JSON.stringify( boardConfigObject );
+
 // The amount of movement required for a program to be considered "moved" and trigger events
 // related to changing positions. Value is normalized, so a value of 0.2 means it has to move
 // 20% of the screen in either X or Y dimensions.
-let positionInterval = 0;
-const updatePositionInterval = newValue => { positionInterval = newValue; };
+const updatePositionInterval = newValue => {
+  saveValueToBoardConfig( 'positionInterval', newValue );
+};
+
+// Sets the new value to the runtime config object and local storage for next page load.
+const saveValueToBoardConfig = ( nameString, value ) => {
+  boardConfigObject[ nameString ] = value;
+  localStorage.boardConfig = JSON.stringify( boardConfigObject );
+};
 
 // Render the scene graph.  Once this is done it updates itself, so there is no other React-based rendering of this
 // component.
@@ -39,7 +64,7 @@ ReactDOM.render(
         <SceneryDisplay scene={scene} width={DISPLAY_SIZE.width} height={DISPLAY_SIZE.height}/>
       </div>
       <div className={styles.paperLandControlsPanel}>
-        <PaperLandControls initialPositionInterval={positionInterval} updatePositionInterval={updatePositionInterval}></PaperLandControls>
+        <PaperLandControls initialPositionInterval={boardConfigObject.positionInterval} updatePositionInterval={updatePositionInterval}></PaperLandControls>
       </div>
     </div>
   </div>,
@@ -190,7 +215,7 @@ const updateBoard = presentPaperProgramInfo => {
     const previousPaperProgramPoints = mapOfPaperProgramNumbersToPreviousPoints.get( paperProgramNumber );
     const currentPaperProgramPoints = paperProgramInstanceInfo.points;
     let paperProgramHasMoved = previousPaperProgramPoints === undefined ||
-                               !areAllPointsEqual( previousPaperProgramPoints, currentPaperProgramPoints, positionInterval );
+                               !areAllPointsEqual( previousPaperProgramPoints, currentPaperProgramPoints, boardConfigObject.positionInterval );
     const programSpecificData = dataByProgramNumber[ paperProgramNumber ];
 
     // If this paper program contains data that is intended for use by the sim design board, and that data has changed
