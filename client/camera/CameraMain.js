@@ -466,7 +466,40 @@ export default class CameraMain extends React.Component {
           </div>
           <div className={styles.sidebar}>
             {this.showTestButton ? (
-              <Button onClick={() => CameraMain.getProgramSummaryList( [ 'taliesin', 'templates' ], summaryList => console.log( summaryList ) )}>Test Button</Button>
+              <Button
+                onClick={() => {
+
+                  // Get a list of the supported constraints for the devices available from this browser.
+                  const supportedConstraints = navigator.mediaDevices.getSupportedConstraints();
+                  console.log( '------------- Supported Constraints -------------------' );
+                  console.log( `${JSON.stringify( supportedConstraints, null, 2 )}` );
+
+                  // Get a list of all media devices and log some of the information to the console.
+                  navigator.mediaDevices
+                    .enumerateDevices()
+                    .then( devices => {
+                      console.log( '------------- Device List -------------------' );
+                      devices.forEach( device => {
+                        console.log( `${device.kind}: ${device.label} id = ${device.deviceId}` );
+                      } );
+                    } )
+                    .catch( err => {
+                      console.error( `${err.name}: ${err.message}` );
+                    } );
+
+                  // Get a list of all devices that support video.
+                  navigator.mediaDevices.getUserMedia( { video: true } ).then( mediaStream => {
+                    const track = mediaStream.getVideoTracks()[ 0 ];
+                    if ( track ) {
+                      console.log( `---------------- found track = ${track.label}, capabilities below -----------------` );
+                      console.log( `${JSON.stringify( track.getCapabilities(), null, 2 )}` );
+                    }
+                  } );
+                }
+                }
+              >
+                Test Button
+              </Button>
             ) : ( '' )}
             <div className={`${styles.sidebarSection} ${styles.create}`}>
               <button onClick={() => { this.setState( { showCreateProgramDialog: true } ); }}>Create Program</button>
