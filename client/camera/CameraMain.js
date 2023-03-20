@@ -38,7 +38,8 @@ export default class CameraMain extends React.Component {
       showCreateProgramDialog: false,
       programCreateMode: ProgramCreateModes.SIMPLE_HELLO_WORLD,
       selectedProgramToCopy: '',
-      programCodeToCopy: ''
+      programCodeToCopy: '',
+      cameraManualMode: false
     };
 
     // @private {number|null} - id of current timeout, null when no timeout set
@@ -471,14 +472,14 @@ export default class CameraMain extends React.Component {
 
                   // Get a list of the supported constraints for the devices available from this browser.
                   const supportedConstraints = navigator.mediaDevices.getSupportedConstraints();
-                  console.log( '------------- Supported Constraints -------------------' );
+                  console.log( '===== Supported Constraints =====' );
                   console.log( `${JSON.stringify( supportedConstraints, null, 2 )}` );
 
                   // Get a list of all media devices and log some of the information to the console.
                   navigator.mediaDevices
                     .enumerateDevices()
                     .then( devices => {
-                      console.log( '------------- Device List -------------------' );
+                      console.log( '===== Device List =====' );
                       devices.forEach( device => {
                         console.log( `${device.kind}: ${device.label} id = ${device.deviceId}` );
                       } );
@@ -487,14 +488,26 @@ export default class CameraMain extends React.Component {
                       console.error( `${err.name}: ${err.message}` );
                     } );
 
-                  // Get a list of all devices that support video.
-                  navigator.mediaDevices.getUserMedia( { video: true } ).then( mediaStream => {
-                    const track = mediaStream.getVideoTracks()[ 0 ];
-                    if ( track ) {
-                      console.log( `---------------- found track = ${track.label}, capabilities below -----------------` );
-                      console.log( `${JSON.stringify( track.getCapabilities(), null, 2 )}` );
-                    }
-                  } );
+                  // Get the video track.
+                  navigator.mediaDevices.getUserMedia( { video: true } )
+                    .then( mediaStream => {
+                      const track = mediaStream.getVideoTracks()[ 0 ];
+                      if ( track ) {
+
+                        // Log information about the video track to the console.
+                        console.log( `===== found track = ${track.label}, capabilities below =====` );
+                        console.log( `${JSON.stringify( track.getCapabilities(), null, 2 )}` );
+
+                        console.log( '===== track settings =====' );
+                        console.log( `${JSON.stringify( track.getSettings(), null, 1 )}` );
+
+                        console.log( '===== track constraints =====' );
+                        console.log( `${JSON.stringify( track.getConstraints(), null, 1 )}` );
+                      }
+                    } )
+                    .catch( e => {
+                      console.log( `Error getting video track = ${e}` );
+                    } );
                 }
                 }
               >
@@ -795,6 +808,40 @@ export default class CameraMain extends React.Component {
                   }
                 />{' '}
                 programs
+              </div>
+            </div>
+            <div className={styles.sidebarSection}>
+              <h3 className={styles.headerWithOption}>Camera Settings</h3>
+              <div>
+                <input
+                  type='checkbox'
+                  name='manualMode'
+                  checked={this.state.cameraManualMode}
+                  onChange={event => {
+                    this.setState( { cameraManualMode: event.target.checked } );
+                    const setToManualMode = event.target.checked;
+                    navigator.mediaDevices.getUserMedia( { video: true } )
+                      .then( mediaStream => {
+                        const track = mediaStream.getVideoTracks()[ 0 ];
+                        if ( track ) {
+                          if ( setToManualMode ) {
+                            console.log( 'Setting camera parameters to manual mode.' );
+                            track.applyConstraints( { advanced: [ { whiteBalanceMode: 'manual' } ] } )
+                              .then( () => { track.applyConstraints( { advanced: [ { exposureMode: 'manual' } ] } ); } )
+                              .then( () => { track.applyConstraints( { advanced: [ { exposureTime: 200 } ] } ); } )
+                              .catch( error => { console.log( `Error applying constraints: ${error}` ); } );
+                          }
+                          else {
+                            track.applyConstraints( { advanced: [ { whiteBalanceMode: 'continuous' } ] } )
+                              .then( () => { track.applyConstraints( { advanced: [ { exposureMode: 'continuous' } ] } ); } )
+                              .catch( error => { console.log( `Error applying constraints: ${error}` ); } );
+                          }
+                        }
+                      } )
+                      .catch( error => { console.log( `error while setting camera to manual mode: ${error}` );} );
+                  }}
+                />
+                <label htmlFor='manualMode'>Camera in Manual Mode</label>
               </div>
             </div>
           </div>
