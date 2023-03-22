@@ -5,6 +5,7 @@ import clientConstants from '../clientConstants.js';
 import { codeToName, getApiUrl, programMatchesFilterString } from '../utils';
 import styles from './CameraMain.css';
 import CameraVideo from './CameraVideo.js';
+import CameraControls from './CameraControls.js';
 import CreateProgramDialog from './CreateProgramDialog.js';
 import helloWorld from './helloWorld';
 import { printCalibrationPage, printPage } from './printPdf';
@@ -38,8 +39,7 @@ export default class CameraMain extends React.Component {
       showCreateProgramDialog: false,
       programCreateMode: ProgramCreateModes.SIMPLE_HELLO_WORLD,
       selectedProgramToCopy: '',
-      programCodeToCopy: '',
-      cameraManualMode: false
+      programCodeToCopy: ''
     };
 
     // @private {number|null} - id of current timeout, null when no timeout set
@@ -811,38 +811,9 @@ export default class CameraMain extends React.Component {
               </div>
             </div>
             <div className={styles.sidebarSection}>
-              <h3 className={styles.headerWithOption}>Camera Settings</h3>
-              <div>
-                <input
-                  type='checkbox'
-                  name='manualMode'
-                  checked={this.state.cameraManualMode}
-                  onChange={event => {
-                    this.setState( { cameraManualMode: event.target.checked } );
-                    const setToManualMode = event.target.checked;
-                    navigator.mediaDevices.getUserMedia( { video: true } )
-                      .then( mediaStream => {
-                        const track = mediaStream.getVideoTracks()[ 0 ];
-                        if ( track ) {
-                          if ( setToManualMode ) {
-                            console.log( 'Setting camera parameters to manual mode.' );
-                            track.applyConstraints( { advanced: [ { whiteBalanceMode: 'manual' } ] } )
-                              .then( () => { track.applyConstraints( { advanced: [ { exposureMode: 'manual' } ] } ); } )
-                              .then( () => { track.applyConstraints( { advanced: [ { exposureTime: 200 } ] } ); } )
-                              .catch( error => { console.log( `Error applying constraints: ${error}` ); } );
-                          }
-                          else {
-                            track.applyConstraints( { advanced: [ { whiteBalanceMode: 'continuous' } ] } )
-                              .then( () => { track.applyConstraints( { advanced: [ { exposureMode: 'continuous' } ] } ); } )
-                              .catch( error => { console.log( `Error applying constraints: ${error}` ); } );
-                          }
-                        }
-                      } )
-                      .catch( error => { console.log( `error while setting camera to manual mode: ${error}` );} );
-                  }}
-                />
-                <label htmlFor='manualMode'>Camera in Manual Mode</label>
-              </div>
+              <CameraControls
+                data={this.state}
+              />
             </div>
           </div>
         </div>
