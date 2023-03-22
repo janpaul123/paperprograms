@@ -13,9 +13,7 @@ export default class CameraVideo extends React.Component {
   constructor( props ) {
     super( props );
     this.state = { keyPoints: [], videoWidth: 1, videoHeight: 1 };
-  }
 
-  UNSAFE_componentWillMount() {
     const init = () => {
       navigator.mediaDevices
         .getUserMedia( {
@@ -37,8 +35,12 @@ export default class CameraVideo extends React.Component {
         } );
     };
 
-    if ( cv.Mat ) {init();}
-    else {cv.onRuntimeInitialized = init;}
+    if ( cv.Mat ) {
+      init();
+    }
+    else {
+      cv.onRuntimeInitialized = init;
+    }
   }
 
   componentDidMount() {
@@ -111,7 +113,7 @@ export default class CameraVideo extends React.Component {
 
     return (
       <div ref={el => ( this._el = el )} style={{ width, height, overflow: 'hidden' }}>
-        <video id='videoInput' style={{ display: 'none' }} ref={el => ( this._videoInput = el )} />
+        <video id='videoInput' style={{ display: 'none' }} ref={el => ( this._videoInput = el )}/>
         <div
           style={{
             position: 'relative',
@@ -174,25 +176,25 @@ export default class CameraVideo extends React.Component {
             );
           } )}
           {this.props.allowSelectingDetectedPoints &&
-            this.state.keyPoints.map( ( point, index ) => {
-              const px = ( point.pt.x - point.size / 2 ) / this.state.videoWidth * width * k + x;
-              const py = ( point.pt.y - point.size / 2 ) / this.state.videoHeight * height * k + y;
-              return (
-                <div
-                  key={index}
-                  className={styles.keyPoint}
-                  style={{
-                    transform: `translate(${px}px, ${py}px) scale(${k})`,
-                    transformOrigin: '0 0',
-                    width: point.size / this.state.videoWidth * width,
-                    height: point.size / this.state.videoHeight * height
-                  }}
-                  onClick={() => {
-                    this.props.onSelectPoint( { color: point.avgColor, size: point.size } );
-                  }}
-                />
-              );
-            } )}
+           this.state.keyPoints.map( ( point, index ) => {
+             const px = ( point.pt.x - point.size / 2 ) / this.state.videoWidth * width * k + x;
+             const py = ( point.pt.y - point.size / 2 ) / this.state.videoHeight * height * k + y;
+             return (
+               <div
+                 key={index}
+                 className={styles.keyPoint}
+                 style={{
+                   transform: `translate(${px}px, ${py}px) scale(${k})`,
+                   transformOrigin: '0 0',
+                   width: point.size / this.state.videoWidth * width,
+                   height: point.size / this.state.videoHeight * height
+                 }}
+                 onClick={() => {
+                   this.props.onSelectPoint( { color: point.avgColor, size: point.size } );
+                 }}
+               />
+             );
+           } )}
         </div>
       </div>
     );

@@ -11,7 +11,7 @@ function projectorSize() {
 }
 
 export default class ProjectorMain extends React.Component {
-  UNSAFE_componentWillMount() {
+  componentDidMount() {
     navigator.mediaDevices
       .getUserMedia( {
         audio: false,
