@@ -10,8 +10,8 @@ edition = "2018"
 [output.html]
 mathjax-support = true
 site-url = "/mdBook/"
-git-repository-url = "https://github.com/phetsims/paper-land/tree/master/docs"
-edit-url-template = "https://github.com/phetsims/paper-land/edit/master/docs/{path}"
+git-repository-url = "https://github.com/phetsims/paper-land/tree/master/src"
+edit-url-template = "https://github.com/phetsims/paper-land/edit/master/src/{path}"
 
 [output.html.playground]
 editable = true
