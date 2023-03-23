@@ -10,8 +10,8 @@ edition = "2023"
 [output.html]
 mathjax-support = true
 site-url = "/mdBook/"
-git-repository-url = "https://github.com/rust-lang/mdBook/tree/master/docs"
-edit-url-template = "https://github.com/rust-lang/mdBook/edit/master/docs/{path}"
+git-repository-url = "https://github.com/phetsims/paper-land/tree/master/docs"
+edit-url-template = "https://github.com/phetsims/paper-land/edit/master/docs/{path}"
 
 [output.html.playground]
 editable = true
@@ -25,6 +25,3 @@ boost-hierarchy = 2
 boost-paragraph = 1
 expand = true
 heading-split-level = 2
-
-[output.html.redirect]
-"/format/config.html" = "configuration/index.html"
