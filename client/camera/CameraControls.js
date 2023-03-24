@@ -43,6 +43,9 @@ class CameraControls extends React.Component {
       .catch( e => {
         console.log( `Error getting media track: e = ${e}` );
       } );
+
+    // TODO: Is this really a good way to ensure sequential setting of params?  See https://github.com/phetsims/paper-land/issues/56.
+    this.cameraSettingPromises = Promise.resolve();
   }
 
   /**
@@ -73,11 +76,11 @@ class CameraControls extends React.Component {
             const exposureMode = checked ? 'continuous' : 'manual';
             this.setState( { exposureMode } );
             console.log( `exposureMode = ${exposureMode}` );
-            this.track.applyConstraints( {
-              advanced: [ { exposureMode } ]
-            } )
-              .then( () => { console.log( 'setting of exposure mode finished' ); } )
-              .catch( e => { console.log( `error setting exposure mode: ${e}` );} );
+            this.cameraSettingPromises.then( () => {
+              this.track.applyConstraints( {
+                advanced: [ { exposureMode } ]
+              } );
+            } );
           }}
         />
         <br/>
@@ -91,13 +94,13 @@ class CameraControls extends React.Component {
             value={this.state.exposureTime}
             onChange={event => {
               const exposureTime = event.target.valueAsNumber;
-              console.log( `exposureTime = ${exposureTime}` );
               this.setState( { exposureTime: exposureTime } );
-              this.track.applyConstraints( {
-                advanced: [ { exposureTime: exposureTime } ]
-              } )
-                .then( () => { console.log( 'setting of exposure time finished' ); } )
-                .catch( e => { console.log( `error setting exposure time: ${e}` );} );
+              this.cameraSettingPromises.then( () => {
+                this.track.applyConstraints( {
+                  advanced: [ { exposureTime: exposureTime } ]
+                } );
+                console.log( `exposureTime = ${exposureTime}` );
+              } );
             }}
           /> ) : ( '' )}
       </>
