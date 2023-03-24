@@ -81,25 +81,25 @@ class CameraControls extends React.Component {
           }}
         />
         <br/>
-        <input
-          name='exposure'
-          type='range'
-          min={this.trackCapabilities.exposureTime.min.toString()}
-          max={this.trackCapabilities.exposureTime.max.toString()}
-          step={this.trackCapabilities.exposureTime.step.toString()}
-          value={this.state.exposureTime}
-          onChange={event => {
-            const exposureTime = event.target.valueAsNumber;
-            console.log( `exposureTime = ${exposureTime}` );
-            this.setState( { exposureTime: exposureTime } );
-            this.track.applyConstraints( {
-              advanced: [ { exposureTime: exposureTime } ]
-            } )
-              .then( () => { console.log( 'setting of exposure time finished' ); } )
-              .catch( e => { console.log( `error setting exposure time: ${e}` );} );
-          }}
-        />
-
+        {this.state.exposureMode === 'manual' ? (
+          <input
+            name='exposure'
+            type='range'
+            min={this.trackCapabilities.exposureTime.min.toString()}
+            max={this.trackCapabilities.exposureTime.max.toString()}
+            step={this.trackCapabilities.exposureTime.step.toString()}
+            value={this.state.exposureTime}
+            onChange={event => {
+              const exposureTime = event.target.valueAsNumber;
+              console.log( `exposureTime = ${exposureTime}` );
+              this.setState( { exposureTime: exposureTime } );
+              this.track.applyConstraints( {
+                advanced: [ { exposureTime: exposureTime } ]
+              } )
+                .then( () => { console.log( 'setting of exposure time finished' ); } )
+                .catch( e => { console.log( `error setting exposure time: ${e}` );} );
+            }}
+          /> ) : ( '' )}
       </>
     );
   }
