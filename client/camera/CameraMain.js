@@ -5,7 +5,8 @@ import clientConstants from '../clientConstants.js';
 import { codeToName, getApiUrl, programMatchesFilterString } from '../utils';
 import styles from './CameraMain.css';
 import CameraVideo from './CameraVideo.js';
-import CameraControls from './CameraControls.js';
+
+// import CameraControls from './CameraControls.js';
 import CreateProgramDialog from './CreateProgramDialog.js';
 import helloWorld from './helloWorld';
 import { printCalibrationPage, printPage } from './printPdf';
@@ -810,11 +811,11 @@ export default class CameraMain extends React.Component {
                 programs
               </div>
             </div>
-            <div className={styles.sidebarSection}>
-              <CameraControls
-                data={this.state}
-              />
-            </div>
+            {/*<div className={styles.sidebarSection}>*/}
+            {/*  <CameraControls*/}
+            {/*    data={this.state}*/}
+            {/*  />*/}
+            {/*</div>*/}
           </div>
         </div>
       </div>
