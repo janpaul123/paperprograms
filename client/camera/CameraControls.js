@@ -7,6 +7,7 @@
 
 import React from 'react';
 import styles from './CameraMain.css';
+import BootstrapSwitchButton from 'bootstrap-switch-button-react';
 
 class CameraControls extends React.Component {
 
@@ -61,25 +62,24 @@ class CameraControls extends React.Component {
     return (
       <>
         <h3 className={styles.headerWithOption}>Camera Settings</h3>
-        <br/>
-        <input
-          type='checkbox'
-          name='automaticExposure'
+        <p>Exposure:</p>
+        <BootstrapSwitchButton
           checked={this.state.exposureMode === 'continuous'}
-          onChange={event => {
-            const automaticExposure = event.target.checked;
-            this.setState( { exposureMode: automaticExposure ? 'continuous' : 'manual' } );
-            if ( automaticExposure ) {
-              console.log( 'Setting camera parameters to continuous mode.' );
-              this.track.applyConstraints( { advanced: [ { exposureMode: 'continuous' } ] } );
-            }
-            else {
-              console.log( 'Setting camera parameters to manual mode.' );
-              this.track.applyConstraints( { advanced: [ { exposureMode: 'manual' } ] } );
-            }
+          width={100}
+          size='sm'
+          onlabel='Auto'
+          offlabel='Manual'
+          onChange={checked => {
+            const exposureMode = checked ? 'continuous' : 'manual';
+            this.setState( { exposureMode } );
+            console.log( `exposureMode = ${exposureMode}` );
+            this.track.applyConstraints( {
+              advanced: [ { exposureMode } ]
+            } )
+              .then( () => { console.log( 'setting of exposure mode finished' ); } )
+              .catch( e => { console.log( `error setting exposure mode: ${e}` );} );
           }}
         />
-        <label htmlFor='automaticExposure'>Auto Exposure</label>
         <br/>
         <input
           name='exposure'
@@ -96,7 +96,7 @@ class CameraControls extends React.Component {
               advanced: [ { exposureTime: exposureTime } ]
             } )
               .then( () => { console.log( 'setting of exposure time finished' ); } )
-              .catch( e => { console.log( `error setting exposre time: ${e}` );} );
+              .catch( e => { console.log( `error setting exposure time: ${e}` );} );
           }}
         />
 
