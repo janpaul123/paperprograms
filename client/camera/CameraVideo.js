@@ -118,7 +118,8 @@ export default class CameraVideo extends React.Component {
           style={{
             position: 'relative',
             width,
-            height
+            height,
+            background: 'linen'
           }}
           ref={el => ( this._zoomSurface = el )}
         >

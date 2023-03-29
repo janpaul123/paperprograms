@@ -5,6 +5,7 @@
 :local(.root) {
   display: flex;
   flex-direction: column;
+  background-color: #2E4152;
 }
 
 :local(.appRoot) {
@@ -62,7 +63,7 @@
 
 :local(.sidebar) a,
 :local(.sidebar) a:visited {
-  color: rgb(43, 156, 212);
+  color: skyblue;
 }
 
 :local(.sidebar) a:hover {
@@ -191,6 +192,9 @@
 }
 
 :local(.editorAnchor) {
-  font-size: 20px;
-  margin-bottom: 10px;
+  font-size: 18px;
+  /* margin-bottom: 10px; */
+  text-align: center;
+  border-style: double;
+  border-radius: 3;
 }

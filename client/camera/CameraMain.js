@@ -244,7 +244,7 @@ export default class CameraMain extends React.Component {
           console.error( error );
         }
         else {
-          alert( 'Created "Hello World" program' );
+          alert( 'Created "Generic Template" program' );
         }
       }
     );
@@ -518,7 +518,9 @@ export default class CameraMain extends React.Component {
             <div className={`${styles.sidebarSection} ${styles.create}`}>
               <button onClick={() => { this.setState( { showCreateProgramDialog: true } ); }}>Create Program</button>
               <a href={editorUrl} target='_blank' className={styles.editorAnchor} rel='noreferrer'>
-                Open Editor
+                Open <br></br>
+                Code Editor <br></br>
+                for this Space
               </a>
             </div>
             <div className={styles.sidebarSection}>
