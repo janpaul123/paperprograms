@@ -1,8 +1,8 @@
-// Density: Voice Density Value
-// Keywords: density, voicing, view
+// Altitude: Image Y-Position mapped to Altitude - Copy
+// Keywords: altitude, image, asset, view
 // ------------------------------- //
-// Required Programs (dependencies) Density: Model
-// Recommended Programs: Density prefix
+// Required Programs (dependencies) Altitude: Model
+// Recommended Programs: Altitude prefix
 // Program Description:
 
 importScripts('paper.js');
@@ -14,55 +14,46 @@ importScripts('paper.js');
     //----------------------------------------------------------------------
     // Template Variables
     //----------------------------------------------------------------------
-    // The model Property that this component is going to observe.
-    // By defining here, this template can add boilerplate code
-    // to nicely handle adding this program before or after the 
-    // model Property exists.
-    const propertyName = 'densityProperty';
+    const propertyName = 'altitudeProperty';
+
+    const imageWidthInPixels = 50; // Must be positive.
+
+    const imageFile = 'girlInAir.png';
+    // const imageFile = 'lunarLander.png';
+    // const imageFile = 'birdInAir.png';
+
     //----------------------------------------------------------------------
     
     // Global model for all programs
     const model = sharedData.modelProperty.value;
 
+    const imageElement = document.createElement( 'img' );
+    imageElement.setAttribute( 'src', `media/images/${imageFile}` );
+    const imageNode = new phet.scenery.Image( imageElement, {
+      minWidth: imageWidthInPixels,
+      maxWidth: imageWidthInPixels
+    } );
+
+    sharedData.scene.addChild( imageNode );
+
     // Adds listeners to the model component when the program is added or when the model
     // Property is added.
     const addComponentListeners = component => {
 
-      const utterance = new phet.utteranceQueue.Utterance( {
-        
-        // This utterance should not cancel others
-        announcerOptions: {
-          cancelOther: false
-        }
-      } );
-
       // This the function to implement to watch the changing Property.
       const componentListener = value => {
-
-        // Just read the new density value, to 1 decimal place.
-        const densityValue = phet.dot.Utils.toFixed( value, 1 );
-        utterance.alert = `Density: ${densityValue} kilograms per Liter.`;
-        phet.scenery.voicingUtteranceQueue.addToBack( utterance );
-      };
-
-      if ( scratchpad[ `componentListener${paperProgramNumber}` ] ) {
-        throw new Error( 'There is already a listener on the scratchpad' );
+        const viewAltitude =  sharedData.displaySize.height * ( 1 - value / component.range.max );
+        imageNode.centerY = viewAltitude;
+        imageNode.centerX = sharedData.displaySize.width / 2;
       }
-      else {
-        scratchpad[ `componentListener${paperProgramNumber}` ] = componentListener;
-        component.link( componentListener );
-      }
+
+      component.link( componentListener );
+      scratchpad[ `componentListener${paperProgramNumber}` ] = componentListener;
     };
 
     // removes 
     const removeComponentListeners = ( component ) => {
-      const beforeListenerCount = component.getListenerCount();
       component.unlink( scratchpad[ `componentListener${paperProgramNumber}` ] );
-
-      if ( beforeListenerCount === component.getListenerCount() ) {
-        throw new Error( 'A listener was NOT removed' );
-      }
-
       delete scratchpad[ `componentListener${paperProgramNumber}` ];
     };
 
@@ -94,6 +85,7 @@ importScripts('paper.js');
     scratchpad[ `modelRemoved${paperProgramNumber}` ] = modelRemovedListener;
     scratchpad[ `removeComponentListeners${paperProgramNumber}`] = removeComponentListeners;
     scratchpad[ `propertyName${paperProgramNumber}` ] = propertyName;
+    scratchpad[ `imageNode${paperProgramNumber}`] = imageNode;
   };
 
   const onProgramRemoved = ( paperProgramNumber, scratchpad, sharedData ) => {
@@ -102,18 +94,17 @@ importScripts('paper.js');
     const model = sharedData.modelProperty.value;
 
     const propertyName = scratchpad[ `propertyName${paperProgramNumber}` ];
-    const removalListener = scratchpad[ `removeComponentListeners${paperProgramNumber}`];
     if ( model[ propertyName ] ) {
-      removalListener( model[ propertyName ] );
+      scratchpad[ `removeComponentListeners${paperProgramNumber}`]( model[ propertyName ] );
     }
 
-    phet.paperLand.modelComponentAddedEmitter.removeListener( scratchpad[ `modelAdded${paperProgramNumber}` ] );
-    phet.paperLand.modelComponentRemovedEmitter.removeListener( scratchpad[ `modelRemoved${paperProgramNumber}` ] );
+    sharedData.scene.removeChild( scratchpad[ `imageNode${paperProgramNumber}` ] );
 
     delete scratchpad[ `modelAdded${paperProgramNumber}` ];
     delete scratchpad[ `modelRemoved${paperProgramNumber}` ];
     delete scratchpad[ `removeComponentListeners${paperProgramNumber}`];
     delete scratchpad[ `propertyName${paperProgramNumber}` ];
+    delete scratchpad[ `imageNode${paperProgramNumber}` ];
   }
 
   // Add the state change handler defined above as data for this paper.
@@ -135,7 +126,8 @@ importScripts('paper.js');
   ctx.font = '20px sans-serif';
   ctx.textAlign = 'center';
   ctx.fillStyle = 'rgb(255,0,0)';
-  ctx.fillText('Voice', canvas.width / 2, canvas.height / 2 - 10);
+  ctx.fillText('Altitude', canvas.width / 2, canvas.height / 2 - 10);
   ctx.fillStyle = 'rgb(0,255,0)';
-  ctx.fillText('Density', canvas.width / 2, canvas.height / 2 + 20);
+  ctx.fillText('Image', canvas.width / 2, canvas.height / 2 + 20);
 })();
+

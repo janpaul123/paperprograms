@@ -19,11 +19,11 @@ importScripts('paper.js');
     const model = sharedData.modelProperty.value;
 
     const massProperty = new phet.axon.NumberProperty( 5, {
-      range: new phet.dot.Range( 0.5, 10 )
+      range: new phet.dot.Range( 1, 10 )
     } );
 
-    const volumeProperty = new phet.axon.NumberProperty( 5, {
-      range: new phet.dot.Range( 1, 10 )
+    const volumeProperty = new phet.axon.NumberProperty( 2, {
+      range: new phet.dot.Range( 1, 5 )
     } );
 
     // When true, density is directly controlled by another program instead of derived

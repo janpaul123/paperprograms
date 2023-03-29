@@ -29,7 +29,7 @@ importScripts('paper.js');
     const addComponentListeners = component => {
 
       const utterance = new phet.utteranceQueue.Utterance( {
-
+        
         // This Utterance should not cancel others (like ones speaking about density)
         announcerOptions: {
           cancelOther: false

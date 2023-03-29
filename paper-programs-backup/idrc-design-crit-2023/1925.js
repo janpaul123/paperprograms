@@ -26,7 +26,7 @@ importScripts('paper.js');
     const imageNode = new phet.scenery.Image( imageElement, {
       minWidth: 150,
       maxWidth: 150,
-      center: new phet.dot.Vector2( 150, 150 )
+      center: new phet.dot.Vector2( 300, 150 )
     } );
     scratchpad[ `imageNode${paperProgramNumber}` ] = imageNode;
     sharedData.scene.addChild( imageNode );
@@ -41,7 +41,7 @@ importScripts('paper.js');
           alert( model.densityRange, 'A range for density is required for this image component.' );
         }
 
-        imageNode.opacity = Math.max( value / model.densityRange.max, 0.3 );
+        imageNode.opacity = Math.max( value / model.densityRange.max, 0.2 );
       };
       component.link( componentListener );
       scratchpad[ `componentListener${paperProgramNumber}` ] = componentListener;

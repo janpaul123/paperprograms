@@ -1,5 +1,5 @@
-// VisibleProperty
-// Keywords: model, value, property, properties
+// Quadrilateral
+// Keywords: lol, hacks
 
 importScripts('paper.js');
 
@@ -9,33 +9,23 @@ importScripts('paper.js');
   // Board code
   //----------------------------------------------------------------------
 
-  // Get the paper number of this piece of paper (which should not change).
-  const myPaperNumber = await paper.get('number');
-
   // Create model components (Properties that can change) when the program is added.
   const onProgramAdded = ( paperProgramNumber, scratchpad, sharedData ) => {
 
-    // Global model for all programs
-    const model = sharedData.modelProperty.value;
+    scratchpad.iframe = document.createElement( 'iframe' );
+    scratchpad.iframe.src = 'https://phet-dev.colorado.edu/html/quadrilateral/1.0.0-dev.76/phet/quadrilateral_all_phet.html?deviceConnection&postMessageOnLoad';
+    document.body.appendChild( scratchpad.iframe );
 
-    // Put new model Properties here.
-    if ( !model.visibleProperty ) {
-          
-      // Creates model properties, using axon because it has capabilities for dynmaic behaviour
-      model.visibleProperty = new phet.axon.BooleanProperty(
-        false // initial value
-      );
-    }
+    const iframeWindow = scratchpad.iframe.contentWindow;
+    window.addEventListener( 'message', event => {
+      console.log( event );
+    } );
   };
 
   // This is tear down code that removes the programs when phyical papers are removed 
   const onProgramRemoved = ( paperProgramNumber, scratchpad, sharedData ) => {
-
-    // Delete your model Properties here.
-    if ( model.visibleProperty ) {
-        model.visibleProperty.dispose();
-        delete model.visibleProperty;
-    }
+    document.body.removeChild( scratchpad.iframe );
+    delete scratchpad.iframe;
   };
 
   // Add the state change handler defined above as data for this paper.
@@ -61,9 +51,9 @@ importScripts('paper.js');
   ctx.font = '20px sans-serif';
   ctx.textAlign = 'center';
   ctx.fillStyle = 'rgb(255,0,0)';
-  ctx.fillText('Create', canvas.width / 2, canvas.height / 2 - 10);
+  ctx.fillText('Quad', canvas.width / 2, canvas.height / 2 - 10);
   ctx.fillStyle = 'rgb(0,255,0)';
-  ctx.fillText('ohmsLawModel', canvas.width / 2, canvas.height / 2 + 20);
+  ctx.fillText('Test', canvas.width / 2, canvas.height / 2 + 20);
 })();
 
 

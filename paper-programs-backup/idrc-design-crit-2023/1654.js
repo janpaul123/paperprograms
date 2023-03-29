@@ -30,6 +30,7 @@ importScripts('paper.js');
     const uniqueSliderName = 'volumeSlider'; // e.g. voltageSlider
 
     const modelProperty = model.volumeProperty; // Rename to the model Property you created
+    modelProperty.link(volume => {console.log(volume)})
     const range = modelProperty.range; // Range of values for the model and slider.
     const voicingNameResponse = '';
 
@@ -61,7 +62,7 @@ importScripts('paper.js');
     scratchpad[ uniqueSliderName ] = slider;
 
     // Place the slider - relative to top left of the Board
-    slider.center = new phet.dot.Vector2( 300, 100 );
+    slider.center = new phet.dot.Vector2( 300, 300 );
   };
 
   const onProgramChangedPosition = ( paperProgramNumber, positionPoints, scratchpad, sharedData ) => {
