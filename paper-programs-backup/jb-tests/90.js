@@ -5,9 +5,9 @@
 // Recommended Programs: General Template (templates)
 // Program Description: Example program with functioning Board and Projector code!
 
-importScripts('paper.js');
+importScripts( 'paper.js' );
 
-(async () => {
+( async () => {
 
   //----------------------------------------------------------------------
   // Board code
@@ -66,37 +66,37 @@ importScripts('paper.js');
   const onProgramRemoved = ( paperProgramNumber, scratchpad, sharedData ) => {
 
     // Disconnect from the step listener.
-    if ( scratchpad.stepListener ){
+    if ( scratchpad.stepListener ) {
       console.log( 'removing listener' );
       phet.axon.stepTimer.removeListener( scratchpad.stepListener );
       scratchpad.stepListener = null;
     }
-    else{
+    else {
       alert( 'No step listener found when paper removed.' );
     }
 
     // Remove the image from the display.
-    if ( scratchpad.imageNode ){
+    if ( scratchpad.imageNode ) {
       sharedData.scene.removeChild( scratchpad.imageNode );
       scratchpad.imageNode = null;
     }
-    else{
+    else {
       alert( 'Error: Image node not found in scratchpad data.' );
     }
 
     // Unhook the image position updater and remove the model element.
-    if ( sharedData.modelProperty.value.positionProperty ){
+    if ( sharedData.modelProperty.value.positionProperty ) {
       sharedData.modelProperty.value.positionProperty.unlink( scratchpad.updatePosition );
       scratchpad.updatePosition = null;
       phet.paperLand.removeModelComponent( 'positionProperty' );
     }
-    else{
+    else {
       alert( 'No positionProperty found when paper removed.' );
     }
   };
 
   // Add the state change handler defined above as data for this paper.
-  await paper.set('data', {
+  await paper.set( 'data', {
     paperPlaygroundData: {
       updateTime: Date.now(),
       eventHandlers: {
@@ -110,19 +110,19 @@ importScripts('paper.js');
   // Projector code
   //----------------------------------------------------------------------
 
-  const canvas = await paper.get('canvas');
+  const canvas = await paper.get( 'canvas' );
 
   // Draw message on the canvas.
-  const ctx = canvas.getContext('2d');
+  const ctx = canvas.getContext( '2d' );
   ctx.font = '20px sans-serif';
   ctx.textAlign = 'center';
   ctx.fillStyle = 'rgb(255,0,0)';
-  ctx.fillText('Time-Based', canvas.width / 2, canvas.height / 2 - 10);
+  ctx.fillText( 'Time-Based', canvas.width / 2, canvas.height / 2 - 10 );
   ctx.fillStyle = 'rgb(0,255,0)';
-  ctx.fillText('Demo', canvas.width / 2, canvas.height / 2 + 20);
+  ctx.fillText( 'Demo', canvas.width / 2, canvas.height / 2 + 20 );
 
   // Get a "supporter canvas", which is a canvas for the entire
   // projection surface.
-  const supporterCanvas = await paper.get('supporterCanvas');
-  const supporterCtx = supporterCanvas.getContext('2d');
-})();
+  const supporterCanvas = await paper.get( 'supporterCanvas' );
+  const supporterCtx = supporterCanvas.getContext( '2d' );
+} )();
