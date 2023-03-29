@@ -2,20 +2,32 @@
  * NodeJS script to read the paper programs from the configured database and store them locally.  This is generally
  * used to back up the paper programs and potentially store them in GitHub.
  *
+ * IMPORTANT NOTE: This script must be run from the top level of the repo if you want to use the URL in the .env file.
+ * Example Usage:
+ *
+ *   node scripts/db/get-programs-from-database.js paper-programs-backup
+ *
  * @author John Blanco (PhET Interactive Simulations)
  */
 
 const fs = require( 'fs' );
 
+const USAGE_STRING = 'Usage: node get-programs-from-db.js <path-to-backup-dir>';
+
+// Make sure the correct number of arguments were supplied.
+if ( process.argv.length !== 3 || ( process.argv.length === 3 && process.argv[ 2 ][ 0 ] === '-' ) ) {
+  console.log( USAGE_STRING );
+  process.exit( 1 );
+}
+
+const pathToBackupDirectory = process.argv[ 2 ];
+
 // Set up the DB connection.
 const knex = require( 'knex' )( require( '../../knexfile' )[ process.env.NODE_ENV || 'development' ] );
 
-// other constants
-const LOCAL_STORAGE_DIRECTORY = 'paper-programs-backup';
-
 // Verify that the location where the programs will be stored exists.
-if ( !fs.existsSync( LOCAL_STORAGE_DIRECTORY ) ) {
-  console.log( `Local backup directory ${LOCAL_STORAGE_DIRECTORY} not found, aborting.` );
+if ( !fs.existsSync( pathToBackupDirectory ) ) {
+  console.log( `Local backup directory ${pathToBackupDirectory} not found, aborting.` );
   process.exit( 1 );
 }
 
@@ -39,7 +51,7 @@ if ( !fs.existsSync( LOCAL_STORAGE_DIRECTORY ) ) {
     for ( const playSpace of playSpaces ) {
 
       // Check if the subdirectory for this play space exists and, if not, create it.
-      const playSpaceSubdirectory = `${LOCAL_STORAGE_DIRECTORY}/${playSpace}`;
+      const playSpaceSubdirectory = `${pathToBackupDirectory}/${playSpace}`;
       if ( !fs.existsSync( playSpaceSubdirectory ) ) {
         fs.mkdirSync( playSpaceSubdirectory );
       }
