@@ -518,8 +518,7 @@ export default class CameraMain extends React.Component {
             <div className={`${styles.sidebarSection} ${styles.create}`}>
               <button onClick={() => { this.setState( { showCreateProgramDialog: true } ); }}>Create Program</button>
               <a href={editorUrl} target='_blank' className={styles.editorAnchor} rel='noreferrer'>
-                Open <br></br>
-                Code Editor <br></br>
+                Open Code Editor <br></br>
                 for this Space
               </a>
             </div>
