@@ -10,7 +10,7 @@ import styles from './BoardMain.css';
 // must move 5% of the distance in X or Y to be considered a change and trigger events.
 const MIN_POSITION_INTERVAL = 0;
 const MAX_POSITION_INTERVAL = 0.5;
-const POSITION_INTERVAL_STEP = 0.05;
+const POSITION_INTERVAL_STEP = 0.01;
 
 export default function PaperLandControls( props ) {
   const [ positionInterval, setPositionInterval ] = useState( props.initialPositionInterval );
