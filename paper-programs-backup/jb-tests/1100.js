@@ -1,8 +1,8 @@
 // Add Red Slider
 
-importScripts('paper.js');
+importScripts( 'paper.js' );
 
-(async () => {
+( async () => {
 
   const onProgramAdded = ( paperProgramNumber, scratchpad, sharedData ) => {
 
@@ -10,6 +10,7 @@ importScripts('paper.js');
       alert( 'There is already a slider!' );
     }
     else {
+
       // Create a Scenery slider.
       const valueProperty = new phet.axon.Property( 0 );
       const range = new phet.dot.Range( 0, 100 );
@@ -21,11 +22,11 @@ importScripts('paper.js');
 
   const onProgramChangedPosition = ( paperProgramNumber, positionPoints, scratchpad, sharedData ) => {
     console.log( 'change position called' );
-    if ( scratchpad.slider ){
+    if ( scratchpad.slider ) {
 
       // Center the image based on the position of the paper.
-      const paperCenterX = ( positionPoints[0].x + positionPoints[1].x ) / 2;
-      const paperCenterY = ( positionPoints[0].y + positionPoints[2].y ) / 2;
+      const paperCenterX = ( positionPoints[ 0 ].x + positionPoints[ 1 ].x ) / 2;
+      const paperCenterY = ( positionPoints[ 0 ].y + positionPoints[ 2 ].y ) / 2;
       scratchpad.slider.centerX = paperCenterX * sharedData.displaySize.width;
       scratchpad.slider.centerY = paperCenterY * sharedData.displaySize.height;
     }
@@ -33,17 +34,17 @@ importScripts('paper.js');
 
   const onProgramRemoved = ( paperProgramNumber, scratchpad, sharedData ) => {
     console.log( 'remove called', scratchpad );
-    if ( scratchpad.slider ){
+    if ( scratchpad.slider ) {
       sharedData.scene.removeChild( scratchpad.slider );
       scratchpad.slider = null;
     }
-    else{
+    else {
       alert( 'Error: Slider not found in scratchpad data.' );
     }
   };
 
-   // Add the state change handler defined above as data for this paper.
-  await paper.set('data', {
+  // Add the state change handler defined above as data for this paper.
+  await paper.set( 'data', {
     paperPlaygroundData: {
       updateTime: Date.now(),
       eventHandlers: {
@@ -55,16 +56,14 @@ importScripts('paper.js');
   } );
 
   // Get a canvas object for this paper.
-  const canvas = await paper.get('canvas');
+  const canvas = await paper.get( 'canvas' );
 
   // Add some text to the canvas.
-  const ctx = canvas.getContext('2d');
+  const ctx = canvas.getContext( '2d' );
   ctx.font = '20px sans-serif';
   ctx.textAlign = 'center';
   ctx.fillStyle = 'rgb(155,25,34)';
-  ctx.fillText('Red', canvas.width / 2, canvas.height / 2 - 10);
+  ctx.fillText( 'Red', canvas.width / 2, canvas.height / 2 - 10 );
   ctx.fillStyle = 'rgb(155,25,34)';
-  ctx.fillText('Slider', canvas.width / 2, canvas.height / 2 + 20);
-
-})();
-
+  ctx.fillText( 'Slider', canvas.width / 2, canvas.height / 2 + 20 );
+} )();
