@@ -62,8 +62,8 @@ const pushProgramToDatabase = async ( spaceName, programNumber, programCode, kne
       console.log( 'The source file and the code in the DB are the same, skipping update.' );
     }
 
-    return;
-    // process.exit();
+    // TODO: Should this be a return? exit seems to stop all execution for other programs
+    process.exit();
   }
   catch( e ) {
     console.log( `  Error adding program to DB:  = ${e}` );
