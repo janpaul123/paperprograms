@@ -34,8 +34,7 @@ const pushProgramToDatabase = async ( spaceName, programNumber, programCode, kne
     // There should be at most one match in the DB.  If there are more, something is wrong.
     if ( programInfo.length > 1 ) {
       console.error( `  Expected at most one matching program, found ${programInfo.length}, aborting.` );
-      return;
-      // process.exit( 1 );
+      process.exit( 1 );
     }
 
     if ( programInfo.length === 0 ) {
