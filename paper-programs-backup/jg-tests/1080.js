@@ -1,5 +1,9 @@
-// addModelObserver - observable
-// Keywords: test
+// VertexD Controller
+// Keywords: vertex
+// =============================== //
+// Program Dependencies: N/A
+// Recommended Programs: General Template (templates)
+// Program Description: Example program with functioning Board and Projector code!
 
 importScripts('paper.js');
 
@@ -9,26 +13,25 @@ importScripts('paper.js');
   // Board code
   //----------------------------------------------------------------------
 
-  // Create view components (graphics, Voicing, sound, anything)
+  // Called when the program is detected or changed.
   const onProgramAdded = ( paperProgramNumber, scratchpad, sharedData ) => {
+  };
 
-    // Global model for all programs
+  // Called when the paper positions change.
+  const onProgramChangedPosition = ( paperProgramNumber, positionPoints, scratchPad, sharedData ) => {
     const model = sharedData.modelProperty.value;
+    const displayCenter = new phet.dot.Vector2(
+      ( positionPoints[ 0 ].x + ( positionPoints[ 2 ].x - positionPoints[ 0 ].x ) / 2 ) * sharedData.displaySize.width,
+      ( 1 - ( positionPoints[ 0 ].y + ( positionPoints[ 2 ].y - positionPoints[ 0 ].y ) / 2 ) ) * sharedData.displaySize.height,
+    )
 
-    console.log( 'adding model component' );
-    phet.paperLand.addModelComponent( 'testModelProperty', new phet.axon.Property( true ) );
+    if ( model.vertexDPositionProperty ) {
+      model.vertexDPositionProperty.value = displayCenter;
+    }
   };
 
-  const onProgramChangedPosition = ( paperProgramNumber, scratchPad, sharedData ) => {
-    
-    // Behavior that changes with paper position here.
-  };
-
-  // This is tear down code that removes the programs when phyical papers are removed 
+  // Called when the program is changed or no longer detected.
   const onProgramRemoved = ( paperProgramNumber, scratchpad, sharedData ) => {
-
-    console.log( 'removing model component' );
-    phet.paperLand.removeModelComponent( 'testModelProperty' );
   };
 
   // Add the state change handler defined above as data for this paper.
@@ -47,17 +50,14 @@ importScripts('paper.js');
   // Projector code
   //----------------------------------------------------------------------
 
-  // Get a canvas object for this paper.
   const canvas = await paper.get('canvas');
 
-  // Draw the name of the program on the canvas
+  // Draw "Hello world" on the canvas.
   const ctx = canvas.getContext('2d');
   ctx.font = '20px sans-serif';
   ctx.textAlign = 'center';
   ctx.fillStyle = 'rgb(255,0,0)';
-  ctx.fillText('Create', canvas.width / 2, canvas.height / 2 - 10);
+  ctx.fillText('Hello', canvas.width / 2, canvas.height / 2 - 10);
   ctx.fillStyle = 'rgb(0,255,0)';
-  ctx.fillText('ohmsLawModel', canvas.width / 2, canvas.height / 2 + 20);
+  ctx.fillText('world', canvas.width / 2, canvas.height / 2 + 20);
 })();
-
-

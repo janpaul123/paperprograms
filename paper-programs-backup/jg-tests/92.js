@@ -13,19 +13,80 @@ importScripts('paper.js');
   const onProgramAdded = ( paperProgramNumber, scratchpad, sharedData ) => {
 
     scratchpad.iframe = document.createElement( 'iframe' );
-    scratchpad.iframe.src = 'https://phet-dev.colorado.edu/html/quadrilateral/1.0.0-dev.76/phet/quadrilateral_all_phet.html?deviceConnection&postMessageOnLoad';
+    scratchpad.iframe.src = 'https://phet-dev.colorado.edu/html/quadrilateral/1.0.0-paperLandTest.1/phet/quadrilateral_all_phet.html?brand=phet&ea&debugger&deviceConnection&postMessageOnLoad&voicingInitiallyEnabled';
+    // scratchpad.iframe.src = 'http://localhost:8080/quadrilateral/quadrilateral_en.html?brand=phet&ea&debugger&deviceConnection&postMessageOnLoad&voicingInitiallyEnabled'
     document.body.appendChild( scratchpad.iframe );
 
-    const iframeWindow = scratchpad.iframe.contentWindow;
-    window.addEventListener( 'message', event => {
-      console.log( event );
+    const loadMessage = JSON.stringify( {
+      type: 'quadrilateralCalibration',
+      width: sharedData.displaySize.width,
+      height: sharedData.displaySize.height
     } );
+
+    const iframeWindow = scratchpad.iframe.contentWindow;
+    iframeWindow.postMessage( loadMessage, '*' );
+
+    scratchpad.windowMessageListener = event => {
+      const data = JSON.parse( event.data );
+
+      if ( data.type === 'load' ) {
+        iframeWindow.postMessage( loadMessage, '*' );
+      }
+    };
+    window.addEventListener( 'message', scratchpad.windowMessageListener );
+
+    // model Properties for each Vertex position
+    phet.paperLand.addModelComponent( 'vertexAPositionProperty', new phet.axon.Property( new phet.dot.Vector2( 0, 0 ) ) );
+    phet.paperLand.addModelComponent( 'vertexBPositionProperty', new phet.axon.Property( new phet.dot.Vector2( 0, 0 ) ) );
+    phet.paperLand.addModelComponent( 'vertexCPositionProperty', new phet.axon.Property( new phet.dot.Vector2( 0, 0 ) ) );
+    phet.paperLand.addModelComponent( 'vertexDPositionProperty', new phet.axon.Property( new phet.dot.Vector2( 0, 0 ) ) );
+
+    const globalModel = sharedData.modelProperty.value;
+    
+    scratchpad.multilink = phet.axon.Multilink.multilink( 
+      [ globalModel.vertexAPositionProperty, globalModel.vertexBPositionProperty, globalModel.vertexCPositionProperty, globalModel.vertexDPositionProperty ],
+      ( aPosition, bPosition, cPosition, dPosition ) => {
+        console.log( aPosition );
+
+        // The simulation receives a message and knows how to use this data to set vertex positions.
+        iframeWindow.postMessage( JSON.stringify( {
+          type: 'quadrilateralControl', 
+          vertexA: {
+            x: aPosition.x,
+            y: aPosition.y
+          },
+          vertexB: {
+            x: bPosition.x,
+            y: bPosition.y
+          },
+          vertexC: {
+            x: cPosition.x,
+            y: cPosition.y  
+          },
+          vertexD: {
+            x: dPosition.x,
+            y: dPosition.y
+          },
+          } ), '*' );
+      }
+    )
   };
 
   // This is tear down code that removes the programs when phyical papers are removed 
   const onProgramRemoved = ( paperProgramNumber, scratchpad, sharedData ) => {
     document.body.removeChild( scratchpad.iframe );
     delete scratchpad.iframe;
+
+    window.removeEventListener( 'message', scratchpad.windowMessageListener );
+    delete scratchpad.windowMessageListener;
+
+    scratchpad.multilink.dispose();
+    delete scratchpad.multilink;
+
+    phet.paperLand.removeModelComponent( 'vertexAPositionProperty' );
+    phet.paperLand.removeModelComponent( 'vertexBPositionProperty' );
+    phet.paperLand.removeModelComponent( 'vertexCPositionProperty' );
+    phet.paperLand.removeModelComponent( 'vertexDPositionProperty' );
   };
 
   // Add the state change handler defined above as data for this paper.

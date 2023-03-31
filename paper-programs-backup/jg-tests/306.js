@@ -1,5 +1,5 @@
-// Checkbox for VisibleProperty
-// Keywords: view
+// addModelObserver - observer
+// Keywords: test
 
 importScripts('paper.js');
 
@@ -9,34 +9,13 @@ importScripts('paper.js');
   // Board code
   //----------------------------------------------------------------------
 
-  // Get the paper number of this piece of paper (which should not change).
-  const myPaperNumber = await paper.get('number');
-
   // Create view components (graphics, Voicing, sound, anything)
   const onProgramAdded = ( paperProgramNumber, scratchpad, sharedData ) => {
+    scratchpad.propertyListener = value => console.log( value );
+    scratchpad.handleAttach = property => property.link( scratchpad.propertyListener );
+    scratchpad.handleDetach = property => property.unlink( scratchpad.propertyListener ); 
 
-    // Global model for all programs
-    const model = sharedData.modelProperty.value;
-
-    // Use scene.addChild( someNode ) to draw components in the Board.
-    const scene = sharedData.scene;
-
-    // Create your View components here.
-    if ( !scratchpad.visibilityCheckbox && model.visibleProperty ) {
-        scratchpad.visibilityCheckbox = new phet.sun.Checkbox(
-          model.visibleProperty,
-
-          // the visual label - replace with any scenery Node ( text, circle,
-          // rectangle, image...)
-          new phet.scenery.Text( 'Visible' )
-        );
-
-      // Add to the Board
-      sharedData.scene.addChild( scratchpad.visibilityCheckbox );
-
-      // position - relative to left top of the board
-      scratchpad.visibilityCheckbox.center = new phet.dot.Vector2( 100, 100 );
-    }
+    phet.paperLand.addModelObserver( 'testModelProperty', scratchpad.handleAttach, scratchpad.handleDetach );
   };
 
   const onProgramChangedPosition = ( paperProgramNumber, scratchPad, sharedData ) => {
@@ -46,12 +25,11 @@ importScripts('paper.js');
 
   // This is tear down code that removes the programs when phyical papers are removed 
   const onProgramRemoved = ( paperProgramNumber, scratchpad, sharedData ) => {
+    phet.paperLand.removeModelObserver( 'testModelProperty', scratchpad.handleDetach );
 
-    // Remove view components here.
-    if ( scratchpad.visibilityCheckbox ) {
-        scratchpad.visibilityCheckbox.dispose();
-        delete scratchpad.visibilityCheckbox;
-    }
+    delete scratchpad.propertyListener;
+    delete scratchpad.handleAttach;
+    delete scratchpad.handleDetach;
   };
 
   // Add the state change handler defined above as data for this paper.

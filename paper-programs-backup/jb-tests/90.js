@@ -120,9 +120,5 @@ importScripts( 'paper.js' );
   ctx.fillText( 'Time-Based', canvas.width / 2, canvas.height / 2 - 10 );
   ctx.fillStyle = 'rgb(0,255,0)';
   ctx.fillText( 'Demo', canvas.width / 2, canvas.height / 2 + 20 );
-
-  // Get a "supporter canvas", which is a canvas for the entire
-  // projection surface.
-  const supporterCanvas = await paper.get( 'supporterCanvas' );
-  const supporterCtx = supporterCanvas.getContext( '2d' );
+  
 } )();
