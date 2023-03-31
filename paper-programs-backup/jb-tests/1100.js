@@ -1,4 +1,4 @@
-// Add Red Slider
+// Add red slider
 
 importScripts( 'paper.js' );
 

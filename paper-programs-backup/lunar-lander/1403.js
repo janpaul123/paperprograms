@@ -1,8 +1,8 @@
-// Altitude: Image Y-Position mapped to Altitude - Copy
-// Keywords: altitude, image, asset, view
+// Thrust
+// Keywords: model, p2, physics
 // ------------------------------- //
-// Required Programs (dependencies) Altitude: Model
-// Recommended Programs: Altitude prefix
+// Required Programs (dependencies) Altitude:
+// Recommended Programs:
 // Program Description:
 
 importScripts('paper.js');
@@ -11,101 +11,29 @@ importScripts('paper.js');
 
   const onProgramAdded = ( paperProgramNumber, scratchpad, sharedData ) => {
 
-    //----------------------------------------------------------------------
-    // Template Variables
-    //----------------------------------------------------------------------
-    const propertyName = 'altitudeProperty';
-
-    const imageWidthInPixels = 50; // Must be positive.
-
-    const imageFile = 'girlInAir.png';
-    // const imageFile = 'lunarLander.png';
-    // const imageFile = 'birdInAir.png';
-
-    //----------------------------------------------------------------------
-    
-    // Global model for all programs
-    const model = sharedData.modelProperty.value;
-
-    const imageElement = document.createElement( 'img' );
-    imageElement.setAttribute( 'src', `media/images/${imageFile}` );
-    const imageNode = new phet.scenery.Image( imageElement, {
-      minWidth: imageWidthInPixels,
-      maxWidth: imageWidthInPixels
-    } );
-
-    sharedData.scene.addChild( imageNode );
-
-    // Adds listeners to the model component when the program is added or when the model
-    // Property is added.
-    const addComponentListeners = component => {
-
-      // This the function to implement to watch the changing Property.
-      const componentListener = value => {
-        const viewAltitude =  sharedData.displaySize.height * ( 1 - value / component.range.max );
-        imageNode.centerY = viewAltitude;
-        imageNode.centerX = sharedData.displaySize.width / 2;
-      }
-
-      component.link( componentListener );
-      scratchpad[ `componentListener${paperProgramNumber}` ] = componentListener;
-    };
-
-    // removes 
-    const removeComponentListeners = ( component ) => {
-      component.unlink( scratchpad[ `componentListener${paperProgramNumber}` ] );
-      delete scratchpad[ `componentListener${paperProgramNumber}` ];
-    };
-
-    if ( model[ propertyName ] ) {
-
-      // Property exists, add view listeners to it
-      addComponentListeners( model[ propertyName ] );
-    }
-    const modelAddedListener = ( componentName, component ) => {
-
-      // Property was added after this one, add listeners to it
-      if ( componentName === propertyName ) {
-        addComponentListeners( component );
-      }
-    };
-    phet.paperLand.modelComponentAddedEmitter.addListener( modelAddedListener );
-
-    const modelRemovedListener = ( componentName, component ) => {
-
-      // Property was removed before this one, remove listeners
-      if ( componentName === propertyName ) {
-        removeComponentListeners( component );
-      }
-    };
-    phet.paperLand.modelComponentRemovedEmitter.addListener( modelRemovedListener );
-
-    // assign components to the scratchpad so that they can be removed later
-    scratchpad[ `modelAdded${paperProgramNumber}` ] = modelAddedListener;
-    scratchpad[ `modelRemoved${paperProgramNumber}` ] = modelRemovedListener;
-    scratchpad[ `removeComponentListeners${paperProgramNumber}`] = removeComponentListeners;
-    scratchpad[ `propertyName${paperProgramNumber}` ] = propertyName;
-    scratchpad[ `imageNode${paperProgramNumber}`] = imageNode;
+    // create a model Property for thrust
+    const thrustProperty = new phet.axon.Property( 0 );
+    phet.paperLand.addModelComponent( 'thrustProperty', thrustProperty );
   };
 
   const onProgramRemoved = ( paperProgramNumber, scratchpad, sharedData ) => {
+    phet.paperLand.removeModelComponent( 'thrustProperty' );
+  };
 
-    // Global model for all programs
-    const model = sharedData.modelProperty.value;
+  const onProgramChangedPosition = ( paperProgramNumber, positionPoints, scratchPad, sharedData ) => {
+    const thrustProperty = sharedData.model.get( 'thrustProperty' );
 
-    const propertyName = scratchpad[ `propertyName${paperProgramNumber}` ];
-    if ( model[ propertyName ] ) {
-      scratchpad[ `removeComponentListeners${paperProgramNumber}`]( model[ propertyName ] );
-    }
+    const range = new phet.dot.Range( 0, 25 );
 
-    sharedData.scene.removeChild( scratchpad[ `imageNode${paperProgramNumber}` ] );
+    // This is the center in x or y dimensions of the paper, normalized from 0 to 1.
+    // Graphics coordinate system has 0 at top so subtract from 1 so that 0 is at the bottom.
+    let paperCenterY = 1 - ( positionPoints[ 0 ].y + positionPoints[ 2 ].y ) / 2;
+    const newValue = paperCenterY * range.max;
 
-    delete scratchpad[ `modelAdded${paperProgramNumber}` ];
-    delete scratchpad[ `modelRemoved${paperProgramNumber}` ];
-    delete scratchpad[ `removeComponentListeners${paperProgramNumber}`];
-    delete scratchpad[ `propertyName${paperProgramNumber}` ];
-    delete scratchpad[ `imageNode${paperProgramNumber}` ];
-  }
+    // make sure value is within the range
+    const constrainedValue = Math.max( Math.min( newValue, range.max ), range.min );
+    thrustProperty.value = constrainedValue;
+  };
 
   // Add the state change handler defined above as data for this paper.
   await paper.set('data', {
@@ -113,6 +41,7 @@ importScripts('paper.js');
       updateTime: Date.now(),
       eventHandlers: {
         onProgramAdded: onProgramAdded.toString(),
+        onProgramChangedPosition: onProgramChangedPosition.toString(),
         onProgramRemoved: onProgramRemoved.toString()
       }
     }

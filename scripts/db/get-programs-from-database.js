@@ -92,7 +92,7 @@ const extractTitleFromCode = paperProgramCode => {
     endOfFirstLine = paperProgramCode.length;
   }
   const firstLine = paperProgramCode.substring( 0, endOfFirstLine );
-  let title = firstLine.match( /[A-Za-z0-9].*$/ )[ 0 ];
+  let title = ( firstLine.match( /[A-Za-z0-9].*$/ ) || [] )[ 0 ];
   if ( title === undefined || title.length === 0 ) {
     title = '(no title found)';
   }
