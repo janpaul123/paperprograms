@@ -61,7 +61,7 @@ importScripts('paper.js');
     // -----------------------------------------------------
 
     // Global model for all programs
-    const model = sharedData.modelProperty.value;
+    const model = sharedData.model;
 
     // Use scene.addChild( someNode ) to draw components in the Board.
     const scene = sharedData.scene;
@@ -84,7 +84,7 @@ importScripts('paper.js');
     const valueTextListener = value => {
       valueText.string = phet.dot.Utils.toFixed( value, decimalPlaces );
     };
-    sharedData.modelProperty.value[propertyName].link( valueTextListener );
+    sharedData.model.get( 'propertyName' ).link( valueTextListener );
 
     // Put values on the scratchpad so we can use them in the other functions. By appending
     // the program number we reduce the chance of collisions with other programs.
@@ -107,7 +107,7 @@ importScripts('paper.js');
     }
 
     // global model for the board (all )    
-    const model = sharedData.modelProperty.value;
+    const model = sharedData.model;
 
     if ( model[ propertyName ] ) {
       const range = model[ propertyName ].range;
@@ -150,7 +150,7 @@ importScripts('paper.js');
     const propertyNameId = `propertyName${paperProgramNumber}`;
 
     // Global model for all programs
-    const model = sharedData.modelProperty.value;
+    const model = sharedData.model;
 
     // Use scene.removeChild( someNode ) to remove components in the Board.
     const scene = sharedData.scene;

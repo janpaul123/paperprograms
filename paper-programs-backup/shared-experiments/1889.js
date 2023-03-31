@@ -14,7 +14,7 @@ importScripts('paper.js');
 
   const onProgramAdded = ( paperProgramNumber, scratchpad, sharedData ) => {
     // Global model for this all programs
-    const model = sharedData.modelProperty.value;
+    const model = sharedData.model;
     
     // Safety checks that model properties do not already exist.
     if ( !model.resistanceProperty && !model.voltageProperty && !model.currentProperty ) {
@@ -47,7 +47,7 @@ importScripts('paper.js');
   };
 // This is tear down code that removes the programs when phyical papers are removed 
   const onProgramRemoved = ( paperProgramNumber, scratchpad, sharedData ) => {
-    const model = sharedData.modelProperty.value;
+    const model = sharedData.model;
     if ( model.resistanceProperty ) {
       model.resistanceProperty.dispose();
       delete model.resistanceProperty;

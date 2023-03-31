@@ -13,7 +13,7 @@ importScripts('paper.js');
   const onProgramAdded = ( paperProgramNumber, scratchpad, sharedData ) => {
 
     // Global model for all programs
-    const model = sharedData.modelProperty.value;
+    const model = sharedData.model;
 
     console.log( 'adding model component' );
     phet.paperLand.addModelComponent( 'testModelProperty', new phet.axon.Property( true ) );

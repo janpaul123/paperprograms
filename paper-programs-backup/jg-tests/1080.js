@@ -19,7 +19,7 @@ importScripts('paper.js');
 
   // Called when the paper positions change.
   const onProgramChangedPosition = ( paperProgramNumber, positionPoints, scratchPad, sharedData ) => {
-    const model = sharedData.modelProperty.value;
+    const model = sharedData.model;
     const displayCenter = new phet.dot.Vector2(
       ( positionPoints[ 0 ].x + ( positionPoints[ 2 ].x - positionPoints[ 0 ].x ) / 2 ) * sharedData.displaySize.width,
       ( 1 - ( positionPoints[ 0 ].y + ( positionPoints[ 2 ].y - positionPoints[ 0 ].y ) / 2 ) ) * sharedData.displaySize.height,

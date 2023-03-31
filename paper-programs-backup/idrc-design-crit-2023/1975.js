@@ -32,7 +32,7 @@ importScripts('paper.js');
     } );
 
     // Global model for all programs
-    const model = sharedData.modelProperty.value;
+    const model = sharedData.model;
 
     // Adds a listener to the altitudeProperty - called when this program is added OR
     // when the altitudeProperty is added to the global model.
@@ -108,7 +108,7 @@ importScripts('paper.js');
 
     if ( scratchpad[ `altitudeSound${paperProgramNumber}`] ) {
 
-      sharedData.modelProperty.value.altitudeProperty.unlink( scratchpad[ `soundListener${paperProgramNumber}`] );
+      sharedData.model.get('altitudeProperty').unlink( scratchpad[ `soundListener${paperProgramNumber}`] );
       delete scratchpad[ `soundListener${paperProgramNumber}`];
 
       phet.tambo.soundManager.removeSoundGenerator( scratchpad[ `altitudeSound${paperProgramNumber}`] );

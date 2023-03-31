@@ -16,7 +16,7 @@ importScripts('paper.js');
   const onProgramAdded = ( paperProgramNumber, scratchpad, sharedData ) => {
 
     // Global model for all programs
-    const model = sharedData.modelProperty.value;
+    const model = sharedData.model;
 
     const massProperty = new phet.axon.NumberProperty( 5, {
       range: new phet.dot.Range( 1, 10 )

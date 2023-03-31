@@ -7,7 +7,7 @@ importScripts('paper.js');
   const onProgramChangedPosition = ( paperProgramNumber, positionPoints, scratchpad, sharedData ) => {
     console.log( `onProgramChangedPosition called for ppn ${paperProgramNumber}`);
 
-    const model = sharedData.modelProperty.value;
+    const model = sharedData.model;
     if ( model.altitudeProperty ){
 
       const maxAltitude = 10;

@@ -37,7 +37,7 @@ importScripts('paper.js');
     
     // Behavior that changes with paper position here.
     // Global model for all programs
-    // const model = sharedData.modelProperty.value;
+    // const model = sharedData.model;
   // };
 
   // Called when the program is changed or no longer detected.

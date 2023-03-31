@@ -16,7 +16,7 @@ importScripts('paper.js');
   const onProgramAdded = ( paperProgramNumber, scratchpad, sharedData ) => {
 
     // Global model for all programs
-    const model = sharedData.modelProperty.value;
+    const model = sharedData.model;
 
     //------------------------------------------------------------------------
     // Template variables
@@ -64,7 +64,7 @@ importScripts('paper.js');
   };
 
   const onProgramChangedPosition = ( paperProgramNumber, positionPoints, scratchpad, sharedData ) => {
-    const model = sharedData.modelProperty.value;
+    const model = sharedData.model;
     // Behavior that changes with paper position here. This example changes the number value with height
     // of the paper in the camera. Change this if you want to track rotation or something else.
 

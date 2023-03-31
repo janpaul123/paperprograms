@@ -67,15 +67,15 @@ importScripts('paper.js');
         }
       };
 
-      sharedData.modelProperty.link( scratchpad.addAltitudeSoundGeneratorListener );
+      phet.paperLand.modelComponentAddedEmitter( scratchpad.addAltitudeSoundGeneratorListener );
     }
   };
 
   const onProgramRemoved = ( paperProgramNumber, scratchpad, sharedData ) => {
     if ( scratchpad.altitudeSound ){
-      sharedData.modelProperty.unlink( scratchpad.addAltitudeSoundGeneratorListener );
-      if ( sharedData.modelProperty.altitudeProperty && scratchpad.altitudeChangedListener ){
-        sharedData.modelProperty.altitudeProperty.unlink( scratchpad.altitudeChangedListener );    
+      sharedData.phet.paperLand.modelComponentAddedEmitter.removeListener( scratchpad.addAltitudeSoundGeneratorListener );
+      if ( sharedData.model.has( 'altitudeProperty' ) && scratchpad.altitudeChangedListener ){
+        sharedData.model.get( 'altitudeProperty' ).unlink( scratchpad.altitudeChangedListener );
       }
       tambo.soundManager.removeSoundGenerator( scratchpad.altitudeSound );
       scratchpad.altitudeSound = null;

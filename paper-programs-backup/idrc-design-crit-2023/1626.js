@@ -33,7 +33,7 @@ importScripts('paper.js');
     } );
 
     // Global model for all programs
-    const model = sharedData.modelProperty.value;
+    const model = sharedData.model;
 
     // Adds a listener to the densityProperty - called when this program is added OR
     // when the densityProperty is added to the global model.
@@ -109,7 +109,7 @@ importScripts('paper.js');
 
     if ( scratchpad[ `densitySound${paperProgramNumber}`] ) {
 
-      sharedData.modelProperty.value.densityProperty.unlink( scratchpad[ `soundListener${paperProgramNumber}`] );
+      sharedData.model.get('densityProperty').unlink( scratchpad[ `soundListener${paperProgramNumber}`] );
       delete scratchpad[ `soundListener${paperProgramNumber}`];
 
       phet.tambo.soundManager.removeSoundGenerator( scratchpad[ `densitySound${paperProgramNumber}`] );

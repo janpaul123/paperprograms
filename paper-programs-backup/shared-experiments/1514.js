@@ -21,7 +21,7 @@ importScripts('paper.js');
   const onProgramAdded = ( paperProgramNumber, scratchpad, sharedData ) => {
 
     // Global model for all programs
-    const model = sharedData.modelProperty.value;
+    const model = sharedData.model;
 
     // Use scene.addChild( someNode ) to draw components in the Board.
     const scene = sharedData.scene;
@@ -34,14 +34,14 @@ importScripts('paper.js');
     
     // Behavior that changes with paper position here.
     // Global model for all programs
-    const model = sharedData.modelProperty.value;
+    const model = sharedData.model;
   };
 
   // Called when the program is changed or no longer detected.
   const onProgramRemoved = ( paperProgramNumber, scratchpad, sharedData ) => {
 
     // Global model for all programs
-    const model = sharedData.modelProperty.value;
+    const model = sharedData.model;
 
     // Use scene.removeChild( someNode ) to remove components in the Board.
     const scene = sharedData.scene;

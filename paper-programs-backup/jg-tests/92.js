@@ -41,7 +41,7 @@ importScripts('paper.js');
     phet.paperLand.addModelComponent( 'vertexCPositionProperty', new phet.axon.Property( new phet.dot.Vector2( 0, 0 ) ) );
     phet.paperLand.addModelComponent( 'vertexDPositionProperty', new phet.axon.Property( new phet.dot.Vector2( 0, 0 ) ) );
 
-    const globalModel = sharedData.modelProperty.value;
+    const globalModel = sharedData.model;
     
     scratchpad.multilink = phet.axon.Multilink.multilink( 
       [ globalModel.vertexAPositionProperty, globalModel.vertexBPositionProperty, globalModel.vertexCPositionProperty, globalModel.vertexDPositionProperty ],

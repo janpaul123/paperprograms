@@ -16,7 +16,7 @@ importScripts('paper.js');
   const onProgramAdded = ( paperProgramNumber, scratchpad, sharedData ) => {
     
     // Global model for all programs
-    const model = sharedData.modelProperty.value;
+    const model = sharedData.model;
     if ( !model.voltageProperty ) {
       
       // Creates model properties, using axon because it has capabilities for dynmaic behaviour

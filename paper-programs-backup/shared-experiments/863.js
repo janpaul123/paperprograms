@@ -53,7 +53,7 @@ importScripts('paper.js');
         }
       };
 
-      sharedData.modelProperty.link( scratchpad.addAltitudeSliderListener );
+      phet.paperLand.modelComponentAddedEmitter( scratchpad.addAltitudeSliderListener );
     }
   };
 
@@ -73,7 +73,7 @@ importScripts('paper.js');
   const onProgramRemoved = ( paperProgramNumber, scratchpad, sharedData ) => {
     console.log( `onProgramRemoved called for ppn ${paperProgramNumber}`);
     if ( scratchpad.slider ){
-      sharedData.modelProperty.unlink( scratchpad.addAltitudeSliderListener );
+      sharedData.phet.paperLand.modelComponentAddedEmitter.removeListener( scratchpad.addAltitudeSliderListener );
       
       sharedData.scene.removeChild( scratchpad.slider );
       scratchpad.slider = null;

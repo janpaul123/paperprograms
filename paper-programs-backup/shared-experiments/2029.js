@@ -104,7 +104,7 @@ importScripts('paper.js');
         }
       };
 
-      sharedData.modelProperty.link( scratchpad.addResistanceSliderListener );
+      phet.paperLand.modelComponentAddedEmitter( scratchpad.addResistanceSliderListener );
     }
   };
 
@@ -124,7 +124,7 @@ importScripts('paper.js');
   const onProgramRemoved = ( paperProgramNumber, scratchpad, sharedData ) => {
     console.log( `onProgramRemoved called for ppn ${paperProgramNumber}`);
     if ( scratchpad.slider ){
-      sharedData.modelProperty.unlink( scratchpad.addResistanceSliderListener );
+      sharedData.phet.paperLand.modelComponentAddedEmitter.removeListener( scratchpad.addResistanceSliderListener );
       
       sharedData.scene.removeChild( scratchpad.slider );
       scratchpad.slider = null;

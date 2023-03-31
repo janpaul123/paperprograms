@@ -18,7 +18,7 @@ importScripts('paper.js');
     //----------------------------------------------------------------------
     
     // Global model for all programs
-    const model = sharedData.modelProperty.value;
+    const model = sharedData.model;
 
     // Create a Scenery image node.
     const imageElement = document.createElement( 'img' );
@@ -86,7 +86,7 @@ importScripts('paper.js');
   const onProgramRemoved = ( paperProgramNumber, scratchpad, sharedData ) => {
 
     // Global model for all programs
-    const model = sharedData.modelProperty.value;
+    const model = sharedData.model;
 
     const propertyName = scratchpad[ `propertyName${paperProgramNumber}` ];
     if ( model[ propertyName ] ) {

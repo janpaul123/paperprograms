@@ -37,7 +37,7 @@ importScripts('paper.js');
     scratchpad.imageNode = imageNode;
 
     // Adjust the position of the image as the altitude property changes.
-    const model = sharedData.modelProperty.value;
+    const model = sharedData.model;
     if ( model.altitudeProperty ) {
 
       // Assign to the scratchpad so we can unlink when the program is removed
@@ -55,7 +55,7 @@ importScripts('paper.js');
  
   // Called when the program is removed.
   const onProgramRemoved = ( paperProgramNumber, scratchpad, sharedData ) => {
-    const model = sharedData.modelProperty.value;
+    const model = sharedData.model;
 
     // Remove the image from the view
     if ( scratchpad.imageNode ){

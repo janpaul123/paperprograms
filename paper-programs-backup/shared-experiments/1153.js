@@ -54,7 +54,7 @@ importScripts('paper.js');
     // -----------------------------------------------------
 
     // Global model for all programs
-    const model = sharedData.modelProperty.value;
+    const model = sharedData.model;
 
     // Use scene.addChild( someNode ) to draw components in the Board.
     const scene = sharedData.scene;
@@ -92,7 +92,7 @@ importScripts('paper.js');
     }
 
     // global model for the board (all )    
-    const model = sharedData.modelProperty.value;
+    const model = sharedData.model;
 
     if ( model.altitudeProperty ) {
       const range = model.altitudeProperty.range;
@@ -132,7 +132,7 @@ importScripts('paper.js');
   const onProgramRemoved = ( paperProgramNumber, scratchpad, sharedData ) => {
 
     // Global model for all programs
-    const model = sharedData.modelProperty.value;
+    const model = sharedData.model;
 
     // Use scene.removeChild( someNode ) to remove components in the Board.
     const scene = sharedData.scene;

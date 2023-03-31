@@ -34,7 +34,8 @@ const pushProgramToDatabase = async ( spaceName, programNumber, programCode, kne
     // There should be at most one match in the DB.  If there are more, something is wrong.
     if ( programInfo.length > 1 ) {
       console.error( `  Expected at most one matching program, found ${programInfo.length}, aborting.` );
-      process.exit( 1 );
+      return;
+      // process.exit( 1 );
     }
 
     if ( programInfo.length === 0 ) {
@@ -61,7 +62,8 @@ const pushProgramToDatabase = async ( spaceName, programNumber, programCode, kne
       console.log( 'The source file and the code in the DB are the same, skipping update.' );
     }
 
-    process.exit();
+    return;
+    // process.exit();
   }
   catch( e ) {
     console.log( `  Error adding program to DB:  = ${e}` );

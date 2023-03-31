@@ -22,7 +22,7 @@ importScripts('paper.js');
     //----------------------------------------------------------------------
     
     // Global model for all programs
-    const model = sharedData.modelProperty.value;
+    const model = sharedData.model;
 
     // Adds listeners to the model component when the program is added or when the model
     // Property is added.
@@ -99,7 +99,7 @@ importScripts('paper.js');
   const onProgramRemoved = ( paperProgramNumber, scratchpad, sharedData ) => {
 
     // Global model for all programs
-    const model = sharedData.modelProperty.value;
+    const model = sharedData.model;
 
     const propertyName = scratchpad[ `propertyName${paperProgramNumber}` ];
     const removalListener = scratchpad[ `removeComponentListeners${paperProgramNumber}`];

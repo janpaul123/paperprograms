@@ -4,20 +4,20 @@
 // with min at the left and max at the right. Control can be linear or exponential,
 // see template variables.
 
-importScripts('paper.js');
+importScripts( 'paper.js' );
 
-(async () => {
+( async () => {
 
   //----------------------------------------------------------------------
   // Board code
   //----------------------------------------------------------------------
 
   // Get the paper number of this piece of paper (which should not change).
-  const myPaperNumber = await paper.get('number');
+  const myPaperNumber = await paper.get( 'number' );
 
   // Called when the program is detected or changed.
   const onProgramAdded = ( paperProgramNumber, scratchpad, sharedData ) => {
-    
+
     // -----------------------------------------------------
     // Template Variables
     // -----------------------------------------------------
@@ -59,7 +59,7 @@ importScripts('paper.js');
     // -----------------------------------------------------
 
     // Global model for all programs
-    const model = sharedData.modelProperty.value;
+    const model = sharedData.model;
 
     // Use scene.addChild( someNode ) to draw components in the Board.
     const scene = sharedData.scene;
@@ -82,14 +82,14 @@ importScripts('paper.js');
     const valueTextListener = value => {
       valueText.string = phet.dot.Utils.toFixed( value, decimalPlaces );
     };
-    sharedData.modelProperty.value[ propertyName ].link( valueTextListener );
+    sharedData.model.get( 'propertyName' ).link( valueTextListener );
 
     // Put values on the scratchpad so we can use them in the other functions. By appending
     // the program number we reduce the chance of collisions with other programs.
     scratchpad[ `propertyName${paperProgramNumber}` ] = propertyName;
     scratchpad[ `controlType${paperProgramNumber}` ] = controlType;
-    scratchpad[ `controlDirection${paperProgramNumber}`] = controlDirection;
-    scratchpad[ `showText${paperProgramNumber}`] = showText;
+    scratchpad[ `controlDirection${paperProgramNumber}` ] = controlDirection;
+    scratchpad[ `showText${paperProgramNumber}` ] = showText;
     scratchpad[ `valueText${paperProgramNumber}` ] = valueText;
     scratchpad[ `valueTextListener${paperProgramNumber}` ] = valueTextListener;
   };
@@ -105,16 +105,16 @@ importScripts('paper.js');
     }
 
     // global model for the board (all )    
-    const model = sharedData.modelProperty.value;
+    const model = sharedData.model;
 
     if ( model[ propertyName ] ) {
       const range = model[ propertyName ].range;
       const positionDimension = controlDirection === 'horizontal' ? 'x' : 'y';
 
       // This is the center in x or y dimensions of the paper, normalized from 0 to 1.
-      let paperCenterValue = ( positionPoints[ 0 ][ positionDimension ] + positionPoints[ 2 ][ positionDimension] ) / 2;
+      let paperCenterValue = ( positionPoints[ 0 ][ positionDimension ] + positionPoints[ 2 ][ positionDimension ] ) / 2;
 
-        // account for origin being at the top
+      // account for origin being at the top
       if ( controlDirection === 'vertical' ) {
         paperCenterValue = 1 - paperCenterValue;
       }
@@ -129,7 +129,7 @@ importScripts('paper.js');
       else if ( controlType === 'inverse' ) {
 
         const scaleFactor = 10; // stretches the curve so you can see the behavior in more space
-        calculatedValue = ( 1 / (paperCenterValue / scaleFactor ) ) - scaleFactor;
+        calculatedValue = ( 1 / ( paperCenterValue / scaleFactor ) ) - scaleFactor;
       }
       else {
         alert( 'Invalid value for controlType' );
@@ -148,7 +148,7 @@ importScripts('paper.js');
     const propertyNameId = `propertyName${paperProgramNumber}`;
 
     // Global model for all programs
-    const model = sharedData.modelProperty.value;
+    const model = sharedData.model;
 
     // Use scene.removeChild( someNode ) to remove components in the Board.
     const scene = sharedData.scene;
@@ -172,12 +172,12 @@ importScripts('paper.js');
 
     // delete the other scratchpad items
     delete scratchpad[ `controlType${paperProgramNumber}` ];
-    delete scratchpad[ `controlDirection${paperProgramNumber}`];
-    delete scratchpad[ `showText${paperProgramNumber}`];
+    delete scratchpad[ `controlDirection${paperProgramNumber}` ];
+    delete scratchpad[ `showText${paperProgramNumber}` ];
   };
 
   // Add the state change handler defined above as data for this paper.
-  await paper.set('data', {
+  await paper.set( 'data', {
     paperPlaygroundData: {
       updateTime: Date.now(),
       eventHandlers: {
@@ -193,17 +193,17 @@ importScripts('paper.js');
   //----------------------------------------------------------------------
 
   // Get a canvas object for this paper.
-  const canvas = await paper.get('canvas');
+  const canvas = await paper.get( 'canvas' );
 
   // Draw the name of the program on the canvas
-  const ctx = canvas.getContext('2d');
+  const ctx = canvas.getContext( '2d' );
   ctx.font = '20px sans-serif';
   ctx.textAlign = 'center';
   ctx.fillStyle = 'rgb(255,0,0)';
-  ctx.fillText('Linear', canvas.width / 2, canvas.height / 2 - 10);
+  ctx.fillText( 'Linear', canvas.width / 2, canvas.height / 2 - 10 );
   ctx.fillStyle = 'rgb(0,255,0)';
-  ctx.fillText('Value', canvas.width / 2, canvas.height / 2 + 20);
-})();
+  ctx.fillText( 'Value', canvas.width / 2, canvas.height / 2 + 20 );
+} )();
 
 
 

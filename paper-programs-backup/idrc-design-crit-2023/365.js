@@ -26,7 +26,7 @@ importScripts('paper.js');
   const onProgramChangedPosition = ( paperProgramNumber, positionPoints, scratchPad, sharedData ) => {
     
     // Global model for all programs
-    const model = sharedData.modelProperty.value;
+    const model = sharedData.model;
 
     if ( model.massProperty ) {
       const range = model.massProperty.range;

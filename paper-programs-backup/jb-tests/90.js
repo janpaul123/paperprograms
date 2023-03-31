@@ -85,8 +85,8 @@ importScripts( 'paper.js' );
     }
 
     // Unhook the image position updater and remove the model element.
-    if ( sharedData.modelProperty.value.positionProperty ) {
-      sharedData.modelProperty.value.positionProperty.unlink( scratchpad.updatePosition );
+    if ( sharedData.model.has('positionProperty') ) {
+      sharedData.model.get('positionProperty').unlink( scratchpad.updatePosition );
       scratchpad.updatePosition = null;
       phet.paperLand.removeModelComponent( 'positionProperty' );
     }

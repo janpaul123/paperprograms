@@ -110,7 +110,7 @@ importScripts('paper.js');
         }
       };
 
-      sharedData.modelProperty.link( scratchpad.addVoltageSliderListener );
+      phet.paperLand.modelComponentAddedEmitter( scratchpad.addVoltageSliderListener );
     }
   };
 
@@ -130,7 +130,7 @@ importScripts('paper.js');
   const onProgramRemoved = ( paperProgramNumber, scratchpad, sharedData ) => {
     console.log( `onProgramRemoved called for ppn ${paperProgramNumber}`);
     if ( scratchpad.voltageSlider ){
-      sharedData.modelProperty.unlink( scratchpad.addVoltageSliderListener );
+      sharedData.phet.paperLand.modelComponentAddedEmitter.removeListener( scratchpad.addVoltageSliderListener );
       
       sharedData.scene.removeChild( scratchpad.voltageSlider );
       scratchpad.voltageSlider = null;
