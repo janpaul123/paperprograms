@@ -62,7 +62,7 @@ const pushProgramToDatabase = async ( spaceName, programNumber, programCode, kne
       console.log( 'The source file and the code in the DB are the same, skipping update.' );
     }
 
-    // TODO: Should this be a return? exit seems to stop all execution for other programs
+    // TODO: Should this be a return? exit seems to stop all execution for other programs when using push-modified-programs-to-db
     process.exit();
   }
   catch( e ) {
