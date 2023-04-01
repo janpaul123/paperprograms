@@ -59,7 +59,6 @@ importScripts('paper.js');
       }
     };
 
-    console.log( 'adding altitude Property link' )
     scratchpad.altitudeObserverId = phet.paperLand.addModelPropertyLink( 'altitudeProperty', scratchpad.altitudeVoicingListener );
   };
 

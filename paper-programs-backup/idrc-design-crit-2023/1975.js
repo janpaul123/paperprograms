@@ -34,64 +34,33 @@ importScripts('paper.js');
     // Global model for all programs
     const model = sharedData.model;
 
-    // Adds a listener to the altitudeProperty - called when this program is added OR
-    // when the altitudeProperty is added to the global model.
-    const addAltitudeChangedListener = ( altitudeProperty ) => {
+    phet.tambo.soundManager.addSoundGenerator( altitudeSound );
+    scratchpad.altitudeSound = altitudeSound;
 
-      phet.tambo.soundManager.addSoundGenerator( altitudeSound );
-      scratchpad[ `altitudeSound${paperProgramNumber}`] = altitudeSound;
+    const soundOnWhenIdleTime = 1; // in seconds
+    let stopSoundTimeout = null;
 
-      const soundOnWhenIdleTime = 1; // in seconds
-      let stopSoundTimeout = null;
+    scratchpad.soundListener = ( newAltitude ) => {
 
-      scratchpad[ `soundListener${paperProgramNumber}` ] = ( newAltitude ) => {
-
-        if ( !altitudeSound.isPlaying ){
-          altitudeSound.play();
-        }
-        altitudeSound.setPlaybackRate( 0.5 + newAltitude / altitudeProperty.range.max * 1.5 );
-
-        // Set a timer to turn off the sound when the altitude is no longer changing.
-        if ( stopSoundTimeout ){
-          window.clearTimeout( stopSoundTimeout );
-        }
-        stopSoundTimeout = window.setTimeout( () => {
-          altitudeSound.stop();
-        }, soundOnWhenIdleTime * 1000 );
-      };
-      altitudeProperty.link( scratchpad[ `soundListener${paperProgramNumber}`] );
-    }
-
-    if ( model.altitudeProperty ) {
-
-      // altitudeProperty was already present when this program was added, add listeners
-      addAltitudeChangedListener( model.altitudeProperty );
-    }
-
-    // add to the scratchpad so that this listener can be removed when this program is removed
-    scratchpad[ `modelAddedListener${paperProgramNumber}`] = ( componentName, component ) => {
-      if ( componentName === 'altitudeProperty' ) {
- 
-        // altitudeProperty was added AFTER this program was added, add listeners
-        addAltitudeChangedListener( component );
+      if ( !altitudeSound.isPlaying ){
+        altitudeSound.play();
       }
-    };
-    phet.paperLand.modelComponentAddedEmitter.addListener( scratchpad[ `modelAddedListener${paperProgramNumber}`] );
 
-    scratchpad[ `modelRemovedListener${paperProgramNumber}`] = ( componentName, component ) => {
-      if ( componentName === 'altitudeProperty' ) {
+      // 100 is the maximum of the altitude range - to be more robust, add a direct dependency on the
+      // altitudeProperty with addModelObserver instead of using addModelPropertyLink. Then in handleAttach
+      // you would have a reference to the modelProperty and its range.
+      altitudeSound.setPlaybackRate( 0.5 + newAltitude / 100 * 1.5 );
 
-        // altitudeProperty was removed after this program was added, remove listeners
-        component.unlink( scratchpad[ `soundListener${paperProgramNumber}`] );
-        delete scratchpad[ `soundListener${paperProgramNumber}`];
-
-        const altitudeSound = scratchpad[ `altitudeSound${paperProgramNumber}` ];
+      // Set a timer to turn off the sound when the altitude is no longer changing.
+      if ( stopSoundTimeout ){
+        window.clearTimeout( stopSoundTimeout );
+      }
+      stopSoundTimeout = window.setTimeout( () => {
         altitudeSound.stop();
-        phet.tambo.soundManager.removeSoundGenerator( altitudeSound );
-        delete scratchpad[ `altitudeSound${paperProgramNumber}`];
-      }
+      }, soundOnWhenIdleTime * 1000 );
     };
-    phet.paperLand.modelComponentRemovedEmitter.addListener( scratchpad[ `modelRemovedListener${paperProgramNumber}`] );
+
+    scratchpad.altitudeListenerId = phet.paperLand.addModelPropertyLink( 'altitudeProperty', scratchpad.soundListener );
   };
 
   // Called when the paper positions change.
@@ -103,17 +72,16 @@ importScripts('paper.js');
 
   // Called when the program is changed or no longer detected.
   const onProgramRemoved = ( paperProgramNumber, scratchpad, sharedData ) => {
-    phet.paperLand.modelComponentAddedEmitter.removeListener( scratchpad[ `modelAddedListener${paperProgramNumber}`] );
-    phet.paperLand.modelComponentRemovedEmitter.removeListener( scratchpad[ `modelRemovedListener${paperProgramNumber}`] );
 
-    if ( scratchpad[ `altitudeSound${paperProgramNumber}`] ) {
+    // stop observing the altitudeProperty
+    phet.paperLand.removeModelPropertyLink( 'altitudeProperty', scratchpad.soundListener, scratchpad.altitudeListenerId );
+    delete scratchpad.soundListener;
+    delete scratchpad.altitudeListenerId;
 
-      sharedData.model.get('altitudeProperty').unlink( scratchpad[ `soundListener${paperProgramNumber}`] );
-      delete scratchpad[ `soundListener${paperProgramNumber}`];
-
-      phet.tambo.soundManager.removeSoundGenerator( scratchpad[ `altitudeSound${paperProgramNumber}`] );
-      delete scratchpad[ `altitudeSound${paperProgramNumber}`];
-    }
+    // stop sounds and remove
+    scratchpad.altitudeSound.stop();
+    phet.tambo.soundManager.removeSoundGenerator( scratchpad.altitudeSound );
+    delete scratchpad.altitudeSound;
   };
 
   // Add the state change handler defined above as data for this paper.
