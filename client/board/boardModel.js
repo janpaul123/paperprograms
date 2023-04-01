@@ -23,6 +23,10 @@ let observerId = 0;
 const idToComponentAddedListenerMap = new Map();
 const idToComponentRemovedListenerMap = new Map();
 
+// Specifically for addModelPropertyLink/removeModelPropertyLink - maps unique ID to listener added with link.
+// Map<number, function> - keys are unique ID returned by addModelPropertyLink, functions are listeners added with link
+const idToLinkListenerMap = new Map();
+
 // Emits events when model components are added or removed, to be used in program code. Emits with two args
 // {string} - name of the model component
 // {*} - Reference to the component being added or removed
@@ -238,7 +242,7 @@ paperLand.removeModelObserver = ( componentName, handleComponentDetach, observer
  * @returns {number} - An ID that uniquely identifies the listeners added in this link, so they can be removed later.
  */
 paperLand.addModelPropertyLink = ( componentName, listener ) => {
-  return paperLand.addModelObserver(
+  const uniqueId = paperLand.addModelObserver(
     componentName,
     component => {
       if ( !component.link ) { throw new Error( 'Model component is not a Property' ); }
@@ -249,21 +253,29 @@ paperLand.addModelPropertyLink = ( componentName, listener ) => {
       component.unlink( listener );
     }
   );
+
+  if ( idToLinkListenerMap.has( uniqueId ) ) { throw new Error( 'map already has ID, it is not unique??' ); }
+  idToLinkListenerMap.set( uniqueId, listener );
+
+  return uniqueId;
 };
 
 /**
  * Removes a listener form a Property in the boardModel and stops watching for changes to the boardModel to add/remove
  * the Property listener again when the model Property is added/removed from the boardModel.
  * @param componentName {string} - name of Property to unlink from
- * @param listener {function} - listener should have been added with addModelPropertyLink
- * @param linkId {number} - Unique ID returned by preceding addModelPropertyLink, needed to remove internal listeners
+ * @param linkId {number} - Unique ID returned by preceding addModelPropertyLink, needed to find listeners to remove
  */
-paperLand.removeModelPropertyLink = ( componentName, listener, linkId ) => {
+paperLand.removeModelPropertyLink = ( componentName, linkId ) => {
+  if ( !idToLinkListenerMap.has( linkId ) ) { throw new Error( 'Map does not have linkId, did you add with addModelPropertyLink?' ); }
+  const listener = idToLinkListenerMap.get( linkId );
   paperLand.removeModelObserver(
     componentName,
     component => component.unlink( listener ),
     linkId
   );
+
+  idToLinkListenerMap.delete( linkId );
 };
 
 export default boardModel;

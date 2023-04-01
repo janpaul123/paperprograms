@@ -70,7 +70,7 @@ QUnit.test( 'addModelPropertyLink/removeModelPropertyLink', assert => {
   assert.ok( phet.paperLand.modelComponentRemovedEmitter.getListenerCount() === 1, 'should be waiting to handle component removal' );
 
   // tests removing the component observer while the model component is actives
-  phet.paperLand.removeModelPropertyLink( 'modelComponent', componentListener, linkId );
+  phet.paperLand.removeModelPropertyLink( 'modelComponent', linkId );
   assert.ok( modelComponent.getListenerCount() === 0, 'removeModelPropertyLink should detach the listener' );
   assert.ok( phet.paperLand.modelComponentRemovedEmitter.getListenerCount() === 0, 'observer removed, model should not be waiting for component removal' );
   assert.ok( phet.paperLand.modelComponentAddedEmitter.getListenerCount() === 0, 'observer removed, model should not be waiting for component add' );
@@ -106,13 +106,13 @@ QUnit.test( 'multiple observers on the same observable', assert => {
   assert.ok( phet.paperLand.modelComponentAddedEmitter.getListenerCount() === 0, 'neither waiting for component addition' );
 
   // remove one of the links
-  phet.paperLand.removeModelPropertyLink( 'modelComponent', listenerA, linkIdA );
+  phet.paperLand.removeModelPropertyLink( 'modelComponent', linkIdA );
   assert.ok( modelComponent.getListenerCount() === 1, 'one listener remains on property after first link removal' );
   assert.ok( phet.paperLand.modelComponentRemovedEmitter.getListenerCount() === 1, 'remaining observer waiting for model component to be removed' );
   assert.ok( phet.paperLand.modelComponentAddedEmitter.getListenerCount() === 0, 'neither waiting for component addition' );
 
   // remove both of the links
-  phet.paperLand.removeModelPropertyLink( 'modelComponent', listenerB, linkIdB );
+  phet.paperLand.removeModelPropertyLink( 'modelComponent', linkIdB );
   assert.ok( modelComponent.getListenerCount() === 0, 'all links detached' );
   assert.ok( phet.paperLand.modelComponentRemovedEmitter.getListenerCount() === 0, 'nothing watching for removal' );
   assert.ok( phet.paperLand.modelComponentAddedEmitter.getListenerCount() === 0, 'nothing watching for added' );
