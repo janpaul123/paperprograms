@@ -36,75 +36,31 @@ importScripts('paper.js');
 
     sharedData.scene.addChild( imageNode );
 
-    // Adds listeners to the model component when the program is added or when the model
-    // Property is added.
-    const addComponentListeners = component => {
-
-      // This the function to implement to watch the changing Property.
-      const componentListener = value => {
-        const viewAltitude =  sharedData.displaySize.height * ( 1 - value / component.range.max );
-        imageNode.centerY = viewAltitude;
-        imageNode.centerX = sharedData.displaySize.width / 2;
-      }
-
-      component.link( componentListener );
-      scratchpad[ `componentListener${paperProgramNumber}` ] = componentListener;
-    };
-
-    // removes 
-    const removeComponentListeners = ( component ) => {
-      component.unlink( scratchpad[ `componentListener${paperProgramNumber}` ] );
-      delete scratchpad[ `componentListener${paperProgramNumber}` ];
-    };
-
-    if ( model.has( propertyName ) ) {
-
-      // Property exists, add view listeners to it
-      addComponentListeners( model.get( propertyName ) );
+    // This the function to implement to watch the changing Property.
+    scratchpad.componentListener = value => {
+      const viewAltitude =  sharedData.displaySize.height * ( 1 - value / component.range.max );
+      imageNode.centerY = viewAltitude;
+      imageNode.centerX = sharedData.displaySize.width / 2;
     }
-    const modelAddedListener = ( componentName, component ) => {
-
-      // Property was added after this one, add listeners to it
-      if ( componentName === propertyName ) {
-        addComponentListeners( component );
-      }
-    };
-    phet.paperLand.modelComponentAddedEmitter.addListener( modelAddedListener );
-
-    const modelRemovedListener = ( componentName, component ) => {
-
-      // Property was removed before this one, remove listeners
-      if ( componentName === propertyName ) {
-        removeComponentListeners( component );
-      }
-    };
-    phet.paperLand.modelComponentRemovedEmitter.addListener( modelRemovedListener );
+    scratchpad.altitudeListenerId = phet.paperLand.addModelPropertyLink( propertyName, scratchpad.componentListener );
 
     // assign components to the scratchpad so that they can be removed later
-    scratchpad[ `modelAdded${paperProgramNumber}` ] = modelAddedListener;
-    scratchpad[ `modelRemoved${paperProgramNumber}` ] = modelRemovedListener;
-    scratchpad[ `removeComponentListeners${paperProgramNumber}`] = removeComponentListeners;
-    scratchpad[ `propertyName${paperProgramNumber}` ] = propertyName;
-    scratchpad[ `imageNode${paperProgramNumber}`] = imageNode;
+    scratchpad.propertyName = propertyName;
+    scratchpad.imageNode = imageNode;
   };
 
   const onProgramRemoved = ( paperProgramNumber, scratchpad, sharedData ) => {
 
     // Global model for all programs
-    const model = sharedData.model;
-
     const propertyName = scratchpad[ `propertyName${paperProgramNumber}` ];
-    if ( model.has( propertyName ) ) {
-      scratchpad[ `removeComponentListeners${paperProgramNumber}`]( model.get( propertyName ) );
-    }
+    delete scratchpad.propertyName;
 
-    sharedData.scene.removeChild( scratchpad[ `imageNode${paperProgramNumber}` ] );
+    phet.paperLand.removeModelPropertyLink( propertyName, scratchpad.componentListener, scratchpad.altitudeListenerId );
+    delete scratchpad.componentListener;
+    delete scratchpad.altitudeListenerId;
 
-    delete scratchpad[ `modelAdded${paperProgramNumber}` ];
-    delete scratchpad[ `modelRemoved${paperProgramNumber}` ];
-    delete scratchpad[ `removeComponentListeners${paperProgramNumber}`];
-    delete scratchpad[ `propertyName${paperProgramNumber}` ];
-    delete scratchpad[ `imageNode${paperProgramNumber}` ];
+    sharedData.scene.removeChild( scratchpad.imageNode );
+    delete scratchpad.imageNode;
   }
 
   // Add the state change handler defined above as data for this paper.
