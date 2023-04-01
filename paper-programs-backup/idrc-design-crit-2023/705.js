@@ -66,10 +66,10 @@ importScripts('paper.js');
       delete scratchpad[ `componentListener${paperProgramNumber}` ];
     };
 
-    if ( model[ propertyName ] ) {
+    if ( model.has( propertyName ) ) {
 
       // Property exists, add view listeners to it
-      addComponentListeners( model[ propertyName ] );
+      addComponentListeners( model.get( propertyName ) );
     }
     const modelAddedListener = ( componentName, component ) => {
 
@@ -103,8 +103,8 @@ importScripts('paper.js');
 
     const propertyName = scratchpad[ `propertyName${paperProgramNumber}` ];
     const removalListener = scratchpad[ `removeComponentListeners${paperProgramNumber}`];
-    if ( model[ propertyName ] ) {
-      removalListener( model[ propertyName ] );
+    if ( model.has( propertyName ) ) {
+      removalListener( model.get( propertyName ) );
     }
 
     phet.paperLand.modelComponentAddedEmitter.removeListener( scratchpad[ `modelAdded${paperProgramNumber}` ] );

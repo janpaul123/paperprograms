@@ -107,8 +107,8 @@ importScripts( 'paper.js' );
     // global model for the board (all )    
     const model = sharedData.model;
 
-    if ( model[ propertyName ] ) {
-      const range = model[ propertyName ].range;
+    if ( model.has( propertyName ) ) {
+      const range = model.get( propertyName ).range;
       const positionDimension = controlDirection === 'horizontal' ? 'x' : 'y';
 
       // This is the center in x or y dimensions of the paper, normalized from 0 to 1.
@@ -119,7 +119,7 @@ importScripts( 'paper.js' );
         paperCenterValue = 1 - paperCenterValue;
       }
 
-      let calculatedValue = model[ propertyName ].value;
+      let calculatedValue = model.get( propertyName ).value;
       if ( controlType === 'linear' ) {
         calculatedValue = paperCenterValue * range.max;
       }
@@ -137,7 +137,7 @@ importScripts( 'paper.js' );
 
       // make sure value is within the range
       const constrainedValue = Math.max( Math.min( calculatedValue, range.max ), range.min );
-      model[ propertyName ].value = constrainedValue
+      model.get( propertyName ).value = constrainedValue
     }
   };
 

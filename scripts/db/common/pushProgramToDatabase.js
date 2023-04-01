@@ -62,7 +62,7 @@ const pushProgramToDatabase = async ( spaceName, programNumber, programCode, kne
     }
 
     // TODO: Should this be a return? exit seems to stop all execution for other programs when using push-modified-programs-to-db
-    process.exit();
+    // process.exit();
   }
   catch( e ) {
     console.log( `  Error adding program to DB:  = ${e}` );

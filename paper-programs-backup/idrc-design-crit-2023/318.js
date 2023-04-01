@@ -20,10 +20,10 @@ importScripts('paper.js');
     // Global model for all programs
     const model = sharedData.model;
 
-    if ( model[ propertyName ] ) {
+    if ( model.has( propertyName ) ) {
 
       // Property exists, set it to true so this program controls density directly
-      model[ propertyName ].value = true;
+      model.get( propertyName ).value = true;
     }
     const modelAddedListener = ( componentName, component ) => {
 
@@ -58,11 +58,11 @@ importScripts('paper.js');
     const model = sharedData.model;
 
     const propertyName = scratchpad[ `propertyName${paperProgramNumber}` ];
-    if ( model[ propertyName ] ) {
+    if ( model.has( propertyName ) ) {
 
       // Nothing to unlink, but when this program is removed, the 
       // Property for controlling density directly should be set to false.
-      model[ propertyName ].value = false;
+      model.get( propertyName ).value = false;
     }
 
     phet.paperLand.modelComponentAddedEmitter.removeListener( scratchpad[ `modelAdded${paperProgramNumber}` ] );

@@ -57,10 +57,10 @@ importScripts('paper.js');
       delete scratchpad[ `componentListener${paperProgramNumber}` ];
     };
 
-    if ( model[ propertyName ] ) {
+    if ( model.has( propertyName ) ) {
 
       // Property exists, add view listeners to it
-      addComponentListeners( model[ propertyName ] );
+      addComponentListeners( model.get( propertyName ) );
     }
     const modelAddedListener = ( componentName, component ) => {
 
@@ -94,8 +94,8 @@ importScripts('paper.js');
     const model = sharedData.model;
 
     const propertyName = scratchpad[ `propertyName${paperProgramNumber}` ];
-    if ( model[ propertyName ] ) {
-      scratchpad[ `removeComponentListeners${paperProgramNumber}`]( model[ propertyName ] );
+    if ( model.has( propertyName ) ) {
+      scratchpad[ `removeComponentListeners${paperProgramNumber}`]( model.get( propertyName ) );
     }
 
     sharedData.scene.removeChild( scratchpad[ `imageNode${paperProgramNumber}` ] );
