@@ -36,7 +36,7 @@ importScripts('paper.js');
     };
 
     // Attach/detach the lander when the world is available in the model
-    phet.paperLand.addModelObserver( 'world', scratchpad.handleWorldExists, scratchpad.handleWorldRemoved );
+    scratchpad.observerId = phet.paperLand.addModelObserver( 'world', scratchpad.handleWorldExists, scratchpad.handleWorldRemoved );
 
     scratchpad.viewRectangle = new phet.scenery.Rectangle( 0, 0, 10, 25, { fill: 'red' } );
     sharedData.scene.addChild( scratchpad.viewRectangle );
@@ -62,7 +62,9 @@ importScripts('paper.js');
 
   // Called when the program is changed or no longer detected.
   const onProgramRemoved = ( paperProgramNumber, scratchpad, sharedData ) => {
-   phet.paperLand.removeModelObserver( 'world', scratchpad.handleWorldRemoved );
+   phet.paperLand.removeModelObserver( 'world', scratchpad.handleWorldRemoved, scratchpad.observerId );
+   delete scratchpad.observerId;
+
    phet.paperLand.removeModelComponent( 'lander' );
 
    phet.axon.stepTimer.removeListener( scratchpad.timerListener );

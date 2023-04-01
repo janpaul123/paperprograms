@@ -15,7 +15,7 @@ importScripts('paper.js');
     scratchpad.handleAttach = property => property.link( scratchpad.propertyListener );
     scratchpad.handleDetach = property => property.unlink( scratchpad.propertyListener ); 
 
-    phet.paperLand.addModelObserver( 'testModelProperty', scratchpad.handleAttach, scratchpad.handleDetach );
+    scratchpad.observerId = phet.paperLand.addModelObserver( 'testModelProperty', scratchpad.handleAttach, scratchpad.handleDetach );
   };
 
   const onProgramChangedPosition = ( paperProgramNumber, scratchPad, sharedData ) => {
@@ -25,7 +25,8 @@ importScripts('paper.js');
 
   // This is tear down code that removes the programs when phyical papers are removed 
   const onProgramRemoved = ( paperProgramNumber, scratchpad, sharedData ) => {
-    phet.paperLand.removeModelObserver( 'testModelProperty', scratchpad.handleDetach );
+    phet.paperLand.removeModelObserver( 'testModelProperty', scratchpad.handleDetach, scratchpad.observerId );
+    delete scratchpad.observerId;
 
     delete scratchpad.propertyListener;
     delete scratchpad.handleAttach;

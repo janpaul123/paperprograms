@@ -60,7 +60,7 @@ importScripts('paper.js');
     };
 
     console.log( 'adding altitude Property link' )
-    phet.paperLand.addModelPropertyLink( 'altitudeProperty', scratchpad.altitudeVoicingListener );
+    scratchpad.altitudeObserverId = phet.paperLand.addModelPropertyLink( 'altitudeProperty', scratchpad.altitudeVoicingListener );
   };
 
   // Called when the paper positions change.
@@ -72,8 +72,8 @@ importScripts('paper.js');
 
   // Called when the program is changed or no longer detected.
   const onProgramRemoved = ( paperProgramNumber, scratchpad, sharedData ) => {
-    console.log( 'removing altitude Property link' )
-    phet.paperLand.removeModelPropertyLink( 'altitudeProperty', scratchpad.altitudeVoicingListener );
+    phet.paperLand.removeModelPropertyLink( 'altitudeProperty', scratchpad.altitudeVoicingListener, scratchpad.altitudeObserverId );
+    delete scratchpad.altitudeObserverId;
     delete scratchpad.altitudeVoicingListener;
   };
 
