@@ -81,10 +81,10 @@ importScripts( 'paper.js' );
     scene.addChild( scratchpad.valueText );
 
     // update the debugging text when the value changes
-    scratchpad.valueTextListener = value => {
+    const valueTextListener = value => {
       scratchpad.valueText.string = phet.dot.Utils.toFixed( value, decimalPlaces );
     };
-    scratchpad.textObserverId = phet.paperLand.addModelPropertyLink( propertyName, scratchpad.valueTextListener );
+    scratchpad.textObserverId = phet.paperLand.addModelPropertyLink( propertyName, valueTextListener );
 
     // Assign template variables to the scratchpad so they can be used in the other program
     // callbacks but only need to be defined in one place
@@ -153,9 +153,8 @@ importScripts( 'paper.js' );
     const scene = sharedData.scene;
 
     // unlink listener that updates debugging Text
-    phet.paperLand.removeModelPropertyLink( propertyName, scratchpad.valueTextListener, scratchpad.textObserverId );
+    phet.paperLand.removeModelPropertyLink( propertyName, scratchpad.textObserverId );
     delete scratchpad.textObserverId;
-    delete scratchpad.valueTextListener
 
     // remove the component from the model
     phet.paperLand.removeModelComponent( propertyName );

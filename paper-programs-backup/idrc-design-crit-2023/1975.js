@@ -40,7 +40,7 @@ importScripts('paper.js');
     const soundOnWhenIdleTime = 1; // in seconds
     let stopSoundTimeout = null;
 
-    scratchpad.soundListener = ( newAltitude ) => {
+    const soundListener = ( newAltitude ) => {
 
       if ( !altitudeSound.isPlaying ){
         altitudeSound.play();
@@ -60,7 +60,7 @@ importScripts('paper.js');
       }, soundOnWhenIdleTime * 1000 );
     };
 
-    scratchpad.altitudeListenerId = phet.paperLand.addModelPropertyLink( 'altitudeProperty', scratchpad.soundListener );
+    scratchpad.altitudeListenerId = phet.paperLand.addModelPropertyLink( 'altitudeProperty', soundListener );
   };
 
   // Called when the paper positions change.
@@ -74,8 +74,7 @@ importScripts('paper.js');
   const onProgramRemoved = ( paperProgramNumber, scratchpad, sharedData ) => {
 
     // stop observing the altitudeProperty
-    phet.paperLand.removeModelPropertyLink( 'altitudeProperty', scratchpad.soundListener, scratchpad.altitudeListenerId );
-    delete scratchpad.soundListener;
+    phet.paperLand.removeModelPropertyLink( 'altitudeProperty', scratchpad.altitudeListenerId );
     delete scratchpad.altitudeListenerId;
 
     // stop sounds and remove

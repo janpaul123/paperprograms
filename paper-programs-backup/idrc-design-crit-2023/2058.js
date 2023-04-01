@@ -37,12 +37,12 @@ importScripts('paper.js');
     sharedData.scene.addChild( imageNode );
 
     // This the function to implement to watch the changing Property.
-    scratchpad.componentListener = value => {
+    const componentListener = value => {
       const viewAltitude =  sharedData.displaySize.height * ( 1 - value / 100 ); // 100 is the max of the range
       imageNode.centerY = viewAltitude;
       imageNode.centerX = sharedData.displaySize.width / 2;
     }
-    scratchpad.altitudeListenerId = phet.paperLand.addModelPropertyLink( propertyName, scratchpad.componentListener );
+    scratchpad.altitudeListenerId = phet.paperLand.addModelPropertyLink( propertyName, componentListener );
 
     // assign components to the scratchpad so that they can be removed later
     scratchpad.propertyName = propertyName;
@@ -55,8 +55,7 @@ importScripts('paper.js');
     const propertyName = scratchpad[ `propertyName${paperProgramNumber}` ];
     delete scratchpad.propertyName;
 
-    phet.paperLand.removeModelPropertyLink( propertyName, scratchpad.componentListener, scratchpad.altitudeListenerId );
-    delete scratchpad.componentListener;
+    phet.paperLand.removeModelPropertyLink( propertyName, scratchpad.altitudeListenerId );
     delete scratchpad.altitudeListenerId;
 
     sharedData.scene.removeChild( scratchpad.imageNode );

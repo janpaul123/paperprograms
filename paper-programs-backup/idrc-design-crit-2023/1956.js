@@ -26,7 +26,7 @@ importScripts('paper.js');
 
     let previousDescribedAltitude = 0;
 
-    scratchpad.altitudeVoicingListener = ( newAltitude ) => {
+    const altitudeVoicingListener = ( newAltitude ) => {
       const valueChange = Math.abs( newAltitude - previousDescribedAltitude );
 
       // if the value changed enough to voicing something new...
@@ -59,7 +59,7 @@ importScripts('paper.js');
       }
     };
 
-    scratchpad.altitudeObserverId = phet.paperLand.addModelPropertyLink( 'altitudeProperty', scratchpad.altitudeVoicingListener );
+    scratchpad.altitudeObserverId = phet.paperLand.addModelPropertyLink( 'altitudeProperty', altitudeVoicingListener );
   };
 
   // Called when the paper positions change.
@@ -71,9 +71,8 @@ importScripts('paper.js');
 
   // Called when the program is changed or no longer detected.
   const onProgramRemoved = ( paperProgramNumber, scratchpad, sharedData ) => {
-    phet.paperLand.removeModelPropertyLink( 'altitudeProperty', scratchpad.altitudeVoicingListener, scratchpad.altitudeObserverId );
+    phet.paperLand.removeModelPropertyLink( 'altitudeProperty', scratchpad.altitudeObserverId );
     delete scratchpad.altitudeObserverId;
-    delete scratchpad.altitudeVoicingListener;
   };
 
   // Add the state change handler defined above as data for this paper.
