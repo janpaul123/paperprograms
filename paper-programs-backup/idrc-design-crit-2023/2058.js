@@ -38,7 +38,7 @@ importScripts('paper.js');
 
     // This the function to implement to watch the changing Property.
     scratchpad.componentListener = value => {
-      const viewAltitude =  sharedData.displaySize.height * ( 1 - value / component.range.max );
+      const viewAltitude =  sharedData.displaySize.height * ( 1 - value / 100 ); // 100 is the max of the range
       imageNode.centerY = viewAltitude;
       imageNode.centerX = sharedData.displaySize.width / 2;
     }
