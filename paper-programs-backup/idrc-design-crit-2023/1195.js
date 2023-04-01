@@ -66,41 +66,39 @@ importScripts( 'paper.js' );
     // Use scene.addChild( someNode ) to draw components in the Board.
     const scene = sharedData.scene;
 
-    // Create the NumberProperty
+    // Create the NumberProperty and add to the board model
     const valueProperty = new phet.axon.NumberProperty( range.min, {
       range: range
     } );
     phet.paperLand.addModelComponent( propertyName, valueProperty );
 
     // Print the value to the board for debugging
-    const valueText = new phet.scenery.Text( '', {
+    scratchpad.valueText = new phet.scenery.Text( '', {
       font: new phet.scenery.Font( { size: fontSize } ),
       leftTop: new phet.dot.Vector2( textLeft, textTop ),
       visible: showText
     } );
-    scene.addChild( valueText );
+    scene.addChild( scratchpad.valueText );
 
     // update the debugging text when the value changes
-    const valueTextListener = value => {
-      valueText.string = phet.dot.Utils.toFixed( value, decimalPlaces );
+    scratchpad.valueTextListener = value => {
+      scratchpad.valueText.string = phet.dot.Utils.toFixed( value, decimalPlaces );
     };
-    sharedData.model.get( 'propertyName' ).link( valueTextListener );
+    phet.paperLand.addModelPropertyLink( propertyName, scratchpad.valueTextListener );
 
-    // Put values on the scratchpad so we can use them in the other functions. By appending
-    // the program number we reduce the chance of collisions with other programs.
-    scratchpad[ `propertyName${paperProgramNumber}` ] = propertyName;
-    scratchpad[ `controlType${paperProgramNumber}` ] = controlType;
-    scratchpad[ `controlDirection${paperProgramNumber}` ] = controlDirection;
-    scratchpad[ `showText${paperProgramNumber}` ] = showText;
-    scratchpad[ `valueText${paperProgramNumber}` ] = valueText;
-    scratchpad[ `valueTextListener${paperProgramNumber}` ] = valueTextListener;
+    // Assign template variables to the scratchpad so they can be used in the other program
+    // callbacks but only need to be defined in one place
+    scratchpad.propertyName = propertyName;
+    scratchpad.controlType = controlType;
+    scratchpad.controlDirection = controlDirection;
+    scratchpad.showText = showText;
   };
 
   // Called when the paper positions change.
   const onProgramChangedPosition = ( paperProgramNumber, positionPoints, scratchpad, sharedData ) => {
-    const propertyName = scratchpad[ `propertyName${paperProgramNumber}` ];
-    const controlType = scratchpad[ `controlType${paperProgramNumber}` ];
-    const controlDirection = scratchpad[ `controlDirection${paperProgramNumber}` ];
+    const propertyName = scratchpad.propertyName;
+    const controlType = scratchpad.controlType;
+    const controlDirection = scratchpad.controlDirection;
 
     if ( controlType === 'none' ) {
       return;
@@ -145,9 +143,8 @@ importScripts( 'paper.js' );
 
   // Called when the program is changed or no longer detected.
   const onProgramRemoved = ( paperProgramNumber, scratchpad, sharedData ) => {
-    const valueTextListenerId = `valueTextListener${paperProgramNumber}`;
-    const valueTextId = `valueText${paperProgramNumber}`;
-    const propertyNameId = `propertyName${paperProgramNumber}`;
+    const propertyName = scratchpad.propertyName;
+    delete scratchpad.propertyName;
 
     // Global model for all programs
     const model = sharedData.model;
@@ -155,27 +152,22 @@ importScripts( 'paper.js' );
     // Use scene.removeChild( someNode ) to remove components in the Board.
     const scene = sharedData.scene;
 
-    if ( scratchpad[ valueTextListenerId ] ) {
+    // unlink listener that updates debugging Text
+    phet.paperLand.removeModelPropertyLink( propertyName, scratchpad.valueTextListener );
+    delete scratchpad.valueTextListener
 
-      // Remove the listener that updates the Text and remove references.
-      model[ scratchpad[ propertyNameId ] ].unlink( scratchpad[ valueTextListenerId ] );
-      delete scratchpad[ valueTextListenerId ];
-    }
-    if ( scratchpad[ propertyNameId ] ) {
-      phet.paperLand.removeModelComponent( scratchpad[ propertyNameId ] );
-      delete scratchpad[ propertyNameId ];
-    }
-    if ( scratchpad[ valueTextId ] ) {
+    // remove the component from the model
+    phet.paperLand.removeModelComponent( propertyName );
 
-      // Remove Text from the view and remove references.
-      scene.removeChild( scratchpad[ valueTextId ] );
-      delete scratchpad[ valueTextId ];
-    }
+    // Remove Text from the view and remove references.
+    scene.removeChild( scratchpad.valueText );
+    delete scratchpad.valueText;
 
     // delete the other scratchpad items
-    delete scratchpad[ `controlType${paperProgramNumber}` ];
-    delete scratchpad[ `controlDirection${paperProgramNumber}` ];
-    delete scratchpad[ `showText${paperProgramNumber}` ];
+    delete scratchpad.controlType;
+    delete scratchpad.controlDirection;
+    delete scratchpad.showText;
+    
   };
 
   // Add the state change handler defined above as data for this paper.

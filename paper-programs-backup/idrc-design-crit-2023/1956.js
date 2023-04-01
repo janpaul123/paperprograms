@@ -24,75 +24,43 @@ importScripts('paper.js');
       priority: 5
     } );
 
-    // Adds a listener to the altitudeProperty - called when this program is added OR
-    // when the altitudeProperty is added to the global model.
-    const addAltitudeChangedListener = ( altitudeProperty ) => {
-      let previousDescribedAltitude = altitudeProperty.value;
+    let previousDescribedAltitude = 0;
 
-      scratchpad.altitudeVoicingListener = ( newAltitude ) => {
-        const valueChange = Math.abs( newAltitude - previousDescribedAltitude );
+    scratchpad.altitudeVoicingListener = ( newAltitude ) => {
+      const valueChange = Math.abs( newAltitude - previousDescribedAltitude );
 
-        // if the value changed enough to voicing something new...
-        if ( valueChange > 15 ) {
+      // if the value changed enough to voicing something new...
+      if ( valueChange > 15 ) {
 
-          let voicingContent = '';
-          if ( newAltitude > 88 ) {
-            voicingContent = 'At extreme altitude! You are a cosmic climber!';
-          }
-          else if ( newAltitude > 70 ) {
-            voicingContent = 'At very high altitude! You are at the edge of space!';
-          }
-          else if ( newAltitude > 50 ) {
-            voicingContent = 'At high altitude! You are a stratospheric soarer!';
-          }
-          else if ( newAltitude > 40 ) {
-            voicingContent = 'At medium altitude! You are a cloud cruiser!';
-          }
-          else if ( newAltitude > 20 ) {
-            voicingContent = 'At low altitude! You are a tree top flyer!';
-          }
-          else {
-            voicingContent = 'At sea level! You are in the splash zone!';
-          }
-
-          console.log( voicingContent );
-          utterance.alert = voicingContent;
-          phet.scenery.voicingUtteranceQueue.addToBack( utterance );
-
-          previousDescribedAltitude = newAltitude;
+        let voicingContent = '';
+        if ( newAltitude > 88 ) {
+          voicingContent = 'At extreme altitude! You are a cosmic climber!';
         }
-      };
-      altitudeProperty.link( scratchpad.altitudeVoicingListener );
-    }
+        else if ( newAltitude > 70 ) {
+          voicingContent = 'At very high altitude! You are at the edge of space!';
+        }
+        else if ( newAltitude > 50 ) {
+          voicingContent = 'At high altitude! You are a stratospheric soarer!';
+        }
+        else if ( newAltitude > 40 ) {
+          voicingContent = 'At medium altitude! You are a cloud cruiser!';
+        }
+        else if ( newAltitude > 20 ) {
+          voicingContent = 'At low altitude! You are a tree top flyer!';
+        }
+        else {
+          voicingContent = 'At sea level! You are in the splash zone!';
+        }
 
-    if ( model.altitudeProperty ) {
+        utterance.alert = voicingContent;
+        phet.scenery.voicingUtteranceQueue.addToBack( utterance );
 
-      // altitudeProperty was already present when this program was added, set up listeners that will trigger
-      // new Voicing responses
-      addAltitudeChangedListener( model.altitudeProperty );
-    }
-
-    // add to the scratchpad so that this listener can be removed when this program is removed
-    scratchpad.altitudeModelComponentAddedListener = ( componentName, component ) => {
-      if ( componentName === 'altitudeProperty' ) {
- 
-        // altitudeProperty was added AFTER this program was added, add listener that trigger new Voicing
-        // responses 
-        addAltitudeChangedListener( component );
+        previousDescribedAltitude = newAltitude;
       }
     };
-    phet.paperLand.modelComponentAddedEmitter.addListener( scratchpad.altitudeModelComponentAddedListener );
 
-    scratchpad.altitudeModelComponentRemovedListener = ( componentName, component ) => {
-      if ( componentName === 'altitudeProperty' ) {
-
-        // altitudeProperty was removed after this program was added, remove listeners that trigger new Voicing
-        // responses
-        component.unlink( scratchpad.altitudeVoicingListener );
-        delete scratchpad.altitudeVoicingListener;
-      }
-    };
-    phet.paperLand.modelComponentRemovedEmitter.addListener( scratchpad.altitudeModelComponentRemovedListener );
+    console.log( 'adding altitude Property link' )
+    phet.paperLand.addModelPropertyLink( 'altitudeProperty', scratchpad.altitudeVoicingListener );
   };
 
   // Called when the paper positions change.
@@ -104,19 +72,8 @@ importScripts('paper.js');
 
   // Called when the program is changed or no longer detected.
   const onProgramRemoved = ( paperProgramNumber, scratchpad, sharedData ) => {
-
-    // Global model for all programs
-    const model = sharedData.model;
-
-    if ( scratchpad.altitudeModelComponentAddedListener ) {
-      phet.paperLand.modelComponentAddedEmitter.removeListener( scratchpad.altitudeModelComponentAddedListener );
-    }
-    if ( scratchpad.altitudeModelComponentRemovedListener ) {
-      phet.paperLand.modelComponentRemovedEmitter.removeListener( scratchpad.altitudeModelComponentRemovedListener );
-    }
-    if ( scratchpad.altitudeVoicingListener && model.altitudeProperty ) {
-      model.altitudeProperty.unlink( scratchpad.altitudeVoicingListener );
-    }
+    console.log( 'removing altitude Property link' )
+    phet.paperLand.removeModelPropertyLink( 'altitudeProperty', scratchpad.altitudeVoicingListener );
   };
 
   // Add the state change handler defined above as data for this paper.

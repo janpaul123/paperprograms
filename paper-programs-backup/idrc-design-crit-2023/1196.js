@@ -28,8 +28,9 @@ importScripts('paper.js');
     // Global model for all programs
     const model = sharedData.model;
 
-    if ( model.altitudeProperty ) {
-      const range = model.altitudeProperty.range;
+    if ( model.has( 'altitudeProperty' ) ) {
+      const altitudeProperty = model.get( 'altitudeProperty' );
+      const range = altitudeProperty.range;
 
       // This is the center in x or y dimensions of the paper, normalized from 0 to 1.
       // Graphics coordinate system has 0 at top so subtract from 1 so that 0 is at the bottom.
@@ -38,7 +39,7 @@ importScripts('paper.js');
 
       // make sure value is within the range
       const constrainedValue = Math.max( Math.min( newValue, range.max ), range.min );
-      model.altitudeProperty.value = constrainedValue;
+      altitudeProperty.value = constrainedValue;
     }
   };
 
