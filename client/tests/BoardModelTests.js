@@ -78,3 +78,39 @@ QUnit.test( 'addModelPropertyLink/removeModelPropertyLink', assert => {
   // clear for next test
   phet.paperLand.removeModelComponent( 'modelComponent' );
 } );
+
+QUnit.test( 'multiple observers on the same observable', assert => {
+
+  // add model components
+  const modelComponent = new phet.axon.Property( 0 );
+  phet.paperLand.addModelComponent( 'modelComponent', modelComponent );
+
+  // link two listeners to the same model component
+  const listenerA = () => {};
+  const listenerB = () => {};
+  phet.paperLand.addModelPropertyLink( 'modelComponent', listenerA );
+  phet.paperLand.addModelPropertyLink( 'modelComponent', listenerB );
+  assert.ok( modelComponent.getListenerCount() === 2, 'two listeners linked to model Property' );
+  assert.ok( phet.paperLand.modelComponentRemovedEmitter.getListenerCount() === 2, 'both waiting for model component to be removed' );
+
+  // remove the model component, links should be detached
+  phet.paperLand.removeModelComponent( 'modelComponent' );
+  assert.ok( modelComponent.getListenerCount() === 0, 'both links detached' );
+  assert.ok( phet.paperLand.modelComponentRemovedEmitter.getListenerCount() === 0, 'neither waiting for component removal' );
+  assert.ok( phet.paperLand.modelComponentAddedEmitter.getListenerCount() === 2, 'both now waiting for component addition' );
+
+  // add the model component back
+  phet.paperLand.addModelComponent( 'modelComponent', modelComponent );
+  assert.ok( modelComponent.getListenerCount() === 2, 'two listeners linked to model Property' );
+  assert.ok( phet.paperLand.modelComponentRemovedEmitter.getListenerCount() === 2, 'both waiting for model component to be removed' );
+  assert.ok( phet.paperLand.modelComponentAddedEmitter.getListenerCount() === 0, 'neither waiting for component addition' );
+
+  // remove the links
+  phet.paperLand.removeModelPropertyLink( 'modelComponent', listenerA );
+  phet.paperLand.removeModelPropertyLink( 'modelComponent', listenerB );
+  assert.ok( modelComponent.getListenerCount() === 0, 'links detached' );
+  assert.ok( phet.paperLand.modelComponentRemovedEmitter.getListenerCount() === 0, 'nothing watching for removal' );
+  assert.ok( phet.paperLand.modelComponentAddedEmitter.getListenerCount() === 0, 'nothing watching for added' );
+
+  phet.paperLand.removeModelComponent( 'modelComponent' );
+} );
