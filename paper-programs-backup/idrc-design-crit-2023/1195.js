@@ -33,7 +33,7 @@ importScripts( 'paper.js' );
     // 'exponential' - value increases exponentially as program moves.
     // 'inverse' - The value is set like 1/x as the program moves.
     // 'none' - The value does NOT change with the program movement.
-    const controlType = 'inverse';
+    const controlType = 'none';
 
     // Does the value change when moving the program left/right or up/down? 
     // 'horizontal' - left is min, right is max

@@ -74,6 +74,7 @@ importScripts('paper.js');
   const onProgramRemoved = ( paperProgramNumber, scratchpad, sharedData ) => {
     console.log( 'removing altitude Property link' )
     phet.paperLand.removeModelPropertyLink( 'altitudeProperty', scratchpad.altitudeVoicingListener );
+    delete scratchpad.altitudeVoicingListener;
   };
 
   // Add the state change handler defined above as data for this paper.
