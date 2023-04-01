@@ -12,11 +12,16 @@ import paperLand from './paperLand.js';
 // Map<string, Object> - keys are the name of the model component, values are any kind of model component
 const boardModel = new Map();
 
+// Each call to add addListenerToModelChangeEmitter increments this value. It is returned by the function
+// so we have a unique id to the observer that is added to the observable (component name is not sufficient
+// when multiple observers are added to the same observable).
+let observerId = 0;
+
 // Maps that give all functions listening for model component add/remove. We need references to those listeners
 // so that we can easily add/remove them when model components or observers are removed.
-// Map<string, function> - keys are name of the component, functions are the listeners
-const componentNameToAddedListenerMap = new Map();
-const componentNameToRemovedListenerMap = new Map();
+// Map<number, function> - keys are unique id returned by addModelObserver, functions are the listeners
+const idToComponentAddedListenerMap = new Map();
+const idToComponentRemovedListenerMap = new Map();
 
 // Emits events when model components are added or removed, to be used in program code. Emits with two args
 // {string} - name of the model component
@@ -66,42 +71,64 @@ paperLand.removeModelComponent = componentName => {
 
 /**
  * Adds a listener to the provided emitter and saves a reference to it in a Map so it can be easily removed later.
- * @param componentName {string}
- * @param emitter {phet.axon.Emitter} - Either modelComponentRemovedEmitter or modelComponentAddedEmitter
+ * @param observerId {number}
  * @param listener {function} - listener for when the model component is added/removed
- * @param listenerMap {Map} - Either componentNameToAddedListenerMap or componentNameToRemovedListenerMap
+ * @param addOrRemove {'add'|'remove'} - whether you are listening for model component 'add' or 'remove'
  */
-const addListenerToModelChangeEmitter = ( componentName, emitter, listener, listenerMap ) => {
+const addListenerToModelChangeEmitter = ( observerId, listener, addOrRemove ) => {
+  let emitter;
+  let listenerMap;
+
+  if ( addOrRemove === 'add' ) {
+    emitter = paperLand.modelComponentAddedEmitter;
+    listenerMap = idToComponentAddedListenerMap;
+  }
+  else {
+    emitter = paperLand.modelComponentRemovedEmitter;
+    listenerMap = idToComponentRemovedListenerMap;
+  }
+
   emitter.addListener( listener );
 
-  if ( !listenerMap.has( componentName ) ) {
-    listenerMap.set( componentName, [] );
+  if ( !listenerMap.has( observerId ) ) {
+    listenerMap.set( observerId, [] );
   }
-  listenerMap.get( componentName ).push( listener );
+  listenerMap.get( observerId ).push( listener );
 };
 
 /**
  * Removes the listener from the provided emitter and clears it from the reference Map.
  *
- * @param componentName {string}
- * @param emitter {phet.axon.Emitter} - Either modelComponentAddedEmitter or modelComponentRemovedEmitter
+ * @param observerId {number}
  * @param listener {function}
- * @param listenerMap {Map} - Either componentNameToAddedListenerMap or componentNameToRemovedListenerMap
+ * @param addOrRemove {'add'|'remove'} - are you removing a listener that was watching for component 'add' or 'remove'?
  */
-const removeListenerFromModelChangeEmitter = ( componentName, emitter, listener, listenerMap ) => {
+const removeListenerFromModelChangeEmitter = ( observerId, listener, addOrRemove ) => {
+  let emitter;
+  let listenerMap;
+
+  if ( addOrRemove === 'add' ) {
+    emitter = paperLand.modelComponentAddedEmitter;
+    listenerMap = idToComponentAddedListenerMap;
+  }
+  else {
+    emitter = paperLand.modelComponentRemovedEmitter;
+    listenerMap = idToComponentRemovedListenerMap;
+  }
+
   emitter.removeListener( listener );
 
-  if ( !listenerMap.has( componentName ) ) {
+  if ( !listenerMap.has( observerId ) ) {
     throw new Error( 'listenerMap does not have provided listener.' );
   }
   else {
-    const listeners = listenerMap.get( componentName );
+    const listeners = listenerMap.get( observerId );
     const index = listeners.indexOf( listener );
     if ( index > -1 ) {
       listeners.splice( index, 1 );
 
       if ( listeners.length === 0 ) {
-        listenerMap.delete( componentName );
+        listenerMap.delete( observerId );
       }
     }
     else {
@@ -127,6 +154,9 @@ const removeListenerFromModelChangeEmitter = ( componentName, emitter, listener,
  */
 paperLand.addModelObserver = ( componentName, handleComponentAttach, handleComponentDetach ) => {
 
+  // reference to a new identifier so callbacks below use the same value as observerId increments
+  const uniqueId = ++observerId; // (get next value before saving reference)
+
   // Component exists in the model - do whatever work is needed on attach and add listeners to watch for when
   // the component is removed again.
   const handleComponentExists = component => {
@@ -135,10 +165,10 @@ paperLand.addModelObserver = ( componentName, handleComponentAttach, handleCompo
     const componentRemovedListener = removedComponentName => {
       if ( componentName === removedComponentName ) {
         handleComponentDoesNotExist( component );
-        removeListenerFromModelChangeEmitter( componentName, paperLand.modelComponentRemovedEmitter, componentRemovedListener, componentNameToRemovedListenerMap );
+        removeListenerFromModelChangeEmitter( uniqueId, componentRemovedListener, 'remove' );
       }
     };
-    addListenerToModelChangeEmitter( componentName, paperLand.modelComponentRemovedEmitter, componentRemovedListener, componentNameToRemovedListenerMap );
+    addListenerToModelChangeEmitter( uniqueId, componentRemovedListener, 'remove' );
   };
   const handleComponentDoesNotExist = component => {
     if ( component !== undefined ) {
@@ -148,10 +178,10 @@ paperLand.addModelObserver = ( componentName, handleComponentAttach, handleCompo
     const componentAddedListener = ( addedComponentName, addedComponent ) => {
       if ( componentName === addedComponentName ) {
         handleComponentExists( addedComponent );
-        removeListenerFromModelChangeEmitter( componentName, paperLand.modelComponentAddedEmitter, componentAddedListener, componentNameToAddedListenerMap );
+        removeListenerFromModelChangeEmitter( uniqueId, componentAddedListener, 'add' );
       }
     };
-    addListenerToModelChangeEmitter( componentName, paperLand.modelComponentAddedEmitter, componentAddedListener, componentNameToAddedListenerMap );
+    addListenerToModelChangeEmitter( uniqueId, componentAddedListener, 'add' );
   };
 
   if ( boardModel.has( componentName ) ) {
@@ -164,6 +194,8 @@ paperLand.addModelObserver = ( componentName, handleComponentAttach, handleCompo
     // component does not exist yet, wait for it to be added
     handleComponentDoesNotExist();
   }
+
+  return observerId;
 };
 
 /**
@@ -172,22 +204,24 @@ paperLand.addModelObserver = ( componentName, handleComponentAttach, handleCompo
  * @param componentName {string} - name of the model component to stop watching
  * @param handleComponentDetach {function(component)} - handles detach on the model component to stop observing changes
  *                                                      (for example, call `component.unlink` here)
+ * @param observerId {number} - The unique ID returned by addModelObserver, needed to remove internal listeners watching
+ *                              for model changes.
  */
-paperLand.removeModelObserver = ( componentName, handleComponentDetach ) => {
+paperLand.removeModelObserver = ( componentName, handleComponentDetach, observerId ) => {
   if ( boardModel.has( componentName ) ) {
     handleComponentDetach( boardModel.get( componentName ) );
   }
 
   // remove any modelComponentAdded/modelComponentRemoved emitter listeners that were added on
   // addModelObserver...
-  const componentAddedListeners = componentNameToAddedListenerMap.get( componentName );
+  const componentAddedListeners = idToComponentAddedListenerMap.get( observerId );
   if ( componentAddedListeners ) {
     while ( componentAddedListeners.length > 0 ) {
       paperLand.modelComponentAddedEmitter.removeListener( componentAddedListeners.pop() );
     }
   }
 
-  const componentRemovedListeners = componentNameToRemovedListenerMap.get( componentName );
+  const componentRemovedListeners = idToComponentRemovedListenerMap.get( observerId );
   if ( componentRemovedListeners ) {
     while ( componentRemovedListeners.length > 0 ) {
       paperLand.modelComponentRemovedEmitter.removeListener( componentRemovedListeners.pop() );
@@ -201,9 +235,10 @@ paperLand.removeModelObserver = ( componentName, handleComponentDetach ) => {
  * as soon as the Property is added back to the model.
  * @param componentName {string} - name of the component to observe
  * @param listener - {function(value)} - listener linked to the model Property
+ * @returns {number} - An ID that uniquely identifies the listeners added in this link, so they can be removed later.
  */
 paperLand.addModelPropertyLink = ( componentName, listener ) => {
-  paperLand.addModelObserver(
+  return paperLand.addModelObserver(
     componentName,
     component => {
       if ( !component.link ) { throw new Error( 'Model component is not a Property' ); }
@@ -221,11 +256,13 @@ paperLand.addModelPropertyLink = ( componentName, listener ) => {
  * the Property listener again when the model Property is added/removed from the boardModel.
  * @param componentName {string} - name of Property to unlink from
  * @param listener {function} - listener should have been added with addModelPropertyLink
+ * @param linkId {number} - Unique ID returned by preceding addModelPropertyLink, needed to remove internal listeners
  */
-paperLand.removeModelPropertyLink = ( componentName, listener ) => {
+paperLand.removeModelPropertyLink = ( componentName, listener, linkId ) => {
   paperLand.removeModelObserver(
     componentName,
-    component => component.unlink( listener )
+    component => component.unlink( listener ),
+    linkId
   );
 };
 
