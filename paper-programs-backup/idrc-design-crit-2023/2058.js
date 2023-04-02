@@ -52,7 +52,7 @@ importScripts('paper.js');
   const onProgramRemoved = ( paperProgramNumber, scratchpad, sharedData ) => {
 
     // Global model for all programs
-    const propertyName = scratchpad[ `propertyName${paperProgramNumber}` ];
+    const propertyName = scratchpad.propertyName;
     delete scratchpad.propertyName;
 
     phet.paperLand.removeModelPropertyLink( propertyName, scratchpad.altitudeListenerId );

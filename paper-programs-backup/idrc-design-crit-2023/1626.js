@@ -5,10 +5,10 @@
 // Recommended Programs: Density prefix
 // Program Description:
 
-importScripts('paper.js');
+importScripts( 'paper.js' );
 
 
-(async () => {
+( async () => {
 
   //----------------------------------------------------------------------
   // Board code
@@ -27,72 +27,33 @@ importScripts('paper.js');
 
     // Create and add the sound generator.
     const wrappedAudioBuffer = createAndLoadWrappedAudioBuffer( `media/sounds/${availableSoundFiles[ 4 ]}` );
-    const densitySound = new phet.tambo.SoundClip( wrappedAudioBuffer, { 
+    const densitySound = new phet.tambo.SoundClip( wrappedAudioBuffer, {
       loop: true,
       initialOutputLevel: 0.1
     } );
 
-    // Global model for all programs
-    const model = sharedData.model;
+    phet.tambo.soundManager.addSoundGenerator( densitySound );
+    scratchpad.densitySound = densitySound;
 
-    // Adds a listener to the densityProperty - called when this program is added OR
-    // when the densityProperty is added to the global model.
-    const addDensityChangedListener = ( densityProperty ) => {
+    const soundOnWhenIdleTime = 1; // in seconds
+    let stopSoundTimeout = null;
 
-      phet.tambo.soundManager.addSoundGenerator( densitySound );
-      scratchpad[ `densitySound${paperProgramNumber}`] = densitySound;
+    const soundListener = newDensity => {
 
-      const soundOnWhenIdleTime = 1; // in seconds
-      let stopSoundTimeout = null;
-
-      scratchpad[ `soundListener${paperProgramNumber}` ] = ( newDensity ) => {
-
-        if ( !densitySound.isPlaying ){
-          densitySound.play();
-        }
-        densitySound.setPlaybackRate( 0.5 + newDensity / model.densityRange.max * 1.5 );
-
-        // Set a timer to turn off the sound when the density is no longer changing.
-        if ( stopSoundTimeout ){
-          window.clearTimeout( stopSoundTimeout );
-        }
-        stopSoundTimeout = window.setTimeout( () => {
-          densitySound.stop();
-        }, soundOnWhenIdleTime * 1000 );
-      };
-      densityProperty.link( scratchpad[ `soundListener${paperProgramNumber}`] );
-    }
-
-    if ( model.densityProperty ) {
-
-      // densityProperty was already present when this program was added, add listeners
-      addDensityChangedListener( model.densityProperty );
-    }
-
-    // add to the scratchpad so that this listener can be removed when this program is removed
-    scratchpad[ `modelAddedListener${paperProgramNumber}`] = ( componentName, component ) => {
-      if ( componentName === 'densityProperty' ) {
- 
-        // densityProperty was added AFTER this program was added, add listeners
-        addDensityChangedListener( component );
+      if ( !densitySound.isPlaying ) {
+        densitySound.play();
       }
-    };
-    phet.paperLand.modelComponentAddedEmitter.addListener( scratchpad[ `modelAddedListener${paperProgramNumber}`] );
+      densitySound.setPlaybackRate( 0.5 + newDensity / model.densityRange.max * 1.5 );
 
-    scratchpad[ `modelRemovedListener${paperProgramNumber}`] = ( componentName, component ) => {
-      if ( componentName === 'densityProperty' ) {
-
-        // densityProperty was removed after this program was added, remove listeners
-        component.unlink( scratchpad[ `soundListener${paperProgramNumber}`] );
-        delete scratchpad[ `soundListener${paperProgramNumber}`];
-
-        const densitySound = scratchpad[ `densitySound${paperProgramNumber}` ];
+      // Set a timer to turn off the sound when the density is no longer changing.
+      if ( stopSoundTimeout ) {
+        window.clearTimeout( stopSoundTimeout );
+      }
+      stopSoundTimeout = window.setTimeout( () => {
         densitySound.stop();
-        phet.tambo.soundManager.removeSoundGenerator( densitySound );
-        delete scratchpad[ `densitySound${paperProgramNumber}`];
-      }
+      }, soundOnWhenIdleTime * 1000 );
     };
-    phet.paperLand.modelComponentRemovedEmitter.addListener( scratchpad[ `modelRemovedListener${paperProgramNumber}`] );
+    scratchpad.linkId = phet.paperLand.addModelPropertyLink( 'densityProperty', soundListener );
   };
 
   // Called when the paper positions change.
@@ -104,21 +65,19 @@ importScripts('paper.js');
 
   // Called when the program is changed or no longer detected.
   const onProgramRemoved = ( paperProgramNumber, scratchpad, sharedData ) => {
-    phet.paperLand.modelComponentAddedEmitter.removeListener( scratchpad[ `modelAddedListener${paperProgramNumber}`] );
-    phet.paperLand.modelComponentRemovedEmitter.removeListener( scratchpad[ `modelRemovedListener${paperProgramNumber}`] );
 
-    if ( scratchpad[ `densitySound${paperProgramNumber}`] ) {
+    // remove the sound from tambo and stop it immediately
+    scratchpad.densitySound.stop();
+    phet.tambo.soundManager.removeSoundGenerator( scratchpad.densitySound );
+    delete scratchpad.densitySound;
 
-      sharedData.model.get('densityProperty').unlink( scratchpad[ `soundListener${paperProgramNumber}`] );
-      delete scratchpad[ `soundListener${paperProgramNumber}`];
-
-      phet.tambo.soundManager.removeSoundGenerator( scratchpad[ `densitySound${paperProgramNumber}`] );
-      delete scratchpad[ `densitySound${paperProgramNumber}`];
-    }
+    // unlink the density listener
+    phet.paperLand.removeModelPropertyLink( 'densityProperty', scratchpad.linkId );
+    delete scratchpad.linkId;
   };
 
   // Add the state change handler defined above as data for this paper.
-  await paper.set('data', {
+  await paper.set( 'data', {
     paperPlaygroundData: {
       updateTime: Date.now(),
       eventHandlers: {
@@ -134,14 +93,14 @@ importScripts('paper.js');
   //----------------------------------------------------------------------
 
   // Get a canvas object for this paper.
-  const canvas = await paper.get('canvas');
+  const canvas = await paper.get( 'canvas' );
 
   // Draw the name of the program on the canvas
-  const ctx = canvas.getContext('2d');
+  const ctx = canvas.getContext( '2d' );
   ctx.font = '20px sans-serif';
   ctx.textAlign = 'center';
   ctx.fillStyle = 'rgb(255,0,0)';
-  ctx.fillText('Density', canvas.width / 2, canvas.height / 2 - 10);
+  ctx.fillText( 'Density', canvas.width / 2, canvas.height / 2 - 10 );
   ctx.fillStyle = 'rgb(0,255,0)';
-  ctx.fillText('Sound', canvas.width / 2, canvas.height / 2 + 20);
-})();
+  ctx.fillText( 'Sound', canvas.width / 2, canvas.height / 2 + 20 );
+} )();

@@ -13,9 +13,6 @@ importScripts('paper.js');
   // Board code
   //----------------------------------------------------------------------
 
-  // Get the paper number of this piece of paper (which should not change).
-  const myPaperNumber = await paper.get('number');
-
   // Called when the program is detected or changed. Create new components here.
   const onProgramAdded = ( paperProgramNumber, scratchpad, sharedData ) => {
 
@@ -28,8 +25,8 @@ importScripts('paper.js');
     // Global model for all programs
     const model = sharedData.model;
 
-    if ( model.massProperty ) {
-      const range = model.massProperty.range;
+    if ( model.has( 'massProperty' ) ) {
+      const range = model.get( 'massProperty' ).range;
 
       // This is the center in x or y dimensions of the paper, normalized from 0 to 1.
       // Graphics coordinate system has 0 at top so subtract from 1 so that 0 is at the bottom.

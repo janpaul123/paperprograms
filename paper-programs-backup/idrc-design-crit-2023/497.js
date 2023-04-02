@@ -13,9 +13,6 @@ importScripts('paper.js');
   // Board code
   //----------------------------------------------------------------------
 
-  // Get the paper number of this piece of paper (which should not change).
-  const myPaperNumber = await paper.get('number');
-
   // Called when the program is detected or changed. Create new components here.
   const onProgramAdded = ( paperProgramNumber, scratchpad, sharedData ) => {
 
@@ -28,8 +25,9 @@ importScripts('paper.js');
     // Global model for all programs
     const model = sharedData.model;
 
-    if ( model.volumeProperty ) {
-      const range = model.volumeProperty.range;
+    if ( model.has( 'volumeProperty' ) ) {
+      const volumeProperty = model.get( 'volumeProperty' );
+      const range = volumeProperty.range;
 
       // these values are normalized within the camera window
       const paperWidth = positionPoints[ 2 ].x - positionPoints[ 0 ].x;
@@ -39,7 +37,7 @@ importScripts('paper.js');
       // multiply area by 2 so max value is ~half of the camera window
       const newValue = area * 2 * range.max;
       const constrainedValue = Math.max( Math.min( newValue, range.max ), range.min );
-      model.volumeProperty.value = constrainedValue;
+      volumeProperty.value = constrainedValue;
     }
   };
 
