@@ -25,8 +25,8 @@ importScripts('paper.js');
       ( 1 - ( positionPoints[ 0 ].y + ( positionPoints[ 2 ].y - positionPoints[ 0 ].y ) / 2 ) ) * sharedData.displaySize.height,
     )
 
-    if ( model.vertexAPositionProperty ) {
-      model.vertexAPositionProperty.value = displayCenter;
+    if ( model.has( 'vertexAPositionProperty' ) ) {
+      model.get( 'vertexAPositionProperty' ).value = displayCenter;
     }
   };
 

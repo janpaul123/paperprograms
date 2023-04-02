@@ -39,19 +39,21 @@ importScripts( 'paper.js' );
     let stopSoundTimeout = null;
 
     const soundListener = newDensity => {
+      if ( sharedData.model.has( 'densityRange' ) ) {
+        const densityRange = sharedData.model.get( 'densityRange' );
+        if ( !densitySound.isPlaying ) {
+          densitySound.play();
+        }
+        densitySound.setPlaybackRate( 0.5 + newDensity / densityRange.max * 1.5 );
 
-      if ( !densitySound.isPlaying ) {
-        densitySound.play();
+        // Set a timer to turn off the sound when the density is no longer changing.
+        if ( stopSoundTimeout ) {
+          window.clearTimeout( stopSoundTimeout );
+        }
+        stopSoundTimeout = window.setTimeout( () => {
+          densitySound.stop();
+        }, soundOnWhenIdleTime * 1000 );
       }
-      densitySound.setPlaybackRate( 0.5 + newDensity / model.densityRange.max * 1.5 );
-
-      // Set a timer to turn off the sound when the density is no longer changing.
-      if ( stopSoundTimeout ) {
-        window.clearTimeout( stopSoundTimeout );
-      }
-      stopSoundTimeout = window.setTimeout( () => {
-        densitySound.stop();
-      }, soundOnWhenIdleTime * 1000 );
     };
     scratchpad.linkId = phet.paperLand.addModelPropertyLink( 'densityProperty', soundListener );
   };

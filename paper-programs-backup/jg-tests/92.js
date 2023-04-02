@@ -44,7 +44,7 @@ importScripts('paper.js');
     const globalModel = sharedData.model;
     
     scratchpad.multilink = phet.axon.Multilink.multilink( 
-      [ globalModel.vertexAPositionProperty, globalModel.vertexBPositionProperty, globalModel.vertexCPositionProperty, globalModel.vertexDPositionProperty ],
+      [ globalModel.get( 'vertexAPositionProperty' ), globalModel.get( 'vertexBPositionProperty' ), globalModel.get( 'vertexCPositionProperty' ), globalModel.get( 'vertexDPositionProperty' ) ],
       ( aPosition, bPosition, cPosition, dPosition ) => {
         console.log( aPosition );
 

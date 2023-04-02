@@ -27,12 +27,10 @@ importScripts( 'paper.js' );
 
     // This the function to implement to watch the changing Property.
     const densityListener = value => {
-      if ( !model.has( 'densityRange' ) ) {
-        alert( model.densityRange, 'A range for density is required for this image component.' );
+      if ( model.has( 'densityRange' ) ) {
+        const range = model.get( 'densityRange' );
+        scratchpad.imageNode.opacity = Math.max( value / range.max, 0.2 );
       }
-
-      const range = model.get( 'densityRange' );
-      scratchpad.imageNode.opacity = Math.max( value / range.max, 0.2 );
     };
     scratchpad.linkId = phet.paperLand.addModelPropertyLink( 'densityProperty', densityListener );
   };

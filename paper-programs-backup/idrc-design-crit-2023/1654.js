@@ -35,7 +35,7 @@ importScripts( 'paper.js' );
       const range = volumeProperty.range;
 
       // Create your View components here.
-      const slider = new phet.sun.VSlider( modelProperty, range, {
+      const slider = new phet.sun.VSlider( volumeProperty, range, {
 
         // voicing
         voicingNameResponse: voicingNameResponse,
