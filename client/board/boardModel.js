@@ -278,4 +278,27 @@ paperLand.removeModelPropertyLink = ( componentName, linkId ) => {
   idToLinkListenerMap.delete( linkId );
 };
 
+/**
+ * Adds a function that sets a Property value once when the value exists or is added to the model.
+ * @param componentName {string} - the name of the component to control
+ * @param controller {function(component)} - called with the component to set its value
+ * @returns {number} - Unique ID needed to remove this controller when the model Property is removed.
+ */
+paperLand.addModelController = ( componentName, controller ) => {
+
+  // controller is called when the Property exists, so there shouldn't be a need to do anything on detach
+  return paperLand.addModelObserver( componentName, controller, component => {} );
+};
+
+/**
+ * Removes a controller from a model component, and stops watching for the component to be added/removed from the model.
+ * @param componentName {string}
+ * @param controllerId {number} - value returned by addModelController, to detach internal listeners
+ */
+paperLand.removeModelController = ( componentName, controllerId ) => {
+
+  // the controll will modify the value when the component exists, but
+  paperLand.removeModelObserver( componentName, () => {}, controllerId );
+};
+
 export default boardModel;

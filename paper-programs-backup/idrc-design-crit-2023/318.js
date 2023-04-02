@@ -11,66 +11,16 @@ importScripts('paper.js');
 
   const onProgramAdded = ( paperProgramNumber, scratchpad, sharedData ) => {
 
-    //----------------------------------------------------------------------
-    // Template Variables
-    //----------------------------------------------------------------------
-    const propertyName = 'controlDensityDirectlyProperty';
-    //----------------------------------------------------------------------
-    
-    // Global model for all programs
-    const model = sharedData.model;
-
-    if ( model.has( propertyName ) ) {
-
-      // Property exists, set it to true so this program controls density directly
-      model.get( propertyName ).value = true;
-    }
-    const modelAddedListener = ( componentName, component ) => {
-
-      // Property was added after this one, set it to true when it becomes 
-      // available
-      if ( componentName === propertyName ) {
-        component.value = true;
-      }
-    };
-    phet.paperLand.modelComponentAddedEmitter.addListener( modelAddedListener );
-
-    const modelRemovedListener = ( componentName, component ) => {
-
-      // Property was removed before this one, set to false
-      // (In this case this is probably unecessary because the density Property
-      // is being removed entirely)
-      if ( componentName === propertyName ) {
-        component.value = false;
-      }
-    };
-    phet.paperLand.modelComponentRemovedEmitter.addListener( modelRemovedListener );
-
-    // assign components to the scratchpad so that they can be removed later
-    scratchpad[ `modelAdded${paperProgramNumber}` ] = modelAddedListener;
-    scratchpad[ `modelRemoved${paperProgramNumber}` ] = modelRemovedListener;
-    scratchpad[ `propertyName${paperProgramNumber}` ] = propertyName;
+    // Whenever the 'controlsDensityDirectlyProperty' exists in the model, it will be set to "true" by this controller.
+    const controller = component => component.value = true;
+    scratchpad.controllerId = phet.paperLand.addModelController( 'controlDensityDirectlyProperty', controller );
   };
 
   const onProgramRemoved = ( paperProgramNumber, scratchpad, sharedData ) => {
 
-    // Global model for all programs
-    const model = sharedData.model;
-
-    const propertyName = scratchpad[ `propertyName${paperProgramNumber}` ];
-    if ( model.has( propertyName ) ) {
-
-      // Nothing to unlink, but when this program is removed, the 
-      // Property for controlling density directly should be set to false.
-      model.get( propertyName ).value = false;
-    }
-
-    phet.paperLand.modelComponentAddedEmitter.removeListener( scratchpad[ `modelAdded${paperProgramNumber}` ] );
-    phet.paperLand.modelComponentRemovedEmitter.removeListener( scratchpad[ `modelRemoved${paperProgramNumber}` ] );
-
-    delete scratchpad[ `modelAdded${paperProgramNumber}` ];
-    delete scratchpad[ `modelRemoved${paperProgramNumber}` ];
-    delete scratchpad[ `propertyName${paperProgramNumber}` ];
+    // stop controlling the model Property
+    phet.paperLand.removeModelController( 'controlDensityDirectlyProperty', scratchpad.controllerId );
+    delete scratchpad.controllerId;
   }
 
   // Called when the paper positions change.
@@ -79,8 +29,9 @@ importScripts('paper.js');
     // Global model for all programs
     const model = sharedData.model;
 
-    if ( model.controlledDensityProperty ) {
-      const range = model.controlledDensityProperty.range;
+    if ( model.has( 'controlledDensityProperty' ) ) {
+      const controlledDensityProperty = model.get( 'controlledDensityProperty' );
+      const range = controlledDensityProperty.range;
 
       // This is the center in x or y dimensions of the paper, normalized from 0 to 1.
       // Graphics coordinate system has 0 at top so subtract from 1 so that 0 is at the bottom.
@@ -89,7 +40,7 @@ importScripts('paper.js');
 
       // make sure value is within the range
       const constrainedValue = Math.max( Math.min( newValue, range.max ), range.min );
-      model.controlledDensityProperty.value = constrainedValue;
+      controlledDensityProperty.value = constrainedValue;
     }
   };
 
