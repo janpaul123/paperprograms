@@ -27,6 +27,8 @@ const idToComponentRemovedListenerMap = new Map();
 // Map<number, function> - keys are unique ID returned by addModelPropertyLink, functions are listeners added with link
 const idToLinkListenerMap = new Map();
 
+const idToControllerDetachMap = new Map();
+
 // Emits events when model components are added or removed, to be used in program code. Emits with two args
 // {string} - name of the model component
 // {*} - Reference to the component being added or removed
@@ -281,13 +283,17 @@ paperLand.removeModelPropertyLink = ( componentName, linkId ) => {
 /**
  * Adds a function that sets a Property value once when the value exists or is added to the model.
  * @param componentName {string} - the name of the component to control
- * @param controller {function(component)} - called with the component to set its value
+ * @param controllerAttach {function(component)} - called with the component to set its value
+ * @param controllerDetach {function(component)} - any work you need to do when the controller or component is removed
  * @returns {number} - Unique ID needed to remove this controller when the model Property is removed.
  */
-paperLand.addModelController = ( componentName, controller ) => {
+paperLand.addModelController = ( componentName, controllerAttach, controllerDetach ) => {
+  const controllerId = paperLand.addModelObserver( componentName, controllerAttach, controllerDetach );
 
-  // controller is called when the Property exists, so there shouldn't be a need to do anything on detach
-  return paperLand.addModelObserver( componentName, controller, component => {} );
+  if ( idToControllerDetachMap.has( controllerId ) ) { throw new Error( 'map already has ID, it is not unique?' ); }
+  idToControllerDetachMap.set( controllerId, controllerDetach );
+
+  return controllerId;
 };
 
 /**
@@ -296,9 +302,11 @@ paperLand.addModelController = ( componentName, controller ) => {
  * @param controllerId {number} - value returned by addModelController, to detach internal listeners
  */
 paperLand.removeModelController = ( componentName, controllerId ) => {
+  if ( !idToControllerDetachMap.has( controllerId ) ) { throw new Error( 'Map does not have controllerId, did you add with addModelController?' ); }
+  const controllerDetach = idToControllerDetachMap.get( controllerId );
+  paperLand.removeModelObserver( componentName, controllerDetach, controllerId );
 
-  // the controll will modify the value when the component exists, but
-  paperLand.removeModelObserver( componentName, () => {}, controllerId );
+  idToControllerDetachMap.delete( controllerId );
 };
 
 export default boardModel;

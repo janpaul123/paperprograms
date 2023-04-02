@@ -123,28 +123,29 @@ QUnit.test( 'multiple observers on the same observable', assert => {
 QUnit.test( 'addModelController/removeModelController', assert => {
 
   // I tried to do this test with an axon Property. For a reason I could not understand, setting the Property value
-  // did not work well in QUnit.
-  let modelComponent = 0;
+  // with property.value and property.set had no effect on the Property value in this context.
+  const modelComponent = {
+    value: 0
+  };
   phet.paperLand.addModelComponent( 'modelComponent', modelComponent );
 
-  const controller = component => {
-    modelComponent = component + 1;
-  };
-  const controllerId = phet.paperLand.addModelController( 'modelComponent', controller );
+  const controllerAttach = component => { modelComponent.value = component.value + 1; };
+  const controllerDetach = component => { modelComponent.value = component.value - 1; };
+  const controllerId = phet.paperLand.addModelController( 'modelComponent', controllerAttach, controllerDetach );
 
-  assert.ok( modelComponent === 1, 'controller should have incremented the value' );
+  assert.ok( modelComponent.value === 1, 'controller should have incremented the value' );
 
   phet.paperLand.removeModelComponent( 'modelComponent' );
-  assert.ok( modelComponent === 1, 'removing component should not invoke the controller' );
+  assert.ok( modelComponent.value === 0, 'removing component should invoke the detach' );
   assert.ok( phet.paperLand.modelComponentAddedEmitter.getListenerCount() === 1, 'should be waiting for component to come back' );
 
   phet.paperLand.addModelComponent( 'modelComponent', modelComponent );
-  assert.ok( modelComponent === 2, 'component added back, controller should be used' );
+  assert.ok( modelComponent.value === 1, 'component added back, controller should be used' );
   assert.ok( phet.paperLand.modelComponentAddedEmitter.getListenerCount() === 0, 'component returned, should not be waiting for it' );
   assert.ok( phet.paperLand.modelComponentRemovedEmitter.getListenerCount() === 1, 'component returned, should waiting for its removal' );
 
   phet.paperLand.removeModelController( 'modelComponent', controllerId );
-  assert.ok( modelComponent === 2, 'removing controller should not invoke it' );
+  assert.ok( modelComponent.value === 0, 'removing controller should invoke the detach' );
   assert.ok( phet.paperLand.modelComponentAddedEmitter.getListenerCount() === 0, 'no longer waiting for add' );
   assert.ok( phet.paperLand.modelComponentRemovedEmitter.getListenerCount() === 0, 'no longer waiting for removal' );
 
