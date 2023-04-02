@@ -12,8 +12,9 @@ importScripts('paper.js');
   const onProgramAdded = ( paperProgramNumber, scratchpad, sharedData ) => {
 
     // Whenever the 'controlsDensityDirectlyProperty' exists in the model, it will be set to "true" by this controller.
-    const controller = component => component.value = true;
-    scratchpad.controllerId = phet.paperLand.addModelController( 'controlDensityDirectlyProperty', controller );
+    const controllerAttach = component => component.value = true;
+    const controllerDetach = component => component.value = false;
+    scratchpad.controllerId = phet.paperLand.addModelController( 'controlDensityDirectlyProperty', controllerAttach, controllerDetach );
   };
 
   const onProgramRemoved = ( paperProgramNumber, scratchpad, sharedData ) => {
