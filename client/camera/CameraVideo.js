@@ -1,13 +1,13 @@
 /* global cv */
 
-import React from 'react';
 import * as d3 from 'd3';
+import React from 'react';
 
 import clientConstants from '../clientConstants';
-import Knob from './Knob';
+import styles from './CameraVideo.css';
 import DebugProgram from './DebugProgram';
 import detectPrograms from './detectPrograms';
-import styles from './CameraVideo.css';
+import Knob from './Knob';
 
 export default class CameraVideo extends React.Component {
   constructor( props ) {
@@ -54,6 +54,12 @@ export default class CameraVideo extends React.Component {
     const zoom = d3
       .zoom()
       .scaleExtent( [ 1, 4 ] )
+      .filter( () => {
+
+        // shift key required - it is too easy to change this accidentally and we don't want to transform unless
+        // user really wants it. Thanks to https://stackoverflow.com/questions/45189490/d3-change-zoom-and-pan-gestures.
+        return d3.event.shiftKey;
+      } )
       .on( 'zoom', () => {
         const { x, y, k } = d3.event.transform;
         this.props.onConfigChange( { ...this.props.config, zoomTransform: { x, y, k } } );
