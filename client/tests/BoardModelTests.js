@@ -46,7 +46,7 @@ QUnit.test( 'addModelObserver/removeModelObserver', assert => {
   assert.ok( phet.paperLand.modelComponentAddedEmitter.getListenerCount() === 0, 'listener waiting for model component to be added should have been removed' );
 
   // tests removing observer while component is active
-  phet.paperLand.removeModelObserver( 'modelComponent', handleComponentDetach, observerId );
+  phet.paperLand.removeModelObserver( 'modelComponent', observerId );
   assert.ok( modelComponent.getListenerCount() === 0, 'observer was removed, componentListener should be detached' );
   assert.ok( phet.paperLand.modelComponentRemovedEmitter.getListenerCount() === 0, 'observer was removed, model should not be waiting for component removal' );
   assert.ok( phet.paperLand.modelComponentAddedEmitter.getListenerCount() === 0, 'observer was removed, model should not be waiting for component addition' );
