@@ -1,13 +1,18 @@
 const express = require( 'express' );
 const crypto = require( 'crypto' );
-
-const editorHandleDuration = 1500;
+const restrictedSpacesList = require( './restrictedSpacesList.js' );
 
 const router = express.Router();
 router.use( express.json() );
 router.use( require( 'nocache' )() );
 
 const knex = require( 'knex' )( require( '../knexfile' )[ process.env.NODE_ENV || 'development' ] );
+
+// Set a constant based on the .env file that will control whether access to restricted files will be allowed on the
+// client side.
+const ALLOW_ACCESS_TO_RESTRICTED_FILES = process.env.ALLOW_ACCESS_TO_RESTRICTED_FILES === 'true';
+
+const editorHandleDuration = 1500;
 
 /**
  * Get the current code for the specified space name and program number.
@@ -73,6 +78,9 @@ router.get( '/api/spaces-list', ( req, res ) => {
     .pluck( 'spaceName' )
     .then( spaceNames => {
       res.json( spaceNames );
+    } )
+    .catch( error => {
+      console.log( `Error getting spaces list: ${error}` );
     } );
 } );
 
@@ -111,7 +119,8 @@ function getSpaceData( req, callback ) {
             claimUrl: `/api/spaces/${spaceName}/programs/${program.number}/claim`,
             editorInfo: {
               ...editorInfo,
-              claimed: !!( editorInfo.time && editorInfo.time + editorHandleDuration > Date.now() )
+              claimed: !!( editorInfo.time && editorInfo.time + editorHandleDuration > Date.now() ),
+              readOnly: !ALLOW_ACCESS_TO_RESTRICTED_FILES && restrictedSpacesList.includes( spaceName )
             },
             codeHasChanged: program.currentCode !== program.originalCode
           };

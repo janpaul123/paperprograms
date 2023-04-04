@@ -220,18 +220,21 @@ export default class EditorMain extends React.Component {
               {sortBy( this.state.spaceData.programs, 'number' )
                 .filter( program => programMatchesFilterString( program.currentCode, this.state.programListFilterString ) )
                 .map( program => {
-                  const beingEditedBySomeoneElse =
-                    program.editorInfo.claimed &&
-                    program.editorInfo.editorId !== this.props.editorConfig.editorId;
+
+                  // Check if it is okay to edit this file.  It is NOT okay if the file is being edited by someone else
+                  // or if it is marked as read-only.
+                  const okayToEdit =
+                    !program.editorInfo.readOnly &&
+                    !( program.editorInfo.claimed && program.editorInfo.editorId !== this.props.editorConfig.editorId );
 
                   return (
                     <option
                       key={program.number}
                       value={program.number}
-                      disabled={beingEditedBySomeoneElse}
+                      disabled={!okayToEdit}
                     >
                       #{program.number} {codeToName( program.currentCode )}
-                      {beingEditedBySomeoneElse ? ' (being edited)' : ''}
+                      {!okayToEdit ? ' (being edited or access restricted)' : ''}
                     </option>
                   );
                 } )}
