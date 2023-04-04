@@ -1,10 +1,9 @@
-// Altitude: Change Altitude with Paper Position - Copy
-// Keywords: altitude, model, positionPoints
+// Target
+// Keywords: p2, body, platform, target
 // ------------------------------- //
-// Required Programs (dependencies): Altitude: Model
-// Recommended Programs: Altitude prefix
-// Program Description: Sets the Altitude property value set in Altitude Model by
-// the center position of this paper.
+// Required Programs (dependencies):
+// Recommended Programs:
+// Program Description:
 
 importScripts('paper.js');
 
@@ -14,37 +13,66 @@ importScripts('paper.js');
   // Board code
   //----------------------------------------------------------------------
 
-  // Get the paper number of this piece of paper (which should not change).
-  const myPaperNumber = await paper.get('number');
-
-  // Called when the program is detected or changed. Create new components here.
   const onProgramAdded = ( paperProgramNumber, scratchpad, sharedData ) => {
-    // Nothing to create! This program controls an existing model Property.
+
+    // create a target shape body for p2 physics engine
+    const targetShape = new p2.Box( { width: 150, height: 15 } );
+    scratchpad.targetBody = new p2.Body( {
+
+      // zero mass means this body is static and doesn't respond to forces
+      mass: 0
+    } );
+    scratchpad.targetBody.addShape( targetShape );
+
+    // add the body to the paper land model
+    phet.paperLand.addModelComponent( 'target', scratchpad.targetBody );
+
+    // The view component for the target
+    scratchpad.targetRectangle = new phet.scenery.Rectangle( 0, 0, 150, 15, {
+      fill: '#1E90FF'
+    } );
+
+    // When the world is available, we will add the model component to the world
+    // and the view component to the display
+    scratchpad.handleWorldExists = world => {
+      world.addBody( scratchpad.targetBody );
+      sharedData.scene.addChild( scratchpad.targetRectangle );
+    };
+
+    // When the world (or this program) is removed, we remove the model and view componets
+    scratchpad.handleWorldRemoved = world => {
+      world.removeBody( scratchpad.targetBody );
+      sharedData.scene.removeChild( scratchpad.targetRectangle );
+    }
+    scratchpad.observerId = phet.paperLand.addModelObserver( 'world', scratchpad.handleWorldExists, scratchpad.handleWorldRemoved );
   };
 
-  // Called when the paper positions change.
-  const onProgramChangedPosition = ( paperProgramNumber, positionPoints, scratchPad, sharedData ) => {
-    
-    // Global model for all programs
-    const model = sharedData.model;
+  const onProgramChangedPosition = ( paperProgramNumber, positionPoints, scratchpad, sharedData ) => {
 
-    if ( model.altitudeProperty ) {
-      const range = model.altitudeProperty.range;
+    if ( sharedData.model.has( 'viewToModelPosition' ) ) {
 
       // This is the center in x or y dimensions of the paper, normalized from 0 to 1.
-      // Graphics coordinate system has 0 at top so subtract from 1 so that 0 is at the bottom.
-      let paperCenterY = 1 - ( positionPoints[ 0 ].y + positionPoints[ 2 ].y ) / 2;
-      const newValue = paperCenterY * range.max;
+      const paperCenterX = ( positionPoints[ 0 ].x + positionPoints[ 2 ].x ) / 2;
+      const paperCenterY = ( positionPoints[ 0 ].y + positionPoints[ 2 ].y ) / 2;
 
-      // make sure value is within the range
-      const constrainedValue = Math.max( Math.min( newValue, range.max ), range.min );
-      model.altitudeProperty.value = constrainedValue;
+      const centerX = paperCenterX * sharedData.displaySize.width;
+      const centerY = paperCenterY * sharedData.displaySize.height;
+      const viewCenter = new phet.dot.Vector2( centerX, centerY );
+
+      // The model has a utility function to convert from view to model coordinates (since papers
+      // are in view coordinates).
+      const modelPosition = sharedData.model.get( 'viewToModelPosition' )( viewCenter );
+
+      // Position the body in the physics engine
+      scratchpad.targetBody.position = [ modelPosition.x, modelPosition.y ];
+
+      // position the component in the view
+      scratchpad.targetRectangle.center = viewCenter;
     }
   };
 
-  // Called when the program is changed or no longer detected. Destroy components here.
   const onProgramRemoved = ( paperProgramNumber, scratchpad, sharedData ) => {
-    // Nothing to destroy! This program is only a controller.
+    phet.paperLand.removeModelObserver( 'world', scratchpad.handleWorldRemoved, scratchpad.observerId );
   };
 
   // Add the state change handler defined above as data for this paper.

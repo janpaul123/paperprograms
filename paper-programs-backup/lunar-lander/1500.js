@@ -1,8 +1,8 @@
-// Altitude: Voice Altitude Value - Copy
-// Keywords: altitude, voicing, view
+// Lander Voicing
+// Keywords: lander, voicing, view, polling
 // ------------------------------- //
-// Required Programs (dependencies) Altitude: Model
-// Recommended Programs: Altitude prefix
+// Required Programs (dependencies):
+// Recommended Programs:
 // Program Description:
 
 importScripts('paper.js');
@@ -16,107 +16,41 @@ importScripts('paper.js');
   // Called when the program is detected or changed.
   const onProgramAdded = ( paperProgramNumber, scratchpad, sharedData ) => {
 
-    // Global model for all programs
-    const model = sharedData.model;
+    scratchpad.handleLanderExists = landerVelocityProperty => {
+      const voicingStepListener = dt => {
+        const velocity = landerVelocityProperty.value;
 
-    // Create new components here!
-    const utterance = new phet.utteranceQueue.Utterance( {
-      priority: 5
-    } );
+        if ( velocity.magnitude < 1 ) {
+          phet.scenery.voicingUtteranceQueue.addToBack( `Lander not moving.` );  
+        }
+        else {
 
-    // Adds a listener to the altitudeProperty - called when this program is added OR
-    // when the altitudeProperty is added to the global model.
-    const addAltitudeChangedListener = ( altitudeProperty ) => {
-      let previousDescribedAltitude = altitudeProperty.value;
-
-      scratchpad.altitudeVoicingListener = ( newAltitude ) => {
-        const valueChange = Math.abs( newAltitude - previousDescribedAltitude );
-
-        // if the value changed enough to voicing something new...
-        if ( valueChange > 15 ) {
-
-          let voicingContent = '';
-          if ( newAltitude > 88 ) {
-            voicingContent = 'At extreme altitude! You are a cosmic climber!';
-          }
-          else if ( newAltitude > 70 ) {
-            voicingContent = 'At very high altitude! You are at the edge of space!';
-          }
-          else if ( newAltitude > 50 ) {
-            voicingContent = 'At high altitude! You are a stratospheric soarer!';
-          }
-          else if ( newAltitude > 40 ) {
-            voicingContent = 'At medium altitude! You are a cloud cruiser!';
-          }
-          else if ( newAltitude > 20 ) {
-            voicingContent = 'At low altitude! You are a tree top flyer!';
-          }
-          else {
-            voicingContent = 'At sea level! You are in the splash zone!';
-          }
-
-          console.log( voicingContent );
-          utterance.alert = voicingContent;
-          phet.scenery.voicingUtteranceQueue.addToBack( utterance );
-
-          previousDescribedAltitude = newAltitude;
+          // Default for MovementAlerter describes -y up
+          const describerVelocity = new phet.dot.Vector2( velocity.x, -velocity.y );
+          const directionString = phet.sceneryPhet.MovementAlerter.getDirectionDescriptionFromAngle(
+            describerVelocity.angle
+          );
+          phet.scenery.voicingUtteranceQueue.addToBack( `Lander moving ${directionString}` );
         }
       };
-      altitudeProperty.link( scratchpad.altitudeVoicingListener );
+      scratchpad.intervalListener = phet.axon.stepTimer.setInterval( voicingStepListener, 7000 );
+    };
+
+    scratchpad.handleLanderRemoved = lander => {
+      phet.axon.stepTimer.clearInterval( scratchpad.intervalListener );
     }
 
-    if ( model.altitudeProperty ) {
-
-      // altitudeProperty was already present when this program was added, set up listeners that will trigger
-      // new Voicing responses
-      addAltitudeChangedListener( model.altitudeProperty );
-    }
-
-    // add to the scratchpad so that this listener can be removed when this program is removed
-    scratchpad.altitudeModelComponentAddedListener = ( componentName, component ) => {
-      if ( componentName === 'altitudeProperty' ) {
- 
-        // altitudeProperty was added AFTER this program was added, add listener that trigger new Voicing
-        // responses 
-        addAltitudeChangedListener( component );
-      }
-    };
-    phet.paperLand.modelComponentAddedEmitter.addListener( scratchpad.altitudeModelComponentAddedListener );
-
-    scratchpad.altitudeModelComponentRemovedListener = ( componentName, component ) => {
-      if ( componentName === 'altitudeProperty' ) {
-
-        // altitudeProperty was removed after this program was added, remove listeners that trigger new Voicing
-        // responses
-        component.unlink( scratchpad.altitudeVoicingListener );
-        delete scratchpad.altitudeVoicingListener;
-      }
-    };
-    phet.paperLand.modelComponentRemovedEmitter.addListener( scratchpad.altitudeModelComponentRemovedListener );
+    scratchpad.observerId = phet.paperLand.addModelObserver( 'landerVelocityProperty', scratchpad.handleLanderExists, scratchpad.handleLanderRemoved );
   };
 
   // Called when the paper positions change.
   const onProgramChangedPosition = ( paperProgramNumber, positionPoints, scratchPad, sharedData ) => {
-
-    // No need to observe paper position for this program! However, you could describe the altitude
-    // based on positionPoints instead of altitudeProperty if you wanted to.
   };
 
   // Called when the program is changed or no longer detected.
   const onProgramRemoved = ( paperProgramNumber, scratchpad, sharedData ) => {
-
-    // Global model for all programs
-    const model = sharedData.model;
-
-    if ( scratchpad.altitudeModelComponentAddedListener ) {
-      phet.paperLand.modelComponentAddedEmitter.removeListener( scratchpad.altitudeModelComponentAddedListener );
-    }
-    if ( scratchpad.altitudeModelComponentRemovedListener ) {
-      phet.paperLand.modelComponentRemovedEmitter.removeListener( scratchpad.altitudeModelComponentRemovedListener );
-    }
-    if ( scratchpad.altitudeVoicingListener && model.altitudeProperty ) {
-      model.altitudeProperty.unlink( scratchpad.altitudeVoicingListener );
-    }
+    phet.paperLand.removeModelObserver( 'landerVelocityProperty', scratchpad.handleLanderRemoved, scratchpad.observerId );
+    delete scratchpad.observerId;
   };
 
   // Add the state change handler defined above as data for this paper.

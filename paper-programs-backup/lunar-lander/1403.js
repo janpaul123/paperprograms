@@ -12,7 +12,7 @@ importScripts('paper.js');
   const onProgramAdded = ( paperProgramNumber, scratchpad, sharedData ) => {
 
     // create a model Property for thrust
-    const thrustProperty = new phet.axon.Property( 0 );
+    const thrustProperty = new phet.axon.Property( new phet.dot.Vector2( 0, 0 ) );
     phet.paperLand.addModelComponent( 'thrustProperty', thrustProperty );
   };
 
@@ -27,12 +27,21 @@ importScripts('paper.js');
 
     // This is the center in x or y dimensions of the paper, normalized from 0 to 1.
     // Graphics coordinate system has 0 at top so subtract from 1 so that 0 is at the bottom.
-    let paperCenterY = 1 - ( positionPoints[ 0 ].y + positionPoints[ 2 ].y ) / 2;
-    const newValue = paperCenterY * range.max;
+    const paperCenterX = ( positionPoints[ 0 ].x + positionPoints[ 2 ].x ) / 2;
+    const paperCenterY = 1 - ( positionPoints[ 0 ].y + positionPoints[ 2 ].y ) / 2;
+
+    const newX = paperCenterX * range.max;
+    const newY = paperCenterY * range.max;
 
     // make sure value is within the range
-    const constrainedValue = Math.max( Math.min( newValue, range.max ), range.min );
-    thrustProperty.value = constrainedValue;
+    const constrainedX = range.constrainValue( newX );
+    const constrainedY = range.constrainValue( newY );
+
+    // for x component of thrust, we want 0 at the center of the screen
+    const centeredX = constrainedX - ( range.max / 2 );
+
+    thrustProperty.value = new phet.dot.Vector2( centeredX, constrainedY );
+    console.log( thrustProperty.value.magnitude );
   };
 
   // Add the state change handler defined above as data for this paper.
