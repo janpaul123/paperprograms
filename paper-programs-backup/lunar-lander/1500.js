@@ -16,7 +16,7 @@ importScripts('paper.js');
   // Called when the program is detected or changed.
   const onProgramAdded = ( paperProgramNumber, scratchpad, sharedData ) => {
 
-    scratchpad.handleLanderExists = landerVelocityProperty => {
+    const handleLanderExists = landerVelocityProperty => {
       const voicingStepListener = dt => {
         const velocity = landerVelocityProperty.value;
 
@@ -36,11 +36,11 @@ importScripts('paper.js');
       scratchpad.intervalListener = phet.axon.stepTimer.setInterval( voicingStepListener, 7000 );
     };
 
-    scratchpad.handleLanderRemoved = lander => {
+    const handleLanderRemoved = lander => {
       phet.axon.stepTimer.clearInterval( scratchpad.intervalListener );
     }
 
-    scratchpad.observerId = phet.paperLand.addModelObserver( 'landerVelocityProperty', scratchpad.handleLanderExists, scratchpad.handleLanderRemoved );
+    scratchpad.observerId = phet.paperLand.addModelObserver( 'landerVelocityProperty', handleLanderExists, handleLanderRemoved );
   };
 
   // Called when the paper positions change.
@@ -49,7 +49,7 @@ importScripts('paper.js');
 
   // Called when the program is changed or no longer detected.
   const onProgramRemoved = ( paperProgramNumber, scratchpad, sharedData ) => {
-    phet.paperLand.removeModelObserver( 'landerVelocityProperty', scratchpad.handleLanderRemoved, scratchpad.observerId );
+    phet.paperLand.removeModelObserver( 'landerVelocityProperty', scratchpad.observerId );
     delete scratchpad.observerId;
   };
 

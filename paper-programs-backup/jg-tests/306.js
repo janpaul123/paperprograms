@@ -12,10 +12,10 @@ importScripts('paper.js');
   // Create view components (graphics, Voicing, sound, anything)
   const onProgramAdded = ( paperProgramNumber, scratchpad, sharedData ) => {
     scratchpad.propertyListener = value => console.log( value );
-    scratchpad.handleAttach = property => property.link( scratchpad.propertyListener );
-    scratchpad.handleDetach = property => property.unlink( scratchpad.propertyListener ); 
+    const handleAttach = property => property.link( scratchpad.propertyListener );
+    const handleDetach = property => property.unlink( scratchpad.propertyListener );
 
-    scratchpad.observerId = phet.paperLand.addModelObserver( 'testModelProperty', scratchpad.handleAttach, scratchpad.handleDetach );
+    scratchpad.observerId = phet.paperLand.addModelObserver( 'testModelProperty', handleAttach, handleDetach );
   };
 
   const onProgramChangedPosition = ( paperProgramNumber, scratchPad, sharedData ) => {
@@ -25,12 +25,10 @@ importScripts('paper.js');
 
   // This is tear down code that removes the programs when phyical papers are removed 
   const onProgramRemoved = ( paperProgramNumber, scratchpad, sharedData ) => {
-    phet.paperLand.removeModelObserver( 'testModelProperty', scratchpad.handleDetach, scratchpad.observerId );
+    phet.paperLand.removeModelObserver( 'testModelProperty', scratchpad.observerId );
     delete scratchpad.observerId;
 
     delete scratchpad.propertyListener;
-    delete scratchpad.handleAttach;
-    delete scratchpad.handleDetach;
   };
 
   // Add the state change handler defined above as data for this paper.

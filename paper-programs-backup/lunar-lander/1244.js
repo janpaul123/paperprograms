@@ -51,14 +51,13 @@ importScripts('paper.js');
 
     // when the world is available, add the lander to it and listeners that will update model
     // from the p2 physics
-    scratchpad.handleWorldExists = world => {
-      console.log( world, scratchpad.shipBody );
+    const handleWorldExists = world => {
       world.addBody( scratchpad.shipBody );
 
       // TODO: This component needs many model other components to work (world, worldStepEmitter, modeltoViewPosition).
       // It would be better if we could observer many model components with a `handleComponentsExist` type function.
       // Instead, we have to nest these 'handleComponentExists' calls.
-      scratchpad.handleWorldStepEmitterExists = worldStepEmitter => {
+      const handleWorldStepEmitterExists = worldStepEmitter => {
         scratchpad.worldStepListener = () => {
 
           // after p2 physics updated the body, update Properties for the lander
@@ -83,7 +82,7 @@ importScripts('paper.js');
         worldStepEmitter.addListener( scratchpad.worldStepListener );
       };
 
-      scratchpad.handleWorldStepEmitterRemoved = worldStepEmitter => {
+      const handleWorldStepEmitterRemoved = worldStepEmitter => {
         worldStepEmitter.removeListener( scratchpad.worldStepListener );
         delete scratchpad.worldStepListener;
       };
@@ -91,25 +90,24 @@ importScripts('paper.js');
       // When the step emitter is available from the model, use it
       scratchpad.stepObserverId = phet.paperLand.addModelObserver(
         'worldStepEmitter',
-        scratchpad.handleWorldStepEmitterExists,
-        scratchpad.handleWorldStepEmitterRemoved
+        handleWorldStepEmitterExists,
+        handleWorldStepEmitterRemoved
       );
     }
 
     // when the world is removed, remove the lander from it
-    scratchpad.handleWorldRemoved = world => {
+    const handleWorldRemoved = world => {
       world.removeBody( scratchpad.shipBody );
 
-      phet.paperLand.removeModelObserver( 'worldStepEmitter', scratchpad.handleWorldStepEmitterRemoved, scratchpad.stepObserverId );
-      delete scratchpad.handleWorldStepEmitterRemoved;
+      phet.paperLand.removeModelObserver( 'worldStepEmitter', scratchpad.stepObserverId );
       delete scratchpad.stepObserverId;
     };
 
     // Attach/detach the lander when the world is available in the model
     scratchpad.observerId = phet.paperLand.addModelObserver(
       'world',
-      scratchpad.handleWorldExists,
-      scratchpad.handleWorldRemoved
+      handleWorldExists,
+      handleWorldRemoved
     );
 
     // Apply thrust over time
@@ -147,9 +145,8 @@ importScripts('paper.js');
 
   // Called when the program is changed or no longer detected.
   const onProgramRemoved = ( paperProgramNumber, scratchpad, sharedData ) => {
-    phet.paperLand.removeModelObserver( 'world', scratchpad.handleWorldRemoved, scratchpad.observerId );
+    phet.paperLand.removeModelObserver( 'world', scratchpad.observerId );
     delete scratchpad.observerId;
-    delete scratchpad.handleWorldRemoved;
 
     phet.paperLand.removeModelComponent( 'lander' );
 
@@ -165,7 +162,6 @@ importScripts('paper.js');
     delete scratchpad.imageNode;
 
     delete scratchpad.shipBody;
-    delete scratchpad.handleWorldExists;
   };
 
   // Add the state change handler defined above as data for this paper.

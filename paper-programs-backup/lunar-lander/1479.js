@@ -34,17 +34,17 @@ importScripts('paper.js');
 
     // When the world is available, we will add the model component to the world
     // and the view component to the display
-    scratchpad.handleWorldExists = world => {
+    const handleWorldExists = world => {
       world.addBody( scratchpad.targetBody );
       sharedData.scene.addChild( scratchpad.targetRectangle );
     };
 
     // When the world (or this program) is removed, we remove the model and view componets
-    scratchpad.handleWorldRemoved = world => {
+    const handleWorldRemoved = world => {
       world.removeBody( scratchpad.targetBody );
       sharedData.scene.removeChild( scratchpad.targetRectangle );
     }
-    scratchpad.observerId = phet.paperLand.addModelObserver( 'world', scratchpad.handleWorldExists, scratchpad.handleWorldRemoved );
+    scratchpad.observerId = phet.paperLand.addModelObserver( 'world', handleWorldExists, handleWorldRemoved );
   };
 
   const onProgramChangedPosition = ( paperProgramNumber, positionPoints, scratchpad, sharedData ) => {
@@ -72,7 +72,7 @@ importScripts('paper.js');
   };
 
   const onProgramRemoved = ( paperProgramNumber, scratchpad, sharedData ) => {
-    phet.paperLand.removeModelObserver( 'world', scratchpad.handleWorldRemoved, scratchpad.observerId );
+    phet.paperLand.removeModelObserver( 'world', scratchpad.observerId );
   };
 
   // Add the state change handler defined above as data for this paper.

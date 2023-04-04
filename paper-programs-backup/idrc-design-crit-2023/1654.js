@@ -29,7 +29,7 @@ importScripts( 'paper.js' );
     const scene = sharedData.scene;
 
     // A function that is called when the volume Property exists or is added to the model
-    scratchpad.handleModelPropertyExists = volumeProperty => {
+    const handleModelPropertyExists = volumeProperty => {
 
       // Range of values for the model and slider.
       const range = volumeProperty.range;
@@ -61,13 +61,13 @@ importScripts( 'paper.js' );
     }
 
     // A function that is called when the volume Property or this program does not exist or is removed from the model
-    scratchpad.handleModelPropertyRemoved = volumeProperty => {
+    const handleModelPropertyRemoved = volumeProperty => {
       scene.removeChild( scratchpad.slider );
     };
 
     // add an observer so the slider is created/destroyed as the volume Property or this program enters/exits the
     // camera detection
-    scratchpad.observerId = phet.paperLand.addModelObserver( 'volumeProperty', scratchpad.handleModelPropertyExists, scratchpad.handleModelPropertyRemoved );
+    scratchpad.observerId = phet.paperLand.addModelObserver( 'volumeProperty', handleModelPropertyExists, handleModelPropertyRemoved );
   };
 
   const onProgramChangedPosition = ( paperProgramNumber, positionPoints, scratchpad, sharedData ) => {
@@ -89,11 +89,8 @@ importScripts( 'paper.js' );
 
   // This is tear down code that removes the programs when phyical papers are removed 
   const onProgramRemoved = ( paperProgramNumber, scratchpad, sharedData ) => {
-    phet.paperLand.removeModelObserver( 'volumeProperty', scratchpad.handleModelPropertyRemoved, scratchpad.observerId );
-    delete scratchpad.handleModelPropertyExists;
-    delete scratchpad.handleModelPropertyRemoved;
+    phet.paperLand.removeModelObserver( 'volumeProperty', scratchpad.observerId );
     delete scratchpad.observerId;
-
   };
 
   // Add the state change handler defined above as data for this paper.

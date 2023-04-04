@@ -29,7 +29,7 @@ importScripts('paper.js');
     phet.tambo.soundManager.addSoundGenerator( thrustSound );
 
     // Called when it is possible to attach to the model component
-    scratchpad.handleAttach = thrustProperty => {
+    const handleAttach = thrustProperty => {
 
       // The actual work to do with the changing thrust
       scratchpad.thrustListener = thrust => {
@@ -47,7 +47,7 @@ importScripts('paper.js');
     };
 
     // Called when the model component or this program is removed
-    scratchpad.handleDetach = thrustProperty => {
+    const handleDetach = thrustProperty => {
 
       // remove the listener from the Property
       thrustProperty.unlink( scratchpad.thrustListener );
@@ -57,7 +57,7 @@ importScripts('paper.js');
       thrustSound.stop();
     }
 
-    scratchpad.observerId = phet.paperLand.addModelObserver( 'thrustProperty', scratchpad.handleAttach, scratchpad.handleDetach );
+    scratchpad.observerId = phet.paperLand.addModelObserver( 'thrustProperty', handleAttach, handleDetach );
   };
 
   // Called when the paper positions change.
@@ -73,10 +73,8 @@ importScripts('paper.js');
     phet.tambo.soundManager.removeSoundGenerator( scratchpad.thrustSound );
     delete scratchpad.thrustSound;
 
-    phet.paperLand.removeModelObserver( 'thrustProperty', scratchpad.handleDetach, scratchpad.observerId );
+    phet.paperLand.removeModelObserver( 'thrustProperty', scratchpad.observerId );
     delete scratchpad.observerId;
-    delete scratchpad.handleAttach;
-    delete scratchpad.handleDetach;
   };
 
   // Add the state change handler defined above as data for this paper.
