@@ -18,15 +18,23 @@ const boardModel = new Map();
 let observerId = 0;
 
 // Maps that give all functions listening for model component add/remove. We need references to those listeners
-// so that we can easily add/remove them when model components or observers are removed.
+// so that we can easily add/remove them when the model component no longer exists in the model. The functions
+// in these maps watch for changes to the global model object.
 // Map<number, function> - keys are unique id returned by addModelObserver, functions are the listeners
 const idToComponentAddedListenerMap = new Map();
 const idToComponentRemovedListenerMap = new Map();
+
+// Maps the unique ID returned by addModelObserver to a detach function that will remove listeners or do other
+// work when a model component is no longer available. The functions in this map actually detach from the
+// model component.
+const idToComponentDetachMap = new Map();
 
 // Specifically for addModelPropertyLink/removeModelPropertyLink - maps unique ID to listener added with link.
 // Map<number, function> - keys are unique ID returned by addModelPropertyLink, functions are listeners added with link
 const idToLinkListenerMap = new Map();
 
+// For addModelController/removeModelController - maps a unique ID to a function that will modify some model component
+// when it exists in the model.
 const idToControllerDetachMap = new Map();
 
 // Emits events when model components are added or removed, to be used in program code. Emits with two args
@@ -168,6 +176,9 @@ paperLand.addModelObserver = ( componentName, handleComponentAttach, handleCompo
   const handleComponentExists = component => {
     handleComponentAttach( component );
 
+    // store the detach so we can call it when we remove the model observer
+    idToComponentDetachMap.set( uniqueId, handleComponentDetach );
+
     const componentRemovedListener = removedComponentName => {
       if ( componentName === removedComponentName ) {
         handleComponentDoesNotExist( component );
@@ -179,6 +190,9 @@ paperLand.addModelObserver = ( componentName, handleComponentAttach, handleCompo
   const handleComponentDoesNotExist = component => {
     if ( component !== undefined ) {
       handleComponentDetach( component );
+
+      // now that it is detached, we don't want to attempt to detach again when we remove the observer
+      idToComponentDetachMap.delete( uniqueId );
     }
 
     const componentAddedListener = ( addedComponentName, addedComponent ) => {
@@ -201,7 +215,7 @@ paperLand.addModelObserver = ( componentName, handleComponentAttach, handleCompo
     handleComponentDoesNotExist();
   }
 
-  return observerId;
+  return uniqueId;
 };
 
 /**
@@ -214,8 +228,12 @@ paperLand.addModelObserver = ( componentName, handleComponentAttach, handleCompo
  *                              for model changes.
  */
 paperLand.removeModelObserver = ( componentName, handleComponentDetach, observerId ) => {
-  if ( boardModel.has( componentName ) ) {
-    handleComponentDetach( boardModel.get( componentName ) );
+  if ( idToComponentDetachMap.has( observerId ) ) {
+    if ( !boardModel.has( componentName ) ) {
+      throw new Error( 'We still have a detach listener, if the component is not available something went wrong.' );
+    }
+    idToComponentDetachMap.get( observerId )( boardModel.get( componentName ) );
+    idToComponentDetachMap.delete( observerId );
   }
 
   // remove any modelComponentAdded/modelComponentRemoved emitter listeners that were added on
