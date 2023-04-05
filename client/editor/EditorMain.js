@@ -8,6 +8,7 @@ import {
 } from '../utils';
 import CodeSnippetsDialog from './CodeSnippetsDialog.js';
 import styles from './EditorMain.css';
+import SaveAlert from './SaveAlert.js';
 
 export default class EditorMain extends React.Component {
 
@@ -19,7 +20,9 @@ export default class EditorMain extends React.Component {
       spaceData: { programs: [] },
       code: '',
       debugInfo: {},
-      showSnippetsDialog: false
+      showSnippetsDialog: false,
+      saveSuccess: true, // Did the save command succeed?
+      showSaveModal: false
     };
   }
 
@@ -93,10 +96,21 @@ export default class EditorMain extends React.Component {
       {
         json: { code }
       },
-      error => {
+      ( error, response ) => {
+
+        const state = { showSaveModal: true };
         if ( error ) {
           console.error( error );
+          state.saveSuccess = false;
         }
+        else {
+          state.saveSuccess = true;
+        }
+        this.setState( state );
+
+        window.setTimeout( () => {
+          this.setState( { showSaveModal: false } );
+        }, 2000 );
       }
     );
   };
@@ -167,17 +181,23 @@ export default class EditorMain extends React.Component {
           <div className={styles.getStarted}>Select a program on the right to get started.</div>
         )}
         {selectedProgram && (
-          <div className={styles.editor}>
-            <MonacoEditor
-              language='javascript'
-              theme='vs-dark'
-              value={this.state.code}
-              onChange={code => this.setState( { code } )}
-              editorDidMount={this._onEditorDidMount}
-              options={{ tabSize: 2, fontSize: '20px' }}
-            />
+          <div>
+            <div className={styles.editor}>
+              <MonacoEditor
+                language='javascript'
+                theme='vs-dark'
+                value={this.state.code}
+                onChange={code => this.setState( { code } )}
+                editorDidMount={this._onEditorDidMount}
+                options={{ tabSize: 2, fontSize: '20px' }}
+              />
+            </div>
           </div>
         )}
+        <SaveAlert
+          success={this.state.saveSuccess}
+          show={this.state.showSaveModal}
+        ></SaveAlert>
         {showSnippetsDialog && (
           <CodeSnippetsDialog
             onClose={() => this.setState( { showSnippetsDialog: false } )}
