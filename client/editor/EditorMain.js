@@ -24,6 +24,9 @@ export default class EditorMain extends React.Component {
       saveSuccess: true, // Did the save command succeed?
       showSaveModal: false
     };
+
+    // A reference to the timeout that will hide the save alert, so we can clear it early if we need to.
+    this.saveAlertTimeout = null;
   }
 
   componentDidMount() {
@@ -108,8 +111,13 @@ export default class EditorMain extends React.Component {
         }
         this.setState( state );
 
-        window.setTimeout( () => {
+        // Clear previous timeout if one is still running
+        window.clearTimeout( this.saveAlertTimeout );
+
+        // Display the alert for a short time (setTimeout will remove itself after it is called)
+        this.saveAlertTimeout = window.setTimeout( () => {
           this.setState( { showSaveModal: false } );
+          this.saveAlertTimeout = null;
         }, 2000 );
       }
     );
