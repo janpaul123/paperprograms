@@ -6,6 +6,7 @@
 
 import React from 'react';
 import Alert from 'react-bootstrap/Alert';
+import styles from './EditorMain.css';
 
 class SaveAlert extends React.Component {
 
@@ -27,15 +28,7 @@ class SaveAlert extends React.Component {
     const show = this.props.show;
 
     return (
-      <div
-        style={{
-
-          // centers the alert horizontally
-          display: 'flex',
-          justifyContent: 'center',
-          padding: '10px'
-        }}
-      >
+      <div className={styles.saveAlert}>
         <Alert
           show={show}
           variant={variant}

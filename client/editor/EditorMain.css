@@ -48,6 +48,12 @@
   font: 20px sans-serif;
 }
 
+:local(.saveAlert ) {
+  display: flex;
+  justify-content: center;
+  padding: paddingSize;
+}
+
 :local(.snippetControls) {
   display: flex;
   flex-direction: row;
