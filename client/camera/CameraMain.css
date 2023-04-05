@@ -13,8 +13,26 @@
   padding: 10px;
 }
 
+:local(.videoAndEditorContainer) {
+  display: flex;
+  flex-direction: column;
+}
+
 :local(.video) {
-  flex: 1 0 auto;
+  margin-right: 10px;
+  margin-bottom: 10px;
+}
+
+:local(.editor) {
+  height: 400px;
+  margin-top: 10px;
+  margin-right: 10px;
+}
+
+:local(.horizontalContainer) {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-around;
 }
 
 :local(.dialog) {
@@ -106,7 +124,6 @@
   padding: 5px;
 }
 
-
 :local(.programListItem) {
   width: 100%;
 }
@@ -196,4 +213,11 @@
   text-align: center;
   border-style: double;
   border-radius: 3;
+}
+
+/*bootstrap*/
+
+.btn.btn-primary[disabled] {
+  background-color: #aaa;
+  border-color: #888;
 }

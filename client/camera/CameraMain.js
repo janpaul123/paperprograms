@@ -5,8 +5,7 @@ import clientConstants from '../clientConstants.js';
 import { codeToName, getApiUrl, programMatchesFilterString } from '../utils';
 import styles from './CameraMain.css';
 import CameraVideo from './CameraVideo.js';
-
-// import CameraControls from './CameraControls.js';
+import MonacoEditor from 'react-monaco-editor';
 import CreateProgramDialog from './CreateProgramDialog.js';
 import helloWorld from './helloWorld';
 import { printCalibrationPage, printPage } from './printPdf';
@@ -40,7 +39,14 @@ export default class CameraMain extends React.Component {
       showCreateProgramDialog: false,
       programCreateMode: ProgramCreateModes.SIMPLE_HELLO_WORLD,
       selectedProgramToCopy: '',
-      programCodeToCopy: ''
+      programCodeToCopy: '',
+
+      // {number} - The ID number of the paper program currently selected in the editor, -1 for none.
+      editorProgramNumber: -1,
+
+      // {string|null} - The program code currently being edited.  When a program is first selected, this is set to
+      // the current value of that program's code.  It diverges from that code as the user makes edits.
+      codeInEditor: null
     };
 
     // @private {number|null} - id of current timeout, null when no timeout set
@@ -101,9 +107,19 @@ export default class CameraMain extends React.Component {
         console.error( error );
       }
       else {
-        this.setState( { spaceData: response.body }, () => {
-          this._programsChange( this.props.paperProgramsProgramsToRender );
-        } );
+        if ( !_.isEqual( this.state.spaceData, response.body ) ) {
+          this.setState( { spaceData: response.body }, () => {
+            this._programsChange( this.props.paperProgramsProgramsToRender );
+
+            // If the currently selected program is no longer in the selected space, load a default.
+            const programIsInSpace = this.state.spaceData.programs.find(
+              program => program.number === this.state.editorProgramNumber
+            ) !== undefined;
+            if ( !programIsInSpace ) {
+              this._loadEditorWithDefault();
+            }
+          } );
+        }
       }
     } );
 
@@ -407,11 +423,84 @@ export default class CameraMain extends React.Component {
    * @private
    */
   _hideCreateProgramDialog() {
-
-    // this.state.showCreateProgramDialog = false;
-    // this.state.selectedProgramToCopy = '';
     this.setState( { showCreateProgramDialog: false } );
     this.setState( { selectedProgramToCopy: '' } );
+  }
+
+  _save() {
+    const { editorProgramNumber, codeInEditor } = this.state;
+    if ( editorProgramNumber === -1 ) {
+      alert( 'Error: No program selected, save operation not possible.' );
+    }
+    else {
+
+      // Save this program by sending it to the server.
+      xhr.put(
+        getApiUrl( this.state.selectedSpaceName, `/programs/${editorProgramNumber}` ),
+        {
+          json: { code: codeInEditor }
+        },
+        error => {
+          if ( error ) {
+            console.error( error );
+          }
+        }
+      );
+    }
+  }
+
+  /**
+   * Load the editor with the default program, which is the program with the lowest number if there are some, or a
+   * default string if not.
+   * @private
+   */
+  _loadEditorWithDefault() {
+
+    // Set the editor to display the first program on the program list.
+    if ( this.state.spaceData.programs.length > 0 ) {
+      const programsSortedByIdNumber = this.state.spaceData.programs.sort(
+        ( programA, programB ) => programA.number - programB.number
+      );
+      const autoSelectedProgram = programsSortedByIdNumber[ 0 ];
+      this.setState( {
+        editorProgramNumber: autoSelectedProgram.number,
+        codeInEditor: autoSelectedProgram.currentCode.slice()
+      } );
+    }
+    else {
+      this.setState( {
+        editorProgramNumber: -1,
+        codeInEditor: '// No programs available.'
+      } );
+    }
+  }
+
+  /**
+   * Handler function for when the editor mounts, adds the keycode for saving a program.
+   * @param editor
+   * @param monaco
+   * @private
+   */
+  _onEditorDidMount( editor, monaco ) {
+
+    this._loadEditorWithDefault();
+
+    // Add the hot key for saving changes in the editor.
+    // eslint-disable-next-line no-bitwise
+    editor.addCommand( monaco.KeyMod.CtrlCmd | monaco.KeyCode.KEY_S, this._save.bind( this ) );
+  }
+
+  /**
+   * Get a boolean value indicating whether the code in the editor has changed since the last time the program was
+   * saved.
+   * @returns {boolean}
+   * @private
+   */
+  _isCodeChanged() {
+    const programInEditor = this.state.spaceData.programs.find(
+      program => program.number === this.state.editorProgramNumber
+    );
+    return !!programInEditor && programInEditor.currentCode !== this.state.codeInEditor;
   }
 
   render() {
@@ -434,38 +523,62 @@ export default class CameraMain extends React.Component {
             setSearchString={str => this.setState( { copyProgramListFilterString: str } )}
           />
 
-          <div className={styles.video}>
-            <CameraVideo
-              width={this.state.pageWidth - padding * 3 - sidebarWidth}
-              config={this.props.config}
-              onConfigChange={this.props.onConfigChange}
-              onProcessVideo={( { programsToRender, markers, framerate } ) => {
-                this.setState( { framerate } );
-                this._programsChange( programsToRender );
-                this.props.onMarkersChange( markers );
-              }}
-              allowSelectingDetectedPoints={this.state.selectedColorIndex !== -1}
-              onSelectPoint={( { color, size } ) => {
-                if ( this.state.selectedColorIndex === -1 ) {
-                  return;
-                }
+          <div className={styles.videoAndEditorContainer}>
+            <div className={styles.video}>
+              <CameraVideo
+                width={this.state.pageWidth - padding * 3 - sidebarWidth}
+                config={this.props.config}
+                onConfigChange={this.props.onConfigChange}
+                onProcessVideo={( { programsToRender, markers, framerate } ) => {
+                  this.setState( { framerate } );
+                  this._programsChange( programsToRender );
+                  this.props.onMarkersChange( markers );
+                }}
+                allowSelectingDetectedPoints={this.state.selectedColorIndex !== -1}
+                onSelectPoint={( { color, size } ) => {
+                  if ( this.state.selectedColorIndex === -1 ) {
+                    return;
+                  }
 
-                const colorsRGB = this.props.config.colorsRGB.slice();
-                colorsRGB[ this.state.selectedColorIndex ] = color.map( value => Math.round( value ) );
+                  const colorsRGB = this.props.config.colorsRGB.slice();
+                  colorsRGB[ this.state.selectedColorIndex ] = color.map( value => Math.round( value ) );
 
-                const paperDotSizes = this.props.config.paperDotSizes.slice();
-                paperDotSizes[ this.state.selectedColorIndex ] = size;
+                  const paperDotSizes = this.props.config.paperDotSizes.slice();
+                  paperDotSizes[ this.state.selectedColorIndex ] = size;
 
-                this.props.onConfigChange( { ...this.props.config, colorsRGB, paperDotSizes } );
-                this.setState( { selectedColorIndex: -1 } );
-              }}
-              debugPrograms={this.state.debugPrograms}
-              removeDebugProgram={program => {
-                const debugPrograms = this.state.debugPrograms.filter( p => p !== program );
-                this.setState( { debugPrograms } );
-              }}
-            />
+                  this.props.onConfigChange( { ...this.props.config, colorsRGB, paperDotSizes } );
+                  this.setState( { selectedColorIndex: -1 } );
+                }}
+                debugPrograms={this.state.debugPrograms}
+                removeDebugProgram={program => {
+                  const debugPrograms = this.state.debugPrograms.filter( p => p !== program );
+                  this.setState( { debugPrograms } );
+                }}
+              />
+            </div>
+
+            <div className={styles.horizontalContainer}>
+              <p>Editing program {this.state.editorProgramNumber}</p>
+              <Button
+                onClick={this._save.bind( this )}
+                disabled={!this._isCodeChanged()}
+              >
+                Save Changes
+              </Button>
+            </div>
+
+            <div className={styles.editor}>
+              <MonacoEditor
+                language='javascript'
+                theme='vs-dark'
+                value={this.state.codeInEditor || '// Select Program'}
+                onChange={code => this.setState( { codeInEditor: code } )}
+                editorDidMount={this._onEditorDidMount.bind( this )}
+                options={{ tabSize: 2, fontSize: '16px', minimap: { enabled: false } }}
+              />
+            </div>
           </div>
+
           <div className={styles.sidebar}>
             {this.showTestButton ? (
               <Button
@@ -608,7 +721,16 @@ export default class CameraMain extends React.Component {
                         ].join( ' ' )}
                       >
                         <span className={styles.programListItemContent}>
-                          <span className={styles.programListItemName}>
+                          <span
+                            className={styles.programListItemName}
+                            onClick={event => {
+                              event.stopPropagation();
+                              this.setState( {
+                                editorProgramNumber: program.number,
+                                codeInEditor: program.currentCode.slice()
+                              } );
+                            }}
+                          >
                             <strong>#{program.number}</strong> {codeToName( program.currentCode )}{' '}
                           </span>
                         </span>
