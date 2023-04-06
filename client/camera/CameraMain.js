@@ -720,16 +720,18 @@ export default class CameraMain extends React.Component {
                           : styles.programListItemNotPrinted
                         ].join( ' ' )}
                       >
-                        <span className={styles.programListItemContent}>
+                        <span
+                          className={styles.programListItemContent}
+                          onClick={event => {
+                            event.stopPropagation();
+                            this.setState( {
+                              editorProgramNumber: program.number,
+                              codeInEditor: program.currentCode.slice()
+                            } );
+                          }}
+                        >
                           <span
                             className={styles.programListItemName}
-                            onClick={event => {
-                              event.stopPropagation();
-                              this.setState( {
-                                editorProgramNumber: program.number,
-                                codeInEditor: program.currentCode.slice()
-                              } );
-                            }}
                           >
                             <strong>#{program.number}</strong> {codeToName( program.currentCode )}{' '}
                           </span>
