@@ -169,22 +169,6 @@ export default class CameraMain extends React.Component {
     } );
   }
 
-  // TODO: Should this use async/Promise instead of callback?
-  static getProgram( spaceName, programNumber, callback ) {
-
-    // program.:spaceName.:number.js
-    const getProgramUrl = new URL( 'program', window.location.origin ).toString();
-    const getRequestedProgramUrl = `${getProgramUrl}.${spaceName}.${programNumber}.js`;
-    xhr.get( getRequestedProgramUrl, { json: true }, ( error, response ) => {
-      if ( error ) {
-        console.error( `error adding space: ${error}` );
-      }
-      else {
-        callback( response.body );
-      }
-    } );
-  }
-
   /**
    * Gets programs for the provided spaces from the database and passes them to the provided callback for further work.
    * Provide an array of the space names, or '*' for all spaces.
@@ -743,7 +727,7 @@ export default class CameraMain extends React.Component {
                             this._print( program );
                           }}
                         >
-                          <img src={'media/images/printer.svg'}/>
+                          <img src={'media/images/printer.svg'} alt={'Printer icon'}/>
                         </span>
                         {this.state.debugPrograms.find( p => p.number === program.number ) === undefined ? (
                           <span
@@ -753,7 +737,7 @@ export default class CameraMain extends React.Component {
                               this._createDebugProgram( program.number, codeToName( program.currentCode ) );
                             }}
                           >
-                            <img src={'media/images/eye.svg'}/>
+                            <img src={'media/images/eye.svg'} alt={'Preview icon'}/>
                           </span>
                         ) : (
                            ''
