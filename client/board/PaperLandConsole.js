@@ -90,16 +90,17 @@ export default function PaperLandConsole( props ) {
   }, [ logArray ] );
 
   return (
-    <div className={styles.boardPanel} hidden={!props.consoleVisible}>
+    <div className={`${styles.boardPanel} ${styles.consolePanel}`} hidden={!props.consoleVisible}>
       <div>
-        <h5 style={{ float: 'left', margin: '10px' }}>Console</h5>
+        <h5 style={{ float: 'left', margin: '5px' }}>Console</h5>
         <Button
           variant='secondary'
           style={{ float: 'right', margin: '5px' }}
           onClick={() => setLogArray( [] )}
         >Clear</Button>
       </div>
-      <hr style={{ clear: 'both' }}/>
+      {/*`clear` puts the breaker after the floating button */}
+      <hr style={{ clear: 'both', marginBottom: '0px' }}/>
       <div
         className={`${styles.consoleContainer}`}
         ref={panelRef}

@@ -50,6 +50,11 @@
   color: black;
 }
 
+/* specific to the console panel, this overrides boardPanel because it is defined AFTER .boardPanel */
+:local(.consolePanel) {
+  padding: 0;
+}
+
 /* Styling for the sim display */
 :local(.simDisplayPanel) {
   width: displayWidth;
