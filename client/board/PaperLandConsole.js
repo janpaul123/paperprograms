@@ -4,6 +4,7 @@
  */
 
 import React, { useEffect, useRef, useState } from 'react';
+import Button from 'react-bootstrap/Button';
 import ListGroup from 'react-bootstrap/ListGroup';
 import boardConsole, { MessageType } from './boardConsole.js';
 import styles from './BoardMain.css';
@@ -89,15 +90,25 @@ export default function PaperLandConsole( props ) {
   }, [ logArray ] );
 
   return (
-    <div
-      hidden={!props.consoleVisible}
-      className={`${styles.consoleContainer} ${styles.boardPanel}`}
-      ref={panelRef}
-      onWheel={handleWheel}>
-      <ListGroup>
-        {items}
-        <div ref={scrollAnchorRef}/>
-      </ListGroup>
+    <div className={styles.boardPanel} hidden={!props.consoleVisible}>
+      <div>
+        <h5 style={{ float: 'left', margin: '10px' }}>Console</h5>
+        <Button
+          variant='secondary'
+          style={{ float: 'right', margin: '5px' }}
+          onClick={() => setLogArray( [] )}
+        >Clear</Button>
+      </div>
+      <hr style={{ clear: 'both' }}/>
+      <div
+        className={`${styles.consoleContainer}`}
+        ref={panelRef}
+        onWheel={handleWheel}>
+        <ListGroup variant='flush'>
+          {items}
+          <div ref={scrollAnchorRef}/>
+        </ListGroup>
+      </div>
     </div>
   );
 }

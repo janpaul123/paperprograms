@@ -60,8 +60,8 @@
   width: displayWidth;
 
   /* so there is a scrollbar - I wish this used flex for height but I couldn't figure it out*/
-  min-height: 300px;
-  max-height: 300px;
+  min-height: 250px;
+  max-height: 250px;
   overflow-y: auto;
 
   /*so that the last item in the list will anchor scrolling when it is visible, see https://css-tricks.com/books/greatest-css-tricks/pin-scrolling-to-bottom/*/
@@ -71,6 +71,7 @@
 /* Parent for all paper-land specific controls */
 :local(.paperLandControlsPanel) {
   box-sizing: border-box;
+  gap: 10px;
 
   /*so the panel doesnt go to the edge of the screen (its layout container will because of flex-grow)*/
   width: 75%
