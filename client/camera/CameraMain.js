@@ -507,7 +507,10 @@ export default class CameraMain extends React.Component {
             setSearchString={str => this.setState( { copyProgramListFilterString: str } )}
           />
 
-          <div className={styles.videoAndEditorContainer}>
+          <div
+            className={styles.videoAndEditorContainer}
+            style={{ width: this.state.pageWidth - padding * 3 - sidebarWidth }}
+          >
             <div className={styles.video}>
               <CameraVideo
                 width={this.state.pageWidth - padding * 3 - sidebarWidth}
@@ -541,10 +544,7 @@ export default class CameraMain extends React.Component {
               />
             </div>
 
-            <div
-              className={styles.horizontalContainer}
-              style={{ width: this.state.pageWidth - padding * 3 - sidebarWidth }}
-            >
+            <div className={styles.editorTitleBar}>
               <p>Editing program {this.state.editorProgramNumber}</p>
               <Button
                 onClick={this._save.bind( this )}
@@ -554,10 +554,7 @@ export default class CameraMain extends React.Component {
               </Button>
             </div>
 
-            <div
-              className={styles.editor}
-              style={{ width: this.state.pageWidth - padding * 3 - sidebarWidth }}
-            >
+            <div className={styles.editor}>
               <MonacoEditor
                 language='javascript'
                 theme='vs-dark'

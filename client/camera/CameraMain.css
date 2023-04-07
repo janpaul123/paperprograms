@@ -16,20 +16,24 @@
 :local(.videoAndEditorContainer) {
   display: flex;
   flex-direction: column;
+  margin-right: 20px;
 }
 
 :local(.video) {
+  width: 100%;
   margin-right: 10px;
   margin-bottom: 10px;
 }
 
 :local(.editor) {
+  width: 100%;
   height: 400px;
   margin-top: 10px;
   margin-right: 10px;
 }
 
-:local(.horizontalContainer) {
+:local(.editorTitleBar) {
+  width: 100%;
   display: flex;
   flex-direction: row;
   justify-content: space-around;
