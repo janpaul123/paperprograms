@@ -7,15 +7,19 @@
  * @author Liam Mulhall (PhET Interactive Simulations)
  */
 
+import 'bootstrap/dist/css/bootstrap.min.css';
 import React from 'react';
 import ReactDOM from 'react-dom';
+import boardConsole from './boardConsole.js';
 import styles from './BoardMain.css';
-import PaperLandControls from './PaperLandControls.js';
-import SceneryDisplay from './SceneryDisplay.js';
+import BoardMain from './BoardMain.js';
 import boardModel from './boardModel.js';
 
 // constants
-const DISPLAY_SIZE = new phet.dot.Dimension2( 640, 480 );
+const DISPLAY_SIZE = new phet.dot.Dimension2(
+  parseInt( styles.displayWidth, 10 ),
+  parseInt( styles.displayHeight, 10 )
+);
 
 // Create the root element for React.
 const simDisplayDiv = document.getElementById( 'board-root-element' );
@@ -58,16 +62,11 @@ const saveValueToBoardConfig = ( nameString, value ) => {
 // Render the scene graph.  Once this is done it updates itself, so there is no other React-based rendering of this
 // component.
 ReactDOM.render(
-  <div className={styles.boardContainer}>
-    <div className={styles.uiContainer}>
-      <div className={styles.simDisplayPanel}>
-        <SceneryDisplay scene={scene} width={DISPLAY_SIZE.width} height={DISPLAY_SIZE.height}/>
-      </div>
-      <div className={styles.paperLandControlsPanel}>
-        <PaperLandControls initialPositionInterval={boardConfigObject.positionInterval} updatePositionInterval={updatePositionInterval}></PaperLandControls>
-      </div>
-    </div>
-  </div>,
+  <BoardMain
+    scene={scene}
+    boardConfigObject={boardConfigObject}
+    updatePositionInterval={updatePositionInterval}
+  ></BoardMain>,
   simDisplayDiv
 );
 
@@ -252,12 +251,12 @@ addEventListener( 'storage', () => {
   const previousProgramNumbers = paperProgramsInfo.map( entry => Number( entry.number ) );
   currentProgramNumbers.forEach( currentProgramNumber => {
     if ( !previousProgramNumbers.includes( currentProgramNumber ) ) {
-      console.log( `New program detected: ${currentProgramNumber}` );
+      boardConsole.log( `New program detected: ${currentProgramNumber}` );
     }
   } );
   previousProgramNumbers.forEach( previousProgramNumber => {
     if ( !currentProgramNumbers.includes( previousProgramNumber ) ) {
-      console.log( `Program disappeared: ${previousProgramNumber}` );
+      boardConsole.log( `Program disappeared: ${previousProgramNumber}` );
     }
   } );
 

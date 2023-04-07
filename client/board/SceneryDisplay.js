@@ -3,6 +3,7 @@
  */
 
 import React, { useEffect } from 'react';
+import styles from './BoardMain.css';
 
 const SceneryDisplay = props => {
 
@@ -13,9 +14,6 @@ const SceneryDisplay = props => {
     // Create the scenery display.
     const sceneryDisplayDomElement = document.getElementById( 'scenery-display' );
     const sceneryDisplay = new phet.scenery.Display( props.scene, {
-      width: props.width,
-      height: props.height,
-      backgroundColor: 'rgb(254, 252, 231)',
 
       // In order to support UI controls outside the Display (other react components), scenery can
       // only add event listeners to its DOM element. However, that means that some scenery features
@@ -25,11 +23,20 @@ const SceneryDisplay = props => {
       container: sceneryDisplayDomElement
     } );
 
+    // styling for the root DOM element
+    sceneryDisplayDomElement.classList.add( styles.simDisplayPanel );
+    sceneryDisplayDomElement.classList.add( styles.boardPanel );
+
     // Make the scenery display interactive.
     sceneryDisplay.initializeEvents();
 
     // scenery workaround for consistent requestAnimationFrame
     phet.scenery.Utils.polyfillRequestAnimationFrame();
+
+    // Makes text selectable (useful for copying text from the console) - Scenery applies CSS to
+    // make it better for interactive content but that is interfering with this use case.
+    // WARNING: If this causes problems for the Display, remove it.
+    document.onselectstart = null;
 
     // set up animation - This takes an optional callback( dt ) if needed at some point
     sceneryDisplay.updateOnRequestAnimationFrame();

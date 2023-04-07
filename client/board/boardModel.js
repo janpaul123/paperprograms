@@ -6,6 +6,7 @@
  * they are available in paper program code.
  */
 
+import boardConsole from './boardConsole.js';
 import paperLand from './paperLand.js';
 
 // The model of our sim design board, with all model Properties and components from paper programs.
@@ -47,7 +48,7 @@ paperLand.addModelComponent = ( componentName, componentObject ) => {
     paperLand.modelComponentAddedEmitter.emit( componentName, componentObject );
   }
   else {
-    console.warn( `Model already has component with name ${componentName}` );
+    boardConsole.warn( `Model already has component with name ${componentName}! Ignoring this component.` );
   }
 };
 
@@ -60,7 +61,7 @@ paperLand.removeModelComponent = componentName => {
   const componentObject = boardModel.get( componentName );
 
   if ( componentObject === undefined ) {
-    console.warn( `Model does not have component with name ${componentName}` );
+    boardConsole.warn( `Model does not have component with name ${componentName}! Use addModelComponent first.` );
   }
   else {
 
@@ -125,6 +126,7 @@ const removeListenerFromModelChangeEmitter = ( observerId, listener, addOrRemove
   emitter.removeListener( listener );
 
   if ( !listenerMap.has( observerId ) ) {
+    boardConsole.error( 'listenerMap does not have provided listener.' );
     throw new Error( 'listenerMap does not have provided listener.' );
   }
   else {
@@ -138,6 +140,7 @@ const removeListenerFromModelChangeEmitter = ( observerId, listener, addOrRemove
       }
     }
     else {
+      boardConsole.error( 'listener was not in the array for component' );
       throw new Error( 'listener was not in the array for component' );
     }
   }

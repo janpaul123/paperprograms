@@ -1,41 +1,81 @@
-/* Parent for entire board, centers all content in the page */
-:local(.boardContainer) {
+/*Dimensions of the scenery display*/
+@value displayWidth: 640px;
+
+@value displayHeight: 480px;
+
+/* The flex parent for all contents of the board page, putting items in a row */
+:local(.rowContainer) {
   display: flex;
-  justify-content: center;
+  flex-direction: row;
+
+  /*so that contents are centered within extra spacing added by flex*/
+  align-content: center;
+  column-gap: 20px
 }
 
-/* Parent flex for UI components (sim, controls, logging) */
-:local(.uiContainer) {
+/*An (empty) item in the row so that the scenery display is centered*/
+:local(.rowSpacer) {
+  flex-grow: 1;
+  flex-basis: 100%;
+}
+
+/*Container for controls, taking up remaining space to the right of the scenery display*/
+:local(.controls) {
+  flex-grow: 1;
+  flex-basis: 100%;
+}
+
+/*Column containing the scenery Display and the console*/
+:local(.displayWithLog) {
+
+  /*so that this column is centered horizontally under rowContainer*/
+  flex-grow: 1;
+
+  /*This component is a column with child contents*/
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  align-items: flex-start;
-  gap: 20px;
+  row-gap: 20px;
+}
+
+:local(.boardPanel) {
+  border-color: #330033;
+  border-style: solid;
+  border-width: 4px;
+  padding: 4px;
+  background-color: rgb(254, 252, 231);
+  color: black;
 }
 
 /* Styling for the sim display */
 :local(.simDisplayPanel) {
-  background-color: #330033;
-  padding: 4px;
+  width: displayWidth;
+  height: displayHeight;
+}
+
+:local(.consoleContainer) {
+  width: displayWidth;
+
+  /* so there is a scrollbar - I wish this used flex for height but I couldn't figure it out*/
+  min-height: 300px;
+  max-height: 300px;
+  overflow-y: auto;
+
+  /*so that the last item in the list will anchor scrolling when it is visible, see https://css-tricks.com/books/greatest-css-tricks/pin-scrolling-to-bottom/*/
+  overflow-anchor: none;
 }
 
 /* Parent for all paper-land specific controls */
 :local(.paperLandControlsPanel) {
-  background-color: rgb(254, 252, 231);
-  border-style: solid;
-  border-color: #330033;
-  padding: 8px;
-  border-width: 4px;
-  width: 50%;
+  box-sizing: border-box;
+
+  /*so the panel doesnt go to the edge of the screen (its layout container will because of flex-grow)*/
+  width: 75%
 }
 
-/* Contents of the controls */
 :local(.paperLandControlsContent) {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-
-  color: black;
 }
 
 /* Inline display for value readouts */

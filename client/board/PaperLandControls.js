@@ -14,25 +14,40 @@ const POSITION_INTERVAL_STEP = 0.01;
 
 export default function PaperLandControls( props ) {
   const [ positionInterval, setPositionInterval ] = useState( props.initialPositionInterval );
+  const [ consoleVisible, setConsoleVisible ] = useState( true );
 
   return (
-    <div className={styles.paperLandControlsContent}>
+    <div className={`${styles.paperLandControlsContent} ${styles.boardPanel}`}>
       <h2>Controls</h2>
-      <div>
-        <Form.Label>Position Interval</Form.Label>
-        <p className={styles.inlineValue}>{positionInterval}</p>
-      </div>
-      <Form.Range
-        min={MIN_POSITION_INTERVAL}
-        max={MAX_POSITION_INTERVAL}
-        step={POSITION_INTERVAL_STEP}
-        value={positionInterval}
-        onChange={event => {
-          const newValue = event.target.value;
-          setPositionInterval( newValue );
-          props.updatePositionInterval( newValue );
-        }}
-      />
+      <>
+        <div>
+          <Form.Label>Position Interval</Form.Label>
+          <p className={styles.inlineValue}>{positionInterval}</p>
+        </div>
+        <Form.Range
+          min={MIN_POSITION_INTERVAL}
+          max={MAX_POSITION_INTERVAL}
+          step={POSITION_INTERVAL_STEP}
+          value={positionInterval}
+          onChange={event => {
+            const newValue = event.target.value;
+            setPositionInterval( newValue );
+            props.updatePositionInterval( newValue );
+          }}
+        />
+      </>
+      <>
+        <Form.Check
+          type='checkbox'
+          label='Show Console'
+          checked={consoleVisible}
+          onChange={event => {
+            const newValue = event.target.checked;
+            setConsoleVisible( newValue );
+            props.updateConsoleVisibility( newValue );
+          }}
+        />
+      </>
     </div>
   );
 }
