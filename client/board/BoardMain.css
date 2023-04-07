@@ -3,6 +3,10 @@
 
 @value displayHeight: 480px;
 
+:local(.titleContainer) {
+  text-align: center;
+}
+
 /* The flex parent for all contents of the board page, putting items in a row */
 :local(.rowContainer) {
   display: flex;
