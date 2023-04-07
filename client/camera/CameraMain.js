@@ -541,7 +541,10 @@ export default class CameraMain extends React.Component {
               />
             </div>
 
-            <div className={styles.horizontalContainer}>
+            <div
+              className={styles.horizontalContainer}
+              style={{ width: this.state.pageWidth - padding * 3 - sidebarWidth }}
+            >
               <p>Editing program {this.state.editorProgramNumber}</p>
               <Button
                 onClick={this._save.bind( this )}
@@ -551,14 +554,22 @@ export default class CameraMain extends React.Component {
               </Button>
             </div>
 
-            <div className={styles.editor}>
+            <div
+              className={styles.editor}
+              style={{ width: this.state.pageWidth - padding * 3 - sidebarWidth }}
+            >
               <MonacoEditor
                 language='javascript'
                 theme='vs-dark'
                 value={this.state.codeInEditor || '// Select Program'}
                 onChange={code => this.setState( { codeInEditor: code } )}
                 editorDidMount={this._onEditorDidMount.bind( this )}
-                options={{ tabSize: 2, fontSize: '16px', minimap: { enabled: false } }}
+                options={{
+                  tabSize: 2,
+                  fontSize: '16px',
+                  minimap: { enabled: false },
+                  automaticLayout: true
+                }}
               />
             </div>
           </div>
@@ -698,7 +709,9 @@ export default class CameraMain extends React.Component {
                       <div
                         key={program.number}
                         className={[
-                          program.number === this.state.editorProgramNumber ? styles.selectedProgramListItem : styles.programListItem
+                          program.number === this.state.editorProgramNumber ?
+                          styles.selectedProgramListItem :
+                          styles.programListItem
                         ].join( ' ' )}
                       >
                         <span
