@@ -27,7 +27,6 @@ export default function PaperLandConsole( props ) {
   const [ logArray, setLogArray ] = useState( [] );
 
   // references to React elements for scrolling and layout calculations
-  const scrollAnchorRef = useRef( null );
   const panelRef = useRef( null );
   const lastItemRef = useRef( null );
 
@@ -75,7 +74,12 @@ export default function PaperLandConsole( props ) {
     }
 
     if ( !userScroll ) {
-      scrollAnchorRef.current?.scrollIntoView();
+      const panelElement = panelRef.current;
+      if ( panelElement ) {
+
+        // set the scrollTop instead of using scrollIntoView so the entire page doesn't scroll
+        panelElement.scrollTop = panelElement.scrollHeight;
+      }
     }
   };
 
@@ -107,7 +111,6 @@ export default function PaperLandConsole( props ) {
         onWheel={handleWheel}>
         <ListGroup variant='flush'>
           {items}
-          <div ref={scrollAnchorRef}/>
         </ListGroup>
       </div>
     </div>
