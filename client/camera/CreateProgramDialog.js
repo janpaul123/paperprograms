@@ -207,6 +207,7 @@ class CreateProgramDialog extends React.Component {
                     theme='vs-dark'
                     value={data.programCodeToCopy || '// Select Program'}
                     options={{
+                      lineNumbers: 'off',
                       readOnly: true,
                       tabSize: 2,
                       fontSize: '16px',
