@@ -41,6 +41,7 @@
   row-gap: 20px;
 }
 
+/*applied to many panels in the board page*/
 :local(.boardPanel) {
   border-color: #330033;
   border-style: solid;
