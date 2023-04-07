@@ -1,5 +1,5 @@
 site_name: Paper Playground
-site_url: https://phet.colorado.edu/
+site_url: https://phet.colorado.edu/paper-land
 nav:
     - Home: index.md
     - Code Documentation: 
@@ -8,3 +8,7 @@ nav:
     - Paper Tutorial:
       - Camera Setup: tutorial/camera-setup.md
       - Legacy Tutorial: tutorial/tutorial.md
+    - Contribution:
+      # - How to Contribute: how to make this a redirect
+      - Feature Wishlist: contribute/wishlist.md
+      # - Community Code of Conduct: how to make this a redirect
