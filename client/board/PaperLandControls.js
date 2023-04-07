@@ -18,7 +18,6 @@ export default function PaperLandControls( props ) {
 
   return (
     <div className={`${styles.paperLandControlsContent} ${styles.boardPanel}`}>
-      <h2>Controls</h2>
       <>
         <div>
           <Form.Label>Position Interval</Form.Label>
