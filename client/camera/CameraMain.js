@@ -698,10 +698,7 @@ export default class CameraMain extends React.Component {
                       <div
                         key={program.number}
                         className={[
-                          styles.programListItem,
-                          program.printed
-                          ? styles.programListItemPrinted
-                          : styles.programListItemNotPrinted
+                          program.number === this.state.editorProgramNumber ? styles.selectedProgramListItem : styles.programListItem
                         ].join( ' ' )}
                       >
                         <span

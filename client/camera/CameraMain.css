@@ -126,26 +126,28 @@
 
 :local(.programListItem) {
   width: 100%;
+  margin-bottom: calc(cameraMainPadding / 4);
+  cursor: pointer;
 }
 
 :local(.programListItem):nth-child(even) {
   background: #555;
 }
 
+:local(.programListItem):hover {
+  background: #99e;
+}
+
+:local(.selectedProgramListItem) {
+  width: 100%;
+  margin-bottom: calc(cameraMainPadding / 4);
+  cursor: pointer;
+  background: #7171E5;
+}
+
 :local(.programListItemContent) {
   width: 75%;
   display: inline-block;
-}
-
-:local(.programListItemPrinted),
-:local(.programListItemNotPrinted) {
-  margin-bottom: calc(cameraMainPadding / 4);
-  cursor: pointer;
-}
-
-:local(.programListItemPrinted):hover,
-:local(.programListItemNotPrinted):hover {
-  background: #99e;
 }
 
 :local(.programListItemToggle) {
