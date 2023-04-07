@@ -1,0 +1,10 @@
+site_name: Paper Playground
+site_url: https://phet.colorado.edu/
+nav:
+    - Home: index.md
+    - Code Documentation: 
+      - Board API: use/implementation-notes.md
+      - Paper API: use/api.md
+    - Paper Tutorial:
+      - Camera Setup: tutorial/camera-setup.md
+      - Legacy Tutorial: tutorial/tutorial.md

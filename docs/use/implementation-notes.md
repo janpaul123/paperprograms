@@ -130,3 +130,15 @@ Quickly breaking down the numbered sections of the above Program code:
 
 From a single `cakeTypeProperty`, we could support several output modalities. We can imagine many other view
 Programs that could play sounds, trigger vibrations, and many other things from this single model component.
+
+## Board Console
+From program code you can use functions like
+phet.paperLand.console.log( string )
+phet.paperLand.console.warn( string )
+phet.paperLand.console.error( message )
+
+and messages will appear in the box and in dev tools.
+
+New messages appear at the bottom of the box and it will auto scroll with new messages unless the user has scrolled up.
+
+The console can be hidden/shown with a checkbox in the board controls panel.
