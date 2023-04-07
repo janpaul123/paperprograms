@@ -51,7 +51,7 @@ router.get( '/program.:spaceName.:number.js', ( req, res ) => {
  */
 router.get( '/api/program-summary-list/:spacesList', ( req, res ) => {
   const { spacesList } = req.params;
-  let summaryQuery = knex.select( [ 'currentCode', 'number' ] ).from( 'programs' );
+  let summaryQuery = knex.select( [ 'currentCode', 'number', 'spaceName' ] ).from( 'programs' );
 
   const spaces = spacesList.split( ',' );
   if ( spacesList !== '*' ) {

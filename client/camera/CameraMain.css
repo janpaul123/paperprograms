@@ -2,10 +2,12 @@
 
 @value cameraMainSidebarWidth: 300px;
 
+@value backgroundColor: #2E4152;
+
 :local(.root) {
   display: flex;
   flex-direction: column;
-  background-color: #2E4152;
+  background-color: backgroundColor;
 }
 
 :local(.appRoot) {
@@ -40,8 +42,28 @@
 }
 
 :local(.dialog) {
-  color: black;
+  color: white;
 }
+
+:local(.createProgramContent) {
+  background: backgroundColor;
+}
+
+:local(.createProgramDialog) {
+  min-width: 90%;
+  padding: 0;
+}
+
+.btn-close {
+  fill: rgba(255,255,255,0.5);
+}
+
+/*.btn-close:after {*/
+/*  content: "\2705";*/
+/*  position: relative;*/
+/*  left: -3px;*/
+/*  top: -3px;*/
+/*}*/
 
 :local(.note) {
   font-size: 0.9em;
