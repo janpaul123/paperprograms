@@ -136,9 +136,16 @@ router.get( '/api/spaces/:spaceName', ( req, res ) => {
   } );
 } );
 
+/**
+ * Adds a new program to the database, assigning it a new unique number for the spacename.
+ *
+ * @param spaceName - The space to save the program to.
+ */
 const maxNumber = 8400 / 4;
 router.post( '/api/spaces/:spaceName/programs', ( req, res ) => {
   const { spaceName } = req.params;
+
+  // extract code from the request
   const { code } = req.body;
   if ( !code ) {
     res.status( 400 ).send( 'Missing "code"' );
