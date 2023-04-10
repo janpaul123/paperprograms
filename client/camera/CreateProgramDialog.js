@@ -26,7 +26,6 @@ class CreateProgramDialog extends React.Component {
     this.state = {
 
       // The name of the space we are going to use to populate templates.
-      // TODO: We want to support multiple source spaces at once, but couldn't get that working with React.
       sourceSpace: '*',
 
       // Whether we are selecting from all spaces or a single space. If false, you can select which space to chose from.
@@ -78,6 +77,7 @@ class CreateProgramDialog extends React.Component {
     const {
       data, setSearchString, onCreateProgram, onCancel
     } = this.props;
+
     return (
       <>
         <Modal
@@ -98,6 +98,7 @@ class CreateProgramDialog extends React.Component {
                   <Form>
                     <div key={'create-mode-radio'} className='mb-3'>
                       <Form.Check
+                        id='create-simple-option'
                         inline
                         type='radio'
                         label='Create a simple "Hello World" program'
@@ -106,9 +107,10 @@ class CreateProgramDialog extends React.Component {
                         onChange={() => {data.programCreateMode = ProgramCreateModes.SIMPLE_HELLO_WORLD;}}
                       />
                       <Form.Check
+                        id='create-from-program-option'
                         inline
                         type='radio'
-                        label='Copy an existing program'
+                        label='Copy from existing programs'
                         name='create-mode-group'
                         checked={data.programCreateMode === ProgramCreateModes.COPY_EXISTING}
                         onChange={() => {data.programCreateMode = ProgramCreateModes.COPY_EXISTING;}}
@@ -122,6 +124,7 @@ class CreateProgramDialog extends React.Component {
                         <div key={'spaces-radio'} className='mb-3'>
                           <Form.Check
                             inline
+                            id='all-spaces-option'
                             type='radio'
                             label='All Spaces'
                             name='spaces-radio-group'
@@ -133,6 +136,7 @@ class CreateProgramDialog extends React.Component {
                           />
                           <Form.Check
                             inline
+                            id='select-space-option'
                             type='radio'
                             label='Select Space'
                             name='spaces-radio-group'
@@ -170,34 +174,42 @@ class CreateProgramDialog extends React.Component {
                           onChange={e => setSearchString( e.target.value )}
                         />
                       </label>
-                      <Form.Select
-                        htmlSize={20}
-                        name='programs'
-                        id='programsID'
-                        onChange={event => {
-                          const selectElement = event.target;
-                          data.selectedProgramToCopy = selectElement.value;
+                      <Form.Group as={Col} controlId='my_multiselect_field'>
+                        <Form.Label>Select one or more programs.</Form.Label>
+                        <Form.Control
+                          as='select'
+                          multiple
+                          htmlSize={10}
+                          onChange={event => {
 
-                          // We need to access the code to copy. As a quick solution, the code is put on the element
-                          // as a data attribute. Another way could be to save both the number AND the space name (we
-                          // need both to identify the program) and send those to CameraMain to use that data
-                          // to request the code from the database. This works for now because we get all code from the
-                          // database instead of a data summary.
-                          data.programCodeToCopy = selectElement.options[ selectElement.selectedIndex ].dataset.programCode;
-                        }}
-                      >
-                        {this._getFilteredProgramNames( this.state.programsForSelectedSpace )
-                          .map( program => {
-                            return <option
-                              key={`${program.number.toString()}-${program.spaceName}`}
-                              value={program.number.toString()}
-                              data-program-code={program.currentCode}
-                            >
-                              {`${codeToName( program.currentCode )} - #${program.number}`}
-                            </option>;
-                          } )
-                        }
-                      </Form.Select>
+                            // Clear out previous selection.
+                            data.programCodeToCopy.length = 0;
+
+                            // Loop through the selections, since multiple selections are allowed, and add them to the
+                            // list of programs to create when the user presses the Create button is press.
+                            for ( const option of event.target.selectedOptions ) {
+
+                              // The code for the programs was previously put on the "options" elements to make it easy
+                              // to access, which is why it is available here.
+                              data.programCodeToCopy.push( option.dataset.programCode );
+                            }
+                          }}
+                        >
+                          {this._getFilteredProgramNames( this.state.programsForSelectedSpace )
+                            .map( program => {
+                              return <option
+                                key={`${program.number.toString()}-${program.spaceName}`}
+                                value={program.number.toString()}
+
+                                // Put the program code on this option element so that we can reference it easily later.
+                                data-program-code={program.currentCode}
+                              >
+                                {`${codeToName( program.currentCode )} - #${program.number}`}
+                              </option>;
+                            } )
+                          }
+                        </Form.Control>
+                      </Form.Group>
                     </> ) : ' '
                   }
                 </Col>
@@ -205,7 +217,7 @@ class CreateProgramDialog extends React.Component {
                   <MonacoEditor
                     language='javascript'
                     theme='vs-dark'
-                    value={data.programCodeToCopy || '// Select Program'}
+                    value={data.programCodeToCopy[ 0 ] || '// Select Program(s)'}
                     options={{
                       lineNumbers: 'off',
                       readOnly: true,
@@ -224,7 +236,7 @@ class CreateProgramDialog extends React.Component {
               variant='light'
               onClick={onCreateProgram}
               disabled={data.programCreateMode === ProgramCreateModes.COPY_EXISTING &&
-                        data.selectedProgramToCopy === ''}
+                        data.programCodeToCopy.length === 0}
             >
               Create
             </Button>

@@ -38,8 +38,10 @@ export default class CameraMain extends React.Component {
       copyProgramListFilterString: '',
       showCreateProgramDialog: false,
       programCreateMode: ProgramCreateModes.SIMPLE_HELLO_WORLD,
-      selectedProgramToCopy: '',
-      programCodeToCopy: '',
+
+      // {string[]} - An array of strings, each of which represent the contents of a paper program, that are being
+      // copied into newly created programs in the DB.
+      programCodeToCopy: [],
 
       // {number} - The ID number of the paper program currently selected in the editor, -1 for none.
       editorProgramNumber: -1,
@@ -382,18 +384,22 @@ export default class CameraMain extends React.Component {
   }
 
   /**
-   * Handler function for the button in the "Create New Program" dialog that indicates that the user wants to create a
-   * program by copying an existing one.
+   * Handler function for the button in the "Create New Program" dialog that indicates that the user wants to create one
+   * or more new programs by copying from existing ones.
    * @private
    */
-  _handleCreateNewProgramButtonClicked() {
+  _handleCreateNewProgramsButtonClicked() {
     if ( this.state.programCreateMode === ProgramCreateModes.COPY_EXISTING ) {
 
-      if ( this.state.programCodeToCopy !== '' ) {
-        this._createProgramCopyFromCode( this.state.programCodeToCopy );
+      if ( this.state.programCodeToCopy.length > 0 ) {
+        this.state.programCodeToCopy.forEach( programCode => {
+
+          // TODO: JPB Make these sequential somehow.
+          this._createProgramCopyFromCode( programCode );
+        } );
       }
       else {
-        alert( `Error: Invalid program number - ${this.state.selectedProgramToCopy}` );
+        alert( 'Error: Invalid program(s) selection.' );
       }
     }
     else if ( this.state.programCreateMode === ProgramCreateModes.SIMPLE_HELLO_WORLD ) {
@@ -408,7 +414,7 @@ export default class CameraMain extends React.Component {
    */
   _hideCreateProgramDialog() {
     this.setState( { showCreateProgramDialog: false } );
-    this.setState( { selectedProgramToCopy: '' } );
+    this.setState( { programCodeToCopy: [] } );
   }
 
   _save() {
@@ -502,7 +508,7 @@ export default class CameraMain extends React.Component {
           {/* The modal dialog used to create a new program by copying an existing program. */}
           <CreateProgramDialog
             data={this.state}
-            onCreateProgram={this._handleCreateNewProgramButtonClicked.bind( this )}
+            onCreateProgram={this._handleCreateNewProgramsButtonClicked.bind( this )}
             onCancel={this._hideCreateProgramDialog.bind( this )}
             setSearchString={str => this.setState( { copyProgramListFilterString: str } )}
           />
