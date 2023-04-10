@@ -15,9 +15,18 @@ import Form from 'react-bootstrap/Form';
 import Modal from 'react-bootstrap/Modal';
 import Row from 'react-bootstrap/Row';
 import MonacoEditor from 'react-monaco-editor';
-import { codeToName, programMatchesFilterString } from '../utils.js';
+import xhr from 'xhr';
+import { codeToName, getApiUrl, programMatchesFilterString } from '../utils.js';
 import styles from './CameraMain.css';
-import CameraMain, { ProgramCreateModes } from './CameraMain.js';
+import helloWorld from './helloWorld';
+
+// constants
+const ProgramCreateModes = {
+  SIMPLE_HELLO_WORLD: 'simpleHelloWorld',
+  COPY_EXISTING: 'copyExisting'
+};
+
+const BASE_API_URL = new URL( 'api', window.location.origin ).toString();
 
 class CreateProgramsDialog extends React.Component {
 
@@ -32,6 +41,12 @@ class CreateProgramsDialog extends React.Component {
       selectFromAllSpaces: true,
 
       showCodePreview: false,
+
+      programCreateMode: ProgramCreateModes.SIMPLE_HELLO_WORLD,
+
+      // {string[]} - An array of strings, each of which represent the contents of a paper program, that are being
+      // copied into newly created programs in the DB.
+      codeFromSelectedPrograms: [],
 
       // List of programs for the selected space.
       // TODO: This should be summary info instead of full program.
@@ -59,12 +74,95 @@ class CreateProgramsDialog extends React.Component {
    * @param {string} space - space name or "*" for all spaces.
    */
   _setSpaceAndRequestPrograms( space ) {
-    CameraMain.getProgramSummaryList( [ space ], summaryList => {
+    CreateProgramsDialog.getProgramSummaryList( [ space ], summaryList => {
       this.setState( {
         sourceSpace: space,
         programsForSelectedSpace: summaryList
       } );
     } );
+  }
+
+  /**
+   * Handler function for the button in the "Create New Program" dialog that indicates that the user wants to create one
+   * or more new programs by copying from existing ones.
+   * @param {string} spaceName
+   *
+   * @private
+   */
+  _handleCreateNewProgramsButtonClicked( spaceName ) {
+    if ( this.state.programCreateMode === ProgramCreateModes.COPY_EXISTING ) {
+
+      if ( this.state.codeFromSelectedPrograms.length > 0 ) {
+        this.state.codeFromSelectedPrograms.forEach( programCode => {
+
+          // TODO: JPB Make these sequential somehow.
+          this._createProgramCopyFromCode( spaceName, programCode );
+        } );
+      }
+      else {
+        alert( 'Error: Invalid program(s) selection.' );
+      }
+    }
+    else if ( this.state.programCreateMode === ProgramCreateModes.SIMPLE_HELLO_WORLD ) {
+      this._createHelloWorld( spaceName );
+    }
+  }
+
+  /**
+   * Create a basic program from the hello world template.
+   * @param {string} spaceName
+   * @private
+   */
+  _createHelloWorld( spaceName ) {
+    xhr.post(
+      getApiUrl( spaceName, '/programs' ),
+      { json: { code: helloWorld } },
+      error => {
+        if ( error ) {
+          console.error( error );
+        }
+        else {
+          alert( 'Created "Generic Template" program' );
+        }
+      }
+    );
+  }
+
+  /**
+   * Create a copy of the provided program code and add it to the current space.  The program will be created with the
+   * existing name with ' - Copy' appended to it.
+   * @param {string} spaceName
+   * @param {string} programCodeToCopy
+   * @private
+   */
+  _createProgramCopyFromCode( spaceName, programCodeToCopy ) {
+
+    // Get the individual lines of the program that is being copied.
+    const programLines = programCodeToCopy.split( '\n' );
+
+    // Add the ' - Copy' portion to the title.
+    programLines[ 0 ] = programLines[ 0 ] + ' - Copy';
+
+    const copiedProgram = programLines.reduce( ( programSoFar, currentLine, index ) => {
+      programSoFar += currentLine;
+      if ( index < programLines.length ) {
+        programSoFar += '\n';
+      }
+      return programSoFar;
+    }, '' );
+
+    xhr.post(
+      getApiUrl( spaceName, '/programs' ),
+      { json: { code: copiedProgram } },
+      error => {
+        if ( error ) {
+          console.error( error );
+        }
+        else {
+          alert( `Created program "${codeToName( copiedProgram )}"` );
+        }
+      }
+    );
   }
 
   /**
@@ -75,8 +173,13 @@ class CreateProgramsDialog extends React.Component {
   render() {
 
     const {
-      data, setSearchString, onCreateProgram, onCancel
+      data, setSearchString, hideDialog
     } = this.props;
+
+    const closeDialog = () => {
+      this.setState( { codeFromSelectedPrograms: [] } );
+      hideDialog();
+    };
 
     return (
       <>
@@ -85,11 +188,15 @@ class CreateProgramsDialog extends React.Component {
           contentClassName={styles.createProgramContent}
           show={data.showCreateProgramDialog}
           className={styles.dialog}
-          onHide={() => {data.showCreateProgramDialog = false;}}
+
+          // Called when the background pane is clicked
+          onHide={() => {
+            closeDialog();
+          }}
         >
           <Modal.Header>
             <Modal.Title>Create New Programs</Modal.Title>
-            <CloseButton variant='white' onClick={() => { data.showCreateProgramDialog = false;}}/>
+            <CloseButton variant='white' onClick={closeDialog}/>
           </Modal.Header>
           <Modal.Body>
             <Container>
@@ -103,8 +210,8 @@ class CreateProgramsDialog extends React.Component {
                         type='radio'
                         label='Create a simple "Hello World" program'
                         name='create-mode-group'
-                        checked={data.programCreateMode === ProgramCreateModes.SIMPLE_HELLO_WORLD}
-                        onChange={() => {data.programCreateMode = ProgramCreateModes.SIMPLE_HELLO_WORLD;}}
+                        checked={this.state.programCreateMode === ProgramCreateModes.SIMPLE_HELLO_WORLD}
+                        onChange={() => {this.setState( { programCreateMode: ProgramCreateModes.SIMPLE_HELLO_WORLD } ); }}
                       />
                       <Form.Check
                         id='create-from-program-option'
@@ -112,12 +219,12 @@ class CreateProgramsDialog extends React.Component {
                         type='radio'
                         label='Copy from existing programs'
                         name='create-mode-group'
-                        checked={data.programCreateMode === ProgramCreateModes.COPY_EXISTING}
-                        onChange={() => {data.programCreateMode = ProgramCreateModes.COPY_EXISTING;}}
+                        checked={this.state.programCreateMode === ProgramCreateModes.COPY_EXISTING}
+                        onChange={() => {this.setState( { programCreateMode: ProgramCreateModes.COPY_EXISTING } ); }}
                       />
                     </div>
                   </Form>
-                  {data.programCreateMode === ProgramCreateModes.COPY_EXISTING ? (
+                  {this.state.programCreateMode === ProgramCreateModes.COPY_EXISTING ? (
                     <>
                       <p><b>Spaces:</b></p>
                       <Form>
@@ -183,7 +290,7 @@ class CreateProgramsDialog extends React.Component {
                           onChange={event => {
 
                             // Clear out previous selection.
-                            data.programCodeToCopy.length = 0;
+                            const codeFromSelectedPrograms = [];
 
                             // Loop through the selections, since multiple selections are allowed, and add them to the
                             // list of programs to create when the user presses the Create button is press.
@@ -191,8 +298,10 @@ class CreateProgramsDialog extends React.Component {
 
                               // The code for the programs was previously put on the "options" elements to make it easy
                               // to access, which is why it is available here.
-                              data.programCodeToCopy.push( option.dataset.programCode );
+                              codeFromSelectedPrograms.push( option.dataset.programCode );
                             }
+
+                            this.setState( { codeFromSelectedPrograms } );
                           }}
                         >
                           {this._getFilteredProgramNames( this.state.programsForSelectedSpace )
@@ -213,11 +322,11 @@ class CreateProgramsDialog extends React.Component {
                     </> ) : ' '
                   }
                 </Col>
-                <Col sm={8} hidden={data.programCreateMode === ProgramCreateModes.SIMPLE_HELLO_WORLD}>
+                <Col sm={8} hidden={this.state.programCreateMode === ProgramCreateModes.SIMPLE_HELLO_WORLD}>
                   <MonacoEditor
                     language='javascript'
                     theme='vs-dark'
-                    value={data.programCodeToCopy[ 0 ] || '// Select Program(s)'}
+                    value={this.state.codeFromSelectedPrograms[ 0 ] || '// Select Program(s)'}
                     options={{
                       lineNumbers: 'off',
                       readOnly: true,
@@ -234,15 +343,18 @@ class CreateProgramsDialog extends React.Component {
           <Modal.Footer>
             <Button
               variant='light'
-              onClick={onCreateProgram}
-              disabled={data.programCreateMode === ProgramCreateModes.COPY_EXISTING &&
-                        data.programCodeToCopy.length === 0}
+              onClick={() => {
+                this._handleCreateNewProgramsButtonClicked( data.selectedSpaceName );
+                closeDialog();
+              }}
+              disabled={this.state.programCreateMode === ProgramCreateModes.COPY_EXISTING &&
+                        this.state.codeFromSelectedPrograms.length === 0}
             >
               Create
             </Button>
             <Button
               variant='secondary'
-              onClick={onCancel}
+              onClick={closeDialog}
             >
               Cancel
             </Button>
@@ -250,6 +362,39 @@ class CreateProgramsDialog extends React.Component {
         </Modal>
       </>
     );
+  }
+
+  /**
+   * Gets programs for the provided spaces from the database and passes them to the provided callback for further work.
+   * Provide an array of the space names, or '*' for all spaces.
+   *
+   * @param {string[] | '*'} spaces
+   * @param callback
+   */
+  static getProgramSummaryList( spaces, callback ) {
+
+    let spacesString = '';
+    if ( Array.isArray( spaces ) ) {
+      spacesString = spaces.join( ',' );
+    }
+    else if ( spaces === '*' ) {
+
+      // handle the wildcard space
+      spacesString = spaces;
+    }
+    else {
+      alert( 'Bad spaces list in getProgramSummaryList' );
+    }
+
+    const getProgramSummaryUrl = `${BASE_API_URL}/program-summary-list/${spacesString}`;
+    xhr.get( getProgramSummaryUrl, { json: true }, ( error, response ) => {
+      if ( error ) {
+        console.error( `error getting program summary list: ${error}` );
+      }
+      else {
+        callback( response.body );
+      }
+    } );
   }
 }
 

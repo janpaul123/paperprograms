@@ -12,12 +12,6 @@ import { printCalibrationPage, printPage } from './printPdf';
 
 // constants
 const SPACE_DATA_POLLING_PERIOD = 1; // in seconds
-export const ProgramCreateModes = {
-  SIMPLE_HELLO_WORLD: 'simpleHelloWorld',
-  COPY_EXISTING: 'copyExisting'
-};
-
-const BASE_API_URL = new URL( 'api', window.location.origin ).toString();
 
 export default class CameraMain extends React.Component {
 
@@ -37,11 +31,6 @@ export default class CameraMain extends React.Component {
       programListFilterString: '',
       copyProgramListFilterString: '',
       showCreateProgramDialog: false,
-      programCreateMode: ProgramCreateModes.SIMPLE_HELLO_WORLD,
-
-      // {string[]} - An array of strings, each of which represent the contents of a paper program, that are being
-      // copied into newly created programs in the DB.
-      programCodeToCopy: [],
 
       // {number} - The ID number of the paper program currently selected in the editor, -1 for none.
       editorProgramNumber: -1,
@@ -171,40 +160,6 @@ export default class CameraMain extends React.Component {
     } );
   }
 
-  /**
-   * Gets programs for the provided spaces from the database and passes them to the provided callback for further work.
-   * Provide an array of the space names, or '*' for all spaces.
-   *
-   * TODO: We want to make this return summary information about the program.
-   * @param {string[] | '*'} spaces
-   * @param callback
-   */
-  static getProgramSummaryList( spaces, callback ) {
-
-    let spacesString = '';
-    if ( Array.isArray( spaces ) ) {
-      spacesString = spaces.join( ',' );
-    }
-    else if ( spaces === '*' ) {
-
-      // handle the wildcard space
-      spacesString = spaces;
-    }
-    else {
-      alert( 'Bad spaces list in getProgramSummaryList' );
-    }
-
-    const getProgramSummaryUrl = `${BASE_API_URL}/program-summary-list/${spacesString}`;
-    xhr.get( getProgramSummaryUrl, { json: true }, ( error, response ) => {
-      if ( error ) {
-        console.error( `error getting program summary list: ${error}` );
-      }
-      else {
-        callback( response.body );
-      }
-    } );
-  }
-
   _updatePageWidth() {
     this.setState( { pageWidth: document.body.clientWidth } );
   }
@@ -232,57 +187,6 @@ export default class CameraMain extends React.Component {
         }
         else {
           this.setState( { spaceData: response.body } );
-        }
-      }
-    );
-  }
-
-  _createHelloWorld() {
-    xhr.post(
-      getApiUrl( this.state.selectedSpaceName, '/programs' ),
-      { json: { code: helloWorld } },
-      error => {
-        if ( error ) {
-          console.error( error );
-        }
-        else {
-          alert( 'Created "Generic Template" program' );
-        }
-      }
-    );
-  }
-
-  /**
-   * Create a copy of the provided program code and add it to the current space.  The program will be created with the
-   * existing name with ' - Copy' appended to it.
-   * @param {string} programCodeToCopy
-   * @private
-   */
-  _createProgramCopyFromCode( programCodeToCopy ) {
-
-    // Get the individual lines of the program that is being copied.
-    const programLines = programCodeToCopy.split( '\n' );
-
-    // Add the ' - Copy' portion to the title.
-    programLines[ 0 ] = programLines[ 0 ] + ' - Copy';
-
-    const copiedProgram = programLines.reduce( ( programSoFar, currentLine, index ) => {
-      programSoFar += currentLine;
-      if ( index < programLines.length ) {
-        programSoFar += '\n';
-      }
-      return programSoFar;
-    }, '' );
-
-    xhr.post(
-      getApiUrl( this.state.selectedSpaceName, '/programs' ),
-      { json: { code: copiedProgram } },
-      error => {
-        if ( error ) {
-          console.error( error );
-        }
-        else {
-          alert( `Created program "${codeToName( copiedProgram )}"` );
         }
       }
     );
@@ -384,37 +288,11 @@ export default class CameraMain extends React.Component {
   }
 
   /**
-   * Handler function for the button in the "Create New Program" dialog that indicates that the user wants to create one
-   * or more new programs by copying from existing ones.
-   * @private
-   */
-  _handleCreateNewProgramsButtonClicked() {
-    if ( this.state.programCreateMode === ProgramCreateModes.COPY_EXISTING ) {
-
-      if ( this.state.programCodeToCopy.length > 0 ) {
-        this.state.programCodeToCopy.forEach( programCode => {
-
-          // TODO: JPB Make these sequential somehow.
-          this._createProgramCopyFromCode( programCode );
-        } );
-      }
-      else {
-        alert( 'Error: Invalid program(s) selection.' );
-      }
-    }
-    else if ( this.state.programCreateMode === ProgramCreateModes.SIMPLE_HELLO_WORLD ) {
-      this._createHelloWorld();
-    }
-    this._hideCreateProgramDialog();
-  }
-
-  /**
    * Hide the dialog that is used to create new programs.
    * @private
    */
   _hideCreateProgramDialog() {
     this.setState( { showCreateProgramDialog: false } );
-    this.setState( { programCodeToCopy: [] } );
   }
 
   _save() {
@@ -508,8 +386,7 @@ export default class CameraMain extends React.Component {
           {/* The modal dialog used to create a new program by copying an existing program. */}
           <CreateProgramsDialog
             data={this.state}
-            onCreateProgram={this._handleCreateNewProgramsButtonClicked.bind( this )}
-            onCancel={this._hideCreateProgramDialog.bind( this )}
+            hideDialog={ () => this.setState( { showCreateProgramDialog: false } ) }
             setSearchString={str => this.setState( { copyProgramListFilterString: str } )}
           />
 
