@@ -89,15 +89,14 @@ class CreateProgramsDialog extends React.Component {
    *
    * @private
    */
-  _handleCreateNewProgramsButtonClicked( spaceName ) {
+  async _handleCreateNewProgramsButtonClicked( spaceName ) {
     if ( this.state.programCreateMode === ProgramCreateModes.COPY_EXISTING ) {
 
       if ( this.state.codeFromSelectedPrograms.length > 0 ) {
-        this.state.codeFromSelectedPrograms.forEach( programCode => {
-
-          // TODO: JPB Make these sequential somehow.
-          this._createProgramCopyFromCode( spaceName, programCode );
-        } );
+        for ( const programCode of this.state.codeFromSelectedPrograms ) {
+          await this._createProgramCopyFromCode( spaceName, programCode );
+          console.log( 'created a program' );
+        }
       }
       else {
         alert( 'Error: Invalid program(s) selection.' );
@@ -135,7 +134,7 @@ class CreateProgramsDialog extends React.Component {
    * @param {string} programCodeToCopy
    * @private
    */
-  _createProgramCopyFromCode( spaceName, programCodeToCopy ) {
+  async _createProgramCopyFromCode( spaceName, programCodeToCopy ) {
 
     // Get the individual lines of the program that is being copied.
     const programLines = programCodeToCopy.split( '\n' );
@@ -156,10 +155,8 @@ class CreateProgramsDialog extends React.Component {
       { json: { code: copiedProgram } },
       error => {
         if ( error ) {
+          alert( `Error creating program "${codeToName( copiedProgram )}": ${error}` );
           console.error( error );
-        }
-        else {
-          alert( `Created program "${codeToName( copiedProgram )}"` );
         }
       }
     );
@@ -343,8 +340,9 @@ class CreateProgramsDialog extends React.Component {
           <Modal.Footer>
             <Button
               variant='light'
-              onClick={() => {
-                this._handleCreateNewProgramsButtonClicked( data.selectedSpaceName );
+              onClick={async () => {
+                await this._handleCreateNewProgramsButtonClicked( data.selectedSpaceName );
+                alert( `Created ${this.state.codeFromSelectedPrograms.length} new program(s).` );
                 closeDialog();
               }}
               disabled={this.state.programCreateMode === ProgramCreateModes.COPY_EXISTING &&
