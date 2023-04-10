@@ -1,5 +1,5 @@
 /**
- * CreateProgramDialog is a React component that presents a modal dialog that allows the user to create a new paper
+ * CreateProgramsDialog is a React component that presents a modal dialog that allows the user to create a new paper
  * program and add it to the current space. It allows the user create a simple "Hello World" program, or to search on
  * and select an existing program to copy from.
  *
@@ -19,7 +19,7 @@ import { codeToName, programMatchesFilterString } from '../utils.js';
 import styles from './CameraMain.css';
 import CameraMain, { ProgramCreateModes } from './CameraMain.js';
 
-class CreateProgramDialog extends React.Component {
+class CreateProgramsDialog extends React.Component {
 
   constructor( props ) {
     super( props );
@@ -88,7 +88,7 @@ class CreateProgramDialog extends React.Component {
           onHide={() => {data.showCreateProgramDialog = false;}}
         >
           <Modal.Header>
-            <Modal.Title>Create New Program</Modal.Title>
+            <Modal.Title>Create New Programs</Modal.Title>
             <CloseButton variant='white' onClick={() => { data.showCreateProgramDialog = false;}}/>
           </Modal.Header>
           <Modal.Body>
@@ -253,4 +253,4 @@ class CreateProgramDialog extends React.Component {
   }
 }
 
-export default CreateProgramDialog;
+export default CreateProgramsDialog;

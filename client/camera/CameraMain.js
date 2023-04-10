@@ -6,7 +6,7 @@ import { codeToName, getApiUrl, programMatchesFilterString } from '../utils';
 import styles from './CameraMain.css';
 import CameraVideo from './CameraVideo.js';
 import MonacoEditor from 'react-monaco-editor';
-import CreateProgramDialog from './CreateProgramDialog.js';
+import CreateProgramsDialog from './CreateProgramsDialog.js';
 import helloWorld from './helloWorld';
 import { printCalibrationPage, printPage } from './printPdf';
 
@@ -506,7 +506,7 @@ export default class CameraMain extends React.Component {
         <div className={styles.appRoot}>
 
           {/* The modal dialog used to create a new program by copying an existing program. */}
-          <CreateProgramDialog
+          <CreateProgramsDialog
             data={this.state}
             onCreateProgram={this._handleCreateNewProgramsButtonClicked.bind( this )}
             onCancel={this._hideCreateProgramDialog.bind( this )}
