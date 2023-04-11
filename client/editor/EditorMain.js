@@ -177,6 +177,20 @@ export default class EditorMain extends React.Component {
     return randomColor( { seed: this.props.editorConfig.editorId } );
   };
 
+  /**
+   * Get the heading that is shown above the editor.  This changes based on the selected program and whether the program
+   * is available for editing.
+   * @returns {string}
+   * @private
+   */
+  _getEditorHeadingText() {
+    let editorHeadingText = 'Select a program on the right to get started.';
+    if ( this.state.selectedProgramNumber !== '' ) {
+      editorHeadingText = `Program ${this.state.selectedProgramNumber}`;
+    }
+    return editorHeadingText;
+  }
+
   render() {
     const selectedProgram = this._selectedProgram( this.state.selectedProgramNumber );
     const okayToEditSelectedProgram = selectedProgram &&
@@ -188,11 +202,10 @@ export default class EditorMain extends React.Component {
 
     return (
       <div className={styles.root}>
-        {!selectedProgram && (
-          <div className={styles.getStarted}>Select a program on the right to get started.</div>
-        )}
-        {selectedProgram && (
-          <div>
+
+        <div>
+          <div className={styles.getStarted}>{this._getEditorHeadingText()}</div>
+          {selectedProgram && (
             <div className={styles.editor}>
               <MonacoEditor
                 language='javascript'
@@ -203,8 +216,9 @@ export default class EditorMain extends React.Component {
                 options={{ tabSize: 2, fontSize: '20px', readOnly: !okayToEditSelectedProgram }}
               />
             </div>
-          </div>
-        )}
+          )}
+        </div>
+
         <SaveAlert
           success={this.state.saveSuccess}
           show={this.state.showSaveModal}

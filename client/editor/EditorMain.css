@@ -4,10 +4,10 @@
 
 :local(.root) {
   position: absolute;
-  top: 0px;
-  left: 0px;
-  right: 0px;
-  bottom: 0px;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
   background-color: #2E4152;
 }
 
@@ -18,11 +18,17 @@
   font: 22px sans-serif;
 }
 
+:local(.editorHeading) {
+  margin-top: paddingSize;
+  margin-left: paddingSize;
+  font: 22px sans-serif;
+}
+
 :local(.editor) {
   position: absolute;
-  top: 0px;
-  bottom: 0px;
-  left: 0px;
+  top: 70px;
+  bottom: 0;
+  left: 0;
   right: sidebarWidth;
   overflow: hidden;
 }
@@ -63,10 +69,10 @@
 
 :local(.sidebar) {
   position: absolute;
-  top: 0px;
-  bottom: 0px;
+  top: 0;
+  bottom: 0;
   width: sidebarWidth;
-  right: 0px;
+  right: 0;
   font: 20px sans-serif;
   font-weight: 300;
   padding: paddingSize;
