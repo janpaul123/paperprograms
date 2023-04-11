@@ -17,7 +17,7 @@ For the best documentation currently available, see the wonderful project this w
 - e.g., `DATABASE_URL=postgres://someDatabaseAddressFromSomeHostingService`
 
 ### Local Database
--  You will need to install [PostgreSQL](https://www.postgresql.org/download/) and set up a local database. See the [Paper Programs tutorial documentation]([https://paperprograms.org](https://github.com/janpaul123/paperprograms/blob/master/docs/tutorial.md#optional-setting-up-the-server-locally)) for more details and commands
+-  You will need to install [PostgreSQL](https://www.postgresql.org/download/) and set up a local database. See the [Paper Programs tutorial documentation](https://github.com/janpaul123/paperprograms/blob/master/docs/tutorial.md#optional-setting-up-the-server-locally)) for more details and commands
 
 ### Recommended Start Up
 At this time, Paper Playground must be run from the command line (e.g., Bash, Terminal, Command Prompt, etc). If you're following along with the development of Paper Playground, you should run the following regularly:
