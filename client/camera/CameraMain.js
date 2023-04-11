@@ -32,16 +32,19 @@ export default class CameraMain extends React.Component {
       copyProgramListFilterString: '',
       showCreateProgramDialog: false,
 
-      // {number} - The ID number of the paper program currently selected in the editor, -1 for none.
-      editorProgramNumber: -1,
+      // {Object|null} - The program currently selected and being displayed in the editor, null for none.
+      programInEditor: null,
 
       // {string|null} - The program code currently being edited.  When a program is first selected, this is set to
       // the current value of that program's code.  It diverges from that code as the user makes edits.
       codeInEditor: null
     };
 
-    // @private {number|null} - id of current timeout, null when no timeout set
-    this._timeout = null;
+    // @private {Object|null} - local reference to the editor, initialized when the editor component mounts
+    this._editor = null;
+
+    // @private {number|null} - id of current timeout for polling the space info in the DB, null when no timeout set
+    this._pollSpaceTimeout = null;
 
     // Process query parameters
     const urlSearchParams = new URLSearchParams( window.location.search );
@@ -103,8 +106,8 @@ export default class CameraMain extends React.Component {
             this._programsChange( this.props.paperProgramsProgramsToRender );
 
             // If the currently selected program is no longer in the selected space, load a default.
-            const programIsInSpace = this.state.spaceData.programs.find(
-              program => program.number === this.state.editorProgramNumber
+            const programIsInSpace = !!this.state.programInEditor && this.state.spaceData.programs.find(
+              program => program.number === this.state.programInEditor.number
             ) !== undefined;
             if ( !programIsInSpace ) {
               this._loadEditorWithDefault();
@@ -116,10 +119,10 @@ export default class CameraMain extends React.Component {
 
     // Set a timeout to call this function again at the appropriate time.
     const elapsedTimeMs = Date.now() - beginTimeMs;
-    if ( this._timeout !== null ) {
-      clearTimeout( this._timeout );
+    if ( this._pollSpaceTimeout !== null ) {
+      clearTimeout( this._pollSpaceTimeout );
     }
-    this._timeout = setTimeout(
+    this._pollSpaceTimeout = setTimeout(
       this._pollSpaceUrl.bind( this ),
       Math.max( 0, SPACE_DATA_POLLING_PERIOD * 1000 - elapsedTimeMs )
     );
@@ -296,15 +299,15 @@ export default class CameraMain extends React.Component {
   }
 
   _save() {
-    const { editorProgramNumber, codeInEditor } = this.state;
-    if ( editorProgramNumber === -1 ) {
+    const { programInEditor, codeInEditor } = this.state;
+    if ( !programInEditor ) {
       alert( 'Error: No program selected, save operation not possible.' );
     }
     else {
 
       // Save this program by sending it to the server.
       xhr.put(
-        getApiUrl( this.state.selectedSpaceName, `/programs/${editorProgramNumber}` ),
+        getApiUrl( this.state.selectedSpaceName, `/programs/${programInEditor.number}` ),
         {
           json: { code: codeInEditor }
         },
@@ -331,13 +334,13 @@ export default class CameraMain extends React.Component {
       );
       const autoSelectedProgram = programsSortedByIdNumber[ 0 ];
       this.setState( {
-        editorProgramNumber: autoSelectedProgram.number,
+        programInEditor: autoSelectedProgram,
         codeInEditor: autoSelectedProgram.currentCode.slice()
       } );
     }
     else {
       this.setState( {
-        editorProgramNumber: -1,
+        programInEditor: null,
         codeInEditor: '// No programs available.'
       } );
     }
@@ -356,6 +359,9 @@ export default class CameraMain extends React.Component {
     // Add the hot key for saving changes in the editor.
     // eslint-disable-next-line no-bitwise
     editor.addCommand( monaco.KeyMod.CtrlCmd | monaco.KeyCode.KEY_S, this._save.bind( this ) );
+
+    // Save a reference to the editor so that its configuration can be changed if necessary.
+    this._editor = editor;
   }
 
   /**
@@ -365,10 +371,46 @@ export default class CameraMain extends React.Component {
    * @private
    */
   _isCodeChanged() {
-    const programInEditor = this.state.spaceData.programs.find(
-      program => program.number === this.state.editorProgramNumber
-    );
-    return !!programInEditor && programInEditor.currentCode !== this.state.codeInEditor;
+    return !!this.state.programInEditor && this.state.programInEditor.currentCode !== this.state.codeInEditor;
+  }
+
+  /**
+   * Get the text that should be used as the label for the editor component.  This varies based on the state of the
+   * program, which is why there is a method for getting it.
+   * @returns {string}
+   * @private
+   */
+  _getEditorLabelText() {
+    let editorLabelText = 'No program selected.';
+    if ( this.state.programInEditor ) {
+      const program = this.state.programInEditor;
+      if ( this.state.programInEditor.editorInfo.readOnly ||
+           this.state.programInEditor.editorInfo.claimed ) {
+
+        // The text should indicate that the file is only available for viewing, not editing.
+        editorLabelText = `Viewing program #${program.number} (read only)`;
+      }
+      else {
+
+        // The program is in a state where the user should be able to edit it.
+        editorLabelText = `Editing program #${program.number}`;
+      }
+    }
+    return editorLabelText;
+  }
+
+  /**
+   * A method to print debug information during rendering.  Feel free to alter as needed for debugging purposes.
+   * @param message
+   * @param retVal
+   * @private
+   */
+  _printDebugMessage( message, retVal ) {
+    if ( this.lastDebugMessage === undefined || message !== this.lastDebugMessage ) {
+      console.log( message );
+      this.lastDebugMessage = message;
+    }
+    return retVal;
   }
 
   render() {
@@ -379,6 +421,17 @@ export default class CameraMain extends React.Component {
       window.location.origin
     ).toString();
 
+    // Determine whether it is okay for the user to make changes to the program that is currently shown in the editor.
+    const okayToEditSelectedProgram = !!this.state.programInEditor &&
+                                      !this.state.programInEditor.editorInfo.readOnly &&
+                                      !this.state.programInEditor.editorInfo.claimed;
+
+    // Update the readOnly state of the editor if necessary.
+    if ( this._editor && this._editor.getConfiguration().readOnly !== !okayToEditSelectedProgram ) {
+      this._editor.updateOptions( { readOnly: !okayToEditSelectedProgram } );
+    }
+
+    // Return the JSX that essentially renders the component.
     return (
       <div className={styles.root}>
         <div className={styles.appRoot}>
@@ -386,7 +439,7 @@ export default class CameraMain extends React.Component {
           {/* The modal dialog used to create a new program by copying an existing program. */}
           <CreateProgramsDialog
             data={this.state}
-            hideDialog={ () => this.setState( { showCreateProgramDialog: false } ) }
+            hideDialog={() => this.setState( { showCreateProgramDialog: false } )}
             setSearchString={str => this.setState( { copyProgramListFilterString: str } )}
           />
 
@@ -428,7 +481,7 @@ export default class CameraMain extends React.Component {
             </div>
 
             <div className={styles.editorTitleBar}>
-              <p>Editing program {this.state.editorProgramNumber}</p>
+              <p>{this._getEditorLabelText()}</p>
               <Button
                 onClick={this._save.bind( this )}
                 disabled={!this._isCodeChanged()}
@@ -444,6 +497,7 @@ export default class CameraMain extends React.Component {
                 value={this.state.codeInEditor || '// Select Program'}
                 onChange={code => this.setState( { codeInEditor: code } )}
                 editorDidMount={this._onEditorDidMount.bind( this )}
+                id={this._printDebugMessage( `okayToEditSelectedProgram = ${okayToEditSelectedProgram}` )}
                 options={{
                   tabSize: 2,
                   fontSize: '16px',
@@ -589,7 +643,7 @@ export default class CameraMain extends React.Component {
                       <div
                         key={program.number}
                         className={[
-                          program.number === this.state.editorProgramNumber ?
+                          this.state.programInEditor && program.number === this.state.programInEditor.number ?
                           styles.selectedProgramListItem :
                           styles.programListItem
                         ].join( ' ' )}
@@ -599,7 +653,7 @@ export default class CameraMain extends React.Component {
                           onClick={event => {
                             event.stopPropagation();
                             this.setState( {
-                              editorProgramNumber: program.number,
+                              programInEditor: program,
                               codeInEditor: program.currentCode.slice()
                             } );
                           }}

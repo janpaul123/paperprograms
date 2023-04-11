@@ -179,6 +179,9 @@ export default class EditorMain extends React.Component {
 
   render() {
     const selectedProgram = this._selectedProgram( this.state.selectedProgramNumber );
+    const okayToEditSelectedProgram = selectedProgram &&
+                                      !selectedProgram.editorInfo.readOnly &&
+                                      !selectedProgram.editorInfo.claimed;
     const errors = this.state.debugInfo.errors || [];
     const logs = this.state.debugInfo.logs || [];
     const showSnippetsDialog = this.state.showSnippetsDialog;
@@ -197,7 +200,7 @@ export default class EditorMain extends React.Component {
                 value={this.state.code}
                 onChange={code => this.setState( { code } )}
                 editorDidMount={this._onEditorDidMount}
-                options={{ tabSize: 2, fontSize: '20px' }}
+                options={{ tabSize: 2, fontSize: '20px', readOnly: !okayToEditSelectedProgram }}
               />
             </div>
           </div>
@@ -216,7 +219,8 @@ export default class EditorMain extends React.Component {
           <h2>Edit Program</h2>
 
           <label>
-            Filter on: <input
+            Filter on:
+            <input
               name='filterProgramsOn'
               style={{ marginBottom: '10px' }}
               onChange={e => this.setState( { programListFilterString: e.target.value } )}
@@ -249,20 +253,12 @@ export default class EditorMain extends React.Component {
                 .filter( program => programMatchesFilterString( program.currentCode, this.state.programListFilterString ) )
                 .map( program => {
 
-                  // Check if it is okay to edit this file.  It is NOT okay if the file is being edited by someone else
-                  // or if it is marked as read-only.
-                  const okayToEdit =
-                    !program.editorInfo.readOnly &&
-                    !( program.editorInfo.claimed && program.editorInfo.editorId !== this.props.editorConfig.editorId );
-
                   return (
                     <option
                       key={program.number}
                       value={program.number}
-                      disabled={!okayToEdit}
                     >
                       #{program.number} {codeToName( program.currentCode )}
-                      {!okayToEdit ? ' (being edited or access restricted)' : ''}
                     </option>
                   );
                 } )}
@@ -276,34 +272,38 @@ export default class EditorMain extends React.Component {
             </div>
           )}
 
-          {selectedProgram &&
-           errors.length > 0 && (
-            <div className={styles.sidebarSection}>
-               errors:{' '}
-              {errors.map( ( error, index ) => (
-                <div key={index} className={styles.logline}>
-                  <strong>
-                     error[{error.filename}:{error.lineNumber}:{error.columnNumber}]:
-                  </strong>{' '}
-                  {error.message}
-                </div>
-              ) )}
-            </div>
-          )}
+          {
+            selectedProgram && errors.length > 0 &&
+            (
+              <div className={styles.sidebarSection}>
+                errors:{' '}
+                {errors.map( ( error, index ) => (
+                  <div key={index} className={styles.logline}>
+                    <strong>
+                      error[{error.filename}:{error.lineNumber}:{error.columnNumber}]:
+                    </strong>{' '}
+                    {error.message}
+                  </div>
+                ) )}
+              </div>
+            )
+          }
 
-          {selectedProgram &&
-           logs.length > 0 && (
-            <div className={styles.sidebarSection}>
-              {logs.map( ( logLine, index ) => (
-                <div key={index} className={styles.logline}>
-                  <strong>
-                    {logLine.name}[{logLine.filename}:{logLine.lineNumber}:{logLine.columnNumber}]:
-                  </strong>{' '}
-                  {logLine.args.join( ', ' )}
-                </div>
-              ) )}
-            </div>
-          )}
+          {
+            selectedProgram && logs.length > 0 &&
+            (
+              <div className={styles.sidebarSection}>
+                {logs.map( ( logLine, index ) => (
+                  <div key={index} className={styles.logline}>
+                    <strong>
+                      {logLine.name}[{logLine.filename}:{logLine.lineNumber}:{logLine.columnNumber}]:
+                    </strong>{' '}
+                    {logLine.args.join( ', ' )}
+                  </div>
+                ) )}
+              </div>
+            )
+          }
 
           <div className={styles.sidebarSection}>
             <a
