@@ -11,11 +11,10 @@
   background-color: #2E4152;
 }
 
-:local(.getStarted) {
-  position: absolute;
-  top: paddingSize;
-  left: paddingSize;
-  font: 22px sans-serif;
+:local(.container) {
+  display: flex;
+  flex-direction: column;
+  width: calc(100% - sidebarWidth); /* Subtract the width of the sidebar from the viewport width */
 }
 
 :local(.editorHeading) {
@@ -25,12 +24,7 @@
 }
 
 :local(.editor) {
-  position: absolute;
-  top: 70px;
-  bottom: 0;
-  left: 0;
-  right: sidebarWidth;
-  overflow: hidden;
+  height: 800px;
 }
 
 :local(.snippetEditor) {

@@ -22,7 +22,11 @@ export default class EditorMain extends React.Component {
       debugInfo: {},
       showSnippetsDialog: false,
       saveSuccess: true, // Did the save command succeed?
-      showSaveModal: false
+      showSaveModal: false,
+
+      // Because editing a program claims it, we keep track of whether the program was claimed when it was selected to
+      // help determine if it is okay to edit it.
+      programClaimedWhenSelected: false
     };
 
     // A reference to the timeout that will hide the save alert, so we can clear it early if we need to.
@@ -186,7 +190,13 @@ export default class EditorMain extends React.Component {
   _getEditorHeadingText() {
     let editorHeadingText = 'Select a program on the right to get started.';
     if ( this.state.selectedProgramNumber !== '' ) {
-      editorHeadingText = `Program ${this.state.selectedProgramNumber}`;
+      const selectedProgram = this._selectedProgram( this.state.selectedProgramNumber );
+      if ( this.state.programClaimedWhenSelected || selectedProgram.editorInfo.readOnly ) {
+        editorHeadingText = `Viewing program ${this.state.selectedProgramNumber} (read-only)`;
+      }
+      else {
+        editorHeadingText = `Editing program ${this.state.selectedProgramNumber}`;
+      }
     }
     return editorHeadingText;
   }
@@ -203,8 +213,8 @@ export default class EditorMain extends React.Component {
     return (
       <div className={styles.root}>
 
-        <div>
-          <div className={styles.getStarted}>{this._getEditorHeadingText()}</div>
+        <div className={styles.container}>
+          <h1 className={styles.editorHeading}>{this._getEditorHeadingText()}</h1>
           {selectedProgram && (
             <div className={styles.editor}>
               <MonacoEditor
@@ -213,7 +223,12 @@ export default class EditorMain extends React.Component {
                 value={this.state.code}
                 onChange={code => this.setState( { code } )}
                 editorDidMount={this._onEditorDidMount}
-                options={{ tabSize: 2, fontSize: '20px', readOnly: !okayToEditSelectedProgram }}
+                options={{
+                  tabSize: 2,
+                  fontSize: '20px',
+                  automaticLayout: true,
+                  readOnly: !okayToEditSelectedProgram
+                }}
               />
             </div>
           )}
@@ -248,10 +263,13 @@ export default class EditorMain extends React.Component {
               size={10}
               onChange={event => {
                 if ( event.target.value !== '' ) {
+                  const selectedProgramNumber = event.target.value;
+                  const selectedProgram = this._selectedProgram( selectedProgramNumber );
                   this.setState(
                     {
-                      selectedProgramNumber: event.target.value,
-                      code: this._selectedProgram( event.target.value ).currentCode,
+                      selectedProgramNumber,
+                      code: selectedProgram.currentCode,
+                      programClaimedWhenSelected: selectedProgram.editorInfo.claimed,
                       debugInfo: {}
                     },
                     () => this._pollDebugUrl()
