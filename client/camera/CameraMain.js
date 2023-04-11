@@ -502,7 +502,6 @@ export default class CameraMain extends React.Component {
                 value={this.state.codeInEditor || '// Select Program'}
                 onChange={code => this.setState( { codeInEditor: code } )}
                 editorDidMount={this._onEditorDidMount.bind( this )}
-                id={this._printDebugMessage( `okayToEditSelectedProgram = ${okayToEditSelectedProgram}` )}
                 options={{
                   tabSize: 2,
                   fontSize: '16px',
