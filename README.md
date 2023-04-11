@@ -11,6 +11,7 @@ For the best documentation currently available, see the wonderful project this w
 2. Install dependencies: `npm install`
 3. Set up database (see below for Remote or Local database)
 4. Start the tool: `npm start`
+5. Open [localhost:3000](localhost:3000) in your browser and follow the links on the landing page.
 
 ### Remote Database
 -  If you are using a remote database, create a `.env` file in the root of paper-land and provide the address for the database under `DATABASE_URL`
