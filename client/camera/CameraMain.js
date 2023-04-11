@@ -482,12 +482,17 @@ export default class CameraMain extends React.Component {
 
             <div className={styles.editorTitleBar}>
               <p>{this._getEditorLabelText()}</p>
-              <Button
-                onClick={this._save.bind( this )}
-                disabled={!this._isCodeChanged()}
-              >
-                Save Changes
-              </Button>
+              {
+                okayToEditSelectedProgram &&
+                (
+                  <Button
+                    onClick={this._save.bind( this )}
+                    disabled={!this._isCodeChanged()}
+                  >
+                    Save Changes
+                  </Button>
+                )
+              }
             </div>
 
             <div className={styles.editor}>
