@@ -99,7 +99,7 @@ export default class EditorMain extends React.Component {
       {
         json: { code }
       },
-      ( error, response ) => {
+      error => {
 
         const state = { showSaveModal: true };
         if ( error ) {
