@@ -88,14 +88,6 @@ router.get( '/api/spaces-list', ( req, res ) => {
 router.get( '/api/add-space/:newSpaceName', ( req, res ) => {
   console.log( `req.params.newSpaceName = ${req.params.newSpaceName}` );
   res.json( req.params );
-
-  // knex
-  //   .distinct()
-  //   .from('programs')
-  //   .pluck('spaceName')
-  //   .then(spaceNames => {
-  //     res.json(spaceNames);
-  //   });
 } );
 
 function getSpaceData( req, callback ) {
