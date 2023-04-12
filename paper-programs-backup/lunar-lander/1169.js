@@ -2,7 +2,7 @@
 // Keywords: gravity, physics, model
 // ------------------------------- //
 // Required Programs (dependencies) [none]
-// Recommended Programs: 
+// Recommended Programs: Lander, Thrust, Lander Voicing, Thrust Sound
 // Program Description: Creates a world for lunar lander.
 
 importScripts('paper.js');

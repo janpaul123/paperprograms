@@ -27,6 +27,8 @@ importScripts('paper.js');
 
     if ( model.has('vertexBPositionProperty') ) {
       model.get('vertexBPositionProperty').value = displayCenter;
+
+      phet.paperLand.console.log( displayCenter );
     }
   };
 

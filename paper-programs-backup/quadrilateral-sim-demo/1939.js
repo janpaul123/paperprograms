@@ -1,7 +1,7 @@
 // VertexD Controller
 // Keywords: vertex, paper
 // =============================== //
-// Program Dependencies: N/A
+// Program Dependencies: Quadrilateral iFrame and Model
 // Recommended Programs: General Template (templates)
 // Program Description: Example program with functioning Board and Projector code!
 

@@ -28,7 +28,7 @@ importScripts('paper.js');
     // This is the center in x or y dimensions of the paper, normalized from 0 to 1.
     // Graphics coordinate system has 0 at top so subtract from 1 so that 0 is at the bottom.
     const paperCenterX = ( positionPoints[ 0 ].x + positionPoints[ 2 ].x ) / 2;
-    const paperCenterY = 1 - ( positionPoints[ 0 ].y + positionPoints[ 2 ].y ) / 2;
+    const paperCenterY = 1 - ( positionPoints[ 0 ].y + positionPoints[ 2 ].y ) / 2;  
 
     const newX = paperCenterX * range.max;
     const newY = paperCenterY * range.max;
@@ -41,7 +41,9 @@ importScripts('paper.js');
     const centeredX = constrainedX - ( range.max / 2 );
 
     thrustProperty.value = new phet.dot.Vector2( centeredX, constrainedY );
-    console.log( thrustProperty.value.magnitude );
+
+    // print the y value of thrust to the console
+    phet.paperLand.console.log( constrainedY );
   };
 
   // Add the state change handler defined above as data for this paper.
