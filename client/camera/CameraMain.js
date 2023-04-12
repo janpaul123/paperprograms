@@ -547,7 +547,10 @@ export default class CameraMain extends React.Component {
                       onClick={this._saveProgram.bind( this )}
                       disabled={!this._isCodeChanged()}
                     >
-                      Save Changes
+                      <span className={styles.iconButtonSpan}>
+                        <img src={'media/images/upload.svg'} alt={'Save icon'}/>
+                        Save to DB
+                      </span>
                     </Button>
                     <Button
                       onClick={() => {
@@ -556,8 +559,9 @@ export default class CameraMain extends React.Component {
                         }
                       }}
                     >
-                      <span>
+                      <span className={styles.iconButtonSpan}>
                         <img src={'media/images/trash3.svg'} alt={'Delete icon'}/>
+                        Delete
                       </span>
                     </Button>
                   </>

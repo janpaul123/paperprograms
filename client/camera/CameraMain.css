@@ -41,6 +41,11 @@
   justify-content: space-around;
 }
 
+:local(.iconButtonSpan) {
+  display: flex;
+  gap: 5px;
+}
+
 :local(.dialog) {
   color: white;
 }
