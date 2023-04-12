@@ -4,6 +4,7 @@
 
 const clientConstants = {
   colorNames: [ 'R', 'G', 'B', 'D' ],
+  englishColorNames: [ 'red', 'green', 'blue', 'black' ],
   cornerNames: [ 'TL', 'TR', 'BR', 'BL' ],
   cameraVideoConstraints: {
 

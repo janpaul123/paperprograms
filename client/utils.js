@@ -191,3 +191,13 @@ export function programMatchesFilterString( programCode, filterString ) {
 
   return numberOfMatchedFilterWords === filterWordsFromUser.length;
 }
+
+/**
+ * Converts color data (in the array form that is used often in this platform) to a color string that can be used
+ * in css styling.
+ * @param {number[]} colorData - containing r, g, b, a values
+ * @returns {string}
+ */
+export function colorDataToCSS( colorData ) {
+  return `rgba(${colorData[ 0 ]},${colorData[ 1 ]},${colorData[ 2 ]},${colorData[ 3 ]})`;
+}

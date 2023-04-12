@@ -5,9 +5,10 @@
 /* eslint-disable indent */
 
 import colorDiff from 'color-diff';
-import sortBy from 'lodash/sortBy';
 import partition from 'lodash/partition';
-
+import sortBy from 'lodash/sortBy';
+import clientConstants from '../clientConstants';
+import { code8400 } from '../dotCodes';
 import {
   add,
   clamp,
@@ -20,8 +21,6 @@ import {
   projectPoint,
   shrinkPoints
 } from '../utils';
-import { code8400 } from '../dotCodes';
-import clientConstants from '../clientConstants';
 import simpleBlobDetector from './simpleBlobDetector';
 
 function keyPointToAvgColor( keyPoint, videoMat ) {
@@ -166,7 +165,8 @@ export default function detectPrograms( {
                                           displayMat,
                                           scaleFactor,
                                           allBlobsAreKeyPoints,
-                                          debugPrograms = []
+                                          debugPrograms = [],
+                                          debugMarkers = []
                                         } ) {
   const startTime = Date.now();
   const paperDotSizes = config.paperDotSizes;
@@ -449,22 +449,16 @@ export default function detectPrograms( {
     programsToRender.push( debugProgram );
   } );
 
-  // Markers
-  markers = markers.map( ( {
-                             colorIndex, avgColor, pt, size
-                           } ) => {
-    const markerPosition = projectPointToUnitSquare( pt, videoMat, config.knobPoints );
-
-    const colorName = {
-      0: 'red',
-      1: 'green',
-      2: 'blue',
-      3: 'black'
-    }[ colorIndex ];
-
-    // find out on which paper the marker is
-    // based on: http://demonstrations.wolfram.com/AnEfficientTestForAPointToBeInAConvexPolygon/
-    const matchingProgram = programsToRender.find( ( { points } ) => {
+  /**
+   * Find the program that the marker is on. Based no based on
+   * http://demonstrations.wolfram.com/AnEfficientTestForAPointToBeInAConvexPolygon/
+   *
+   * @param markerPosition - center of the marker
+   * @param listOfPrograms - all Programs to see if the marker is inside any of them
+   * @returns {*} - program object or null if not inside a program
+   */
+  const findProgramContainingMarker = ( markerPosition, listOfPrograms ) => {
+    return listOfPrograms.find( ( { points } ) => {
       for ( let i = 0; i < 4; i++ ) {
         const a = i;
         const b = ( i + 1 ) % 4;
@@ -485,6 +479,23 @@ export default function detectPrograms( {
 
       return true;
     } );
+  };
+
+  // Markers
+  markers = markers.map( ( {
+                             colorIndex, avgColor, pt, size
+                           } ) => {
+    const markerPosition = projectPointToUnitSquare( pt, videoMat, config.knobPoints );
+
+    const colorName = {
+      0: 'red',
+      1: 'green',
+      2: 'blue',
+      3: 'black'
+    }[ colorIndex ];
+
+    // find out on which paper the marker is
+    const matchingProgram = findProgramContainingMarker( markerPosition, programsToRender );
 
     return {
       positionOnPaper:
@@ -495,6 +506,28 @@ export default function detectPrograms( {
       color: avgColor,
       colorName
     };
+  } );
+
+  // Debug markers
+  debugMarkers.forEach( debugMarker => {
+    const absPoint = mult( debugMarker.position, { x: videoMat.cols, y: videoMat.rows } );
+    const markerPosition = projectPointToUnitSquare( absPoint, videoMat, config.knobPoints );
+
+    const colorName = debugMarker.colorName;
+    const colorData = debugMarker.colorData;
+
+    const containingProgram = findProgramContainingMarker( markerPosition, programsToRender );
+
+    markers.push( {
+      position: markerPosition,
+      color: colorData,
+      colorName: colorName,
+      size: debugMarker.size,
+
+      // only available if the marker is inside of a program
+      paperNumber: containingProgram && containingProgram.number,
+      positionOnPaper: containingProgram && projectPoint( markerPosition, containingProgram.projectionMatrix )
+    } );
   } );
 
   videoMat.delete();

@@ -5,6 +5,7 @@ import React from 'react';
 
 import clientConstants from '../clientConstants';
 import styles from './CameraVideo.css';
+import DebugMarker from './DebugMarker.js';
 import DebugProgram from './DebugProgram';
 import detectPrograms from './detectPrograms';
 import Knob from './Knob';
@@ -98,7 +99,8 @@ export default class CameraVideo extends React.Component {
         displayMat,
         scaleFactor: this.props.config.scaleFactor,
         allBlobsAreKeyPoints: this.props.allowSelectingDetectedPoints,
-        debugPrograms: this.props.debugPrograms
+        debugPrograms: this.props.debugPrograms,
+        debugMarkers: this.props.debugMarkers
       } );
       this._dataToRemember = dataToRemember;
       this.setState( { keyPoints } );
@@ -160,6 +162,21 @@ export default class CameraVideo extends React.Component {
                   videoHeight={this.state.videoHeight}
                   remove={() => this.props.removeDebugProgram( program )}
                 />
+              );
+            } )}
+            {this.props.debugMarkers.map( ( marker, index ) => {
+              return (
+                <DebugMarker
+                  key={marker.count}
+                  marker={marker}
+                  onMouseEnter={() => this._disableZoomer()}
+                  onRelease={() => this._attachZoomer()}
+                  videoWidth={this.state.videoWidth}
+                  videoHeight={this.state.videoHeight}
+                  remove={() => {
+                    this.props.removeDebugMarker( marker );
+                  }}
+                ></DebugMarker>
               );
             } )}
           </div>

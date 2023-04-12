@@ -1,17 +1,22 @@
 import React from 'react';
 import Button from 'react-bootstrap/Button';
+import MonacoEditor from 'react-monaco-editor';
 import xhr from 'xhr';
 import clientConstants from '../clientConstants.js';
 import { codeToName, getApiUrl, programMatchesFilterString } from '../utils';
 import styles from './CameraMain.css';
 import CameraVideo from './CameraVideo.js';
-import MonacoEditor from 'react-monaco-editor';
+import ColorListItem from './ColorListItem.js';
 import CreateProgramsDialog from './CreateProgramsDialog.js';
 import helloWorld from './helloWorld';
 import { printCalibrationPage, printPage } from './printPdf';
 
 // constants
 const SPACE_DATA_POLLING_PERIOD = 1; // in seconds
+
+// Produces a unique ID for each debug marker component, important for React to
+// render a list of components.
+let markerCount = 0;
 
 export default class CameraMain extends React.Component {
 
@@ -28,6 +33,7 @@ export default class CameraMain extends React.Component {
       isAddingNewSpace: false,
       newSpaceName: '',
       debugPrograms: [],
+      debugMarkers: [],
       programListFilterString: '',
       copyProgramListFilterString: '',
       showCreateProgramDialog: false,
@@ -214,6 +220,29 @@ export default class CameraMain extends React.Component {
     };
     debugPrograms.push( newProgram );
     this.setState( { debugPrograms } );
+  }
+
+  /**
+   * Creates a debug marker with the provided color. It will be rendered in the camera view and the code
+   * will run as if a marker of this color is detected by the camera.
+   * @private
+   */
+  _createDebugMarker( colorIndex ) {
+    markerCount++;
+
+    const colorsRGB = this.props.config.colorsRGB.slice();
+
+    const debugMarkers = this.state.debugMarkers;
+    const newMarker = {
+
+      // further from the origin so it is easier to grab initially
+      position: { x: 0.3, y: 0.3 },
+      color: colorsRGB[ colorIndex ],
+      colorName: clientConstants.englishColorNames[ colorIndex ],
+      count: markerCount
+    };
+    debugMarkers.push( newMarker );
+    this.setState( { debugMarkers } );
   }
 
   _programsChange( programsToRender ) {
@@ -477,6 +506,13 @@ export default class CameraMain extends React.Component {
                   const debugPrograms = this.state.debugPrograms.filter( p => p !== program );
                   this.setState( { debugPrograms } );
                 }}
+                debugMarkers={this.state.debugMarkers}
+                removeDebugMarker={marker => {
+                  const debugMarkers = this.state.debugMarkers.slice();
+                  const index = debugMarkers.indexOf( marker );
+                  debugMarkers.splice( index, 1 );
+                  this.setState( { debugMarkers } );
+                }}
               />
             </div>
 
@@ -695,6 +731,22 @@ export default class CameraMain extends React.Component {
                 </div>
               </div>
             </div>
+            <div className={styles.sidebarSection}>
+              <h3>Markers</h3>
+              <div
+                className={styles.sidebarSubSection}
+              >
+                {this.props.config.colorsRGB.map( ( color, colorIndex ) => (
+                  <ColorListItem
+                    key={colorIndex}
+                    colorIndex={colorIndex}
+                    color={color}
+                    size={50}
+                    onClick={this._createDebugMarker.bind( this )}
+                  ></ColorListItem>
+                ) )}
+              </div>
+            </div>
 
             <div className={styles.sidebarSection}>
               <h3>Printing</h3>
@@ -738,22 +790,12 @@ export default class CameraMain extends React.Component {
               <h3>Calibration</h3>
               <div className={styles.sidebarSubSection}>
                 {this.props.config.colorsRGB.map( ( color, colorIndex ) => (
-                  <div
+                  <ColorListItem
+                    colorIndex={colorIndex}
+                    color={color}
                     key={colorIndex}
-                    className={[
-                      styles.colorListItem,
-                      this.state.selectedColorIndex === colorIndex && styles.colorListItemSelected
-                    ].join( ' ' )}
-                    style={{ background: `rgb(${color.slice( 0, 3 ).join( ',' )})` }}
-                    onClick={() =>
-                      this.setState( state => ( {
-                        selectedColorIndex:
-                          state.selectedColorIndex === colorIndex ? -1 : colorIndex
-                      } ) )
-                    }
-                  >
-                    <strong>{clientConstants.colorNames[ colorIndex ]}</strong>
-                  </div>
+                  ></ColorListItem>
+
                 ) )}
               </div>
             </div>
