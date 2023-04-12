@@ -67,6 +67,8 @@
   color: white;
   font: 16px sans-serif;
   font-weight: 300;
+  height: 95vh;
+  overflow-y: auto;
 }
 
 :local(.sidebar) h1,
