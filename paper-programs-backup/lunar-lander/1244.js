@@ -19,7 +19,7 @@ importScripts('paper.js');
     // create a body with p2
     const shipShape = new p2.Box( { width: 75, height: 45 } );
     scratchpad.shipBody = new p2.Body( {
-      mass: 1,
+      mass: 1, // initial mass, to be updated
       position: [ 0, 200 ], // initial position
       fixedRotation: true // don't let this physical body rotate
     } );
@@ -34,13 +34,17 @@ importScripts('paper.js');
     const landerVelocityProperty = new phet.axon.Property( new phet.dot.Vector2( 0, 0 ) );
     const landerAccelerationProperty = new phet.axon.Property( new phet.dot.Vector2( 0, 0 ) );
     const landerForceProperty = new phet.axon.Property( new phet.dot.Vector2( 0, 0 ) );
+    const landerThrustProperty = new phet.axon.Property( new phet.dot.Vector2( 0, 0 ) );
+    const landerMassProperty = new phet.axon.Property( 1 );
+    phet.paperLand.addModelComponent( 'landerThrustProperty', landerThrustProperty );
     phet.paperLand.addModelComponent( 'landerPositionProperty', landerPositionProperty );
     phet.paperLand.addModelComponent( 'landerVelocityProperty', landerVelocityProperty );
     phet.paperLand.addModelComponent( 'landerAccelerationProperty', landerAccelerationProperty );
     phet.paperLand.addModelComponent( 'landerForceProperty', landerForceProperty );
+    phet.paperLand.addModelComponent( 'landerMassProperty', landerMassProperty );
 
     // Create a visualization for the lander itself
-        // Create a Scenery image node.
+    // Create a Scenery image node.
     const imageElement = document.createElement( 'img' );
     imageElement.setAttribute( 'src', 'media/images/lunarLander.png' );
     scratchpad.imageNode = new phet.scenery.Image( imageElement, {
@@ -71,7 +75,7 @@ importScripts('paper.js');
           landerForceProperty.set( new phet.dot.Vector2( forceArray[ 0 ], forceArray[ 1 ] ) );
 
           // because F = mA (acceleration is not a field in p2)
-          const mass = scratchpad.shipBody.mass;
+          const mass = landerMassProperty.value;
           landerAccelerationProperty.set( new phet.dot.Vector2( forceArray[ 0 ] / mass, forceArray[ 1 ] / mass ) );
 
           // re-position the view rectangle
@@ -110,10 +114,16 @@ importScripts('paper.js');
       handleWorldRemoved
     );
 
+    // update the mass for the p2 lander body when the model Property changes
+    scratchpad.massObserverId = phet.paperLand.addModelPropertyLink( 'landerMassProperty', mass => {
+      phet.paperLand.console.log( mass );
+      scratchpad.shipBody.mass = mass;
+    } );
+
     // Apply thrust over time
     scratchpad.timerListener = dt => {
-      if ( sharedData.model.has( 'thrustProperty' ) ) {
-        const thrust = sharedData.model.get( 'thrustProperty' ).value;
+      if ( sharedData.model.has( 'landerThrustProperty' ) ) {
+        const thrust = sharedData.model.get( 'landerThrustProperty' ).value;
         scratchpad.shipBody.applyForceLocal( [ thrust.x, thrust.y ], [ 0, 0 ] );
       }
     }
@@ -148,12 +158,17 @@ importScripts('paper.js');
     phet.paperLand.removeModelObserver( 'world', scratchpad.observerId );
     delete scratchpad.observerId;
 
+    phet.paperLand.removeModelPropertyLink( 'landerMassProperty', scratchpad.massObserverId );
+    delete scratchpad.massObserverId;
+
     phet.paperLand.removeModelComponent( 'lander' );
 
     phet.paperLand.removeModelComponent( 'landerPositionProperty' );
     phet.paperLand.removeModelComponent( 'landerVelocityProperty' );
     phet.paperLand.removeModelComponent( 'landerAccelerationProperty' );
     phet.paperLand.removeModelComponent( 'landerForceProperty' );
+    phet.paperLand.removeModelComponent( 'landerThrustProperty' );
+    phet.paperLand.removeModelComponent( 'landerMassProperty' );
 
     phet.axon.stepTimer.removeListener( scratchpad.timerListener );
     delete scratchpad.timerListener;

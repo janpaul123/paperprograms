@@ -57,7 +57,7 @@ importScripts('paper.js');
       thrustSound.stop();
     }
 
-    scratchpad.observerId = phet.paperLand.addModelObserver( 'thrustProperty', handleAttach, handleDetach );
+    scratchpad.observerId = phet.paperLand.addModelObserver( 'landerThrustProperty', handleAttach, handleDetach );
   };
 
   // Called when the paper positions change.
@@ -73,7 +73,7 @@ importScripts('paper.js');
     phet.tambo.soundManager.removeSoundGenerator( scratchpad.thrustSound );
     delete scratchpad.thrustSound;
 
-    phet.paperLand.removeModelObserver( 'thrustProperty', scratchpad.observerId );
+    phet.paperLand.removeModelObserver( 'landerThrustProperty', scratchpad.observerId );
     delete scratchpad.observerId;
   };
 
