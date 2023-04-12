@@ -13,6 +13,7 @@ import { printCalibrationPage, printPage } from './printPdf';
 
 // constants
 const SPACE_DATA_POLLING_PERIOD = 1; // in seconds
+const PROGRAM_DELETE_WARNING = 'This will remove the program for all users of the database.\nAre you sure you want to delete this program?';
 
 // Produces a unique ID for each debug marker component, important for React to
 // render a list of components.
@@ -319,15 +320,7 @@ export default class CameraMain extends React.Component {
     return succeeded;
   }
 
-  /**
-   * Hide the dialog that is used to create new programs.
-   * @private
-   */
-  _hideCreateProgramDialog() {
-    this.setState( { showCreateProgramDialog: false } );
-  }
-
-  _save() {
+  _saveProgram() {
     const { programInEditor, codeInEditor } = this.state;
     if ( !programInEditor ) {
       alert( 'Error: No program selected, save operation not possible.' );
@@ -347,6 +340,34 @@ export default class CameraMain extends React.Component {
         }
       );
     }
+  }
+
+  /**
+   * Delete the specified program.
+   * @param {string} spaceName
+   * @param {string|number} programNumber
+   * @private
+   */
+  _deleteProgram( spaceName, programNumber ) {
+    xhr.get(
+      getApiUrl( spaceName, `/delete/${programNumber}` ),
+      {
+        json: {}
+      },
+      ( error, response ) => {
+        if ( error ) {
+          alert( `Error deleting program: ${error}` );
+        }
+        else if ( response.body.numberOfProgramsDeleted !== 1 ) {
+          if ( response.body.numberOfProgramsDeleted === 0 ) {
+            alert( 'Delete failed - program not found in database.' );
+          }
+          else {
+            alert( `Unexpected number of programs deleted: ${response.body.numberOfProgramsDeleted}` );
+          }
+        }
+      }
+    );
   }
 
   /**
@@ -387,7 +408,7 @@ export default class CameraMain extends React.Component {
 
     // Add the hot key for saving changes in the editor.
     // eslint-disable-next-line no-bitwise
-    editor.addCommand( monaco.KeyMod.CtrlCmd | monaco.KeyCode.KEY_S, this._save.bind( this ) );
+    editor.addCommand( monaco.KeyMod.CtrlCmd | monaco.KeyCode.KEY_S, this._saveProgram.bind( this ) );
 
     // Save a reference to the editor so that its configuration can be changed if necessary.
     this._editor = editor;
@@ -521,12 +542,25 @@ export default class CameraMain extends React.Component {
               {
                 okayToEditSelectedProgram &&
                 (
-                  <Button
-                    onClick={this._save.bind( this )}
-                    disabled={!this._isCodeChanged()}
-                  >
-                    Save Changes
-                  </Button>
+                  <>
+                    <Button
+                      onClick={this._saveProgram.bind( this )}
+                      disabled={!this._isCodeChanged()}
+                    >
+                      Save Changes
+                    </Button>
+                    <Button
+                      onClick={() => {
+                        if ( confirm( PROGRAM_DELETE_WARNING ) === true ) {
+                          this._deleteProgram( this.state.selectedSpaceName, this.state.programInEditor.number );
+                        }
+                      }}
+                    >
+                      <span>
+                        <img src={'media/images/trash3.svg'} alt={'Delete icon'}/>
+                      </span>
+                    </Button>
+                  </>
                 )
               }
             </div>

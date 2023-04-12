@@ -257,6 +257,19 @@ router.post( '/api/spaces/:spaceName/programs/:number/markPrinted', ( req, res )
     } );
 } );
 
+/**
+ * Delete the specified program from the specified space.
+ */
+router.get( '/api/spaces/:spaceName/delete/:programNumber', ( req, res ) => {
+  const { spaceName, programNumber } = req.params;
+  knex( 'programs' )
+    .where( { spaceName, number: programNumber } )
+    .del()
+    .then( numberOfProgramsDeleted => {
+      res.json( { numberOfProgramsDeleted } );
+    } );
+} );
+
 router.put( '/api/spaces/:spaceName/programs/:number/debugInfo', ( req, res ) => {
   const { spaceName, number } = req.params;
 
