@@ -14,36 +14,42 @@ export class MessageType extends phet.phetCore.EnumerationValue {
   static enumeration = new phet.phetCore.Enumeration( MessageType );
 }
 
+/**
+ * Joins multiple args into a single printable string.
+ * @param args {string[]}
+ * @returns {string}
+ */
+const argsToString = args => {
+  return args.join( ', ' );
+};
+
 const boardConsole = {
 
   /**
    * Log a message to the console.
-   * @param message {string}
+   * @param {...string} args - arguments are strings to print
    */
-  log: message => {
-    const stringMessage = message.toString();
-    boardConsole.messageEmitter.emit( stringMessage, MessageType.LOG );
-    console.log( message );
+  log: function( ...args ) {
+    boardConsole.messageEmitter.emit( argsToString( args ), MessageType.LOG );
+    console.log( ...args );
   },
 
   /**
    * Put a warning message in the console.
-   * @param message {string}
+   * @param {...string} args - arguments are strings to print
    */
-  warn: message => {
-    const stringMessage = message.toString();
-    boardConsole.messageEmitter.emit( stringMessage, MessageType.WARN );
-    console.warn( stringMessage );
+  warn: function( ...args ) {
+    boardConsole.messageEmitter.emit( argsToString( args ), MessageType.WARN );
+    console.warn( ...args );
   },
 
   /**
    * Put an error message in the console
-   * @param message {string}
+   * @param {...string} args - arguments are strings to print
    */
-  error: message => {
-    const stringMessage = message.toString();
-    boardConsole.messageEmitter.emit( stringMessage, MessageType.ERROR );
-    console.error( message );
+  error: function( ...args ) {
+    boardConsole.messageEmitter.emit( argsToString( args ), MessageType.ERROR );
+    console.error( ...args );
   },
 
   // Emits an event whenever a new message is logged.

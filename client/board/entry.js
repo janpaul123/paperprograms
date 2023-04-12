@@ -91,12 +91,18 @@ const mapOfProgramNumbersToScratchpadObjects = new Map();
 // {Map<number,Object>} - map of paper program numbers that are present in the detection window to their position points
 const mapOfPaperProgramNumbersToPreviousPoints = new Map();
 
+// {Object[]} - Collection of all Markers detected by the camera
+const markers = [];
+
+const mapOfPaperProgramNumbersToPreviousMarkers = new Map();
+
 // {Object} - This object contains the data that is passed into the handlers for the paper programs and can be used to
 // share information between them.  The data can be referenced and sometimes updated.
 const sharedData = {
   model: boardModel,
   scene: scene,
-  displaySize: DISPLAY_SIZE
+  displaySize: DISPLAY_SIZE,
+  markers: markers
 };
 
 // Returns true when both x and y of the provided points are equal within threshold.
@@ -141,7 +147,7 @@ if ( !createAndLoadWrappedAudioBuffer ) {
 }
 
 // Update the sim design board based on changes to the paper programs.
-const updateBoard = presentPaperProgramInfo => {
+const updateBoard = ( presentPaperProgramInfo, currentMarkersInfo ) => {
 
   const dataByProgramNumber = JSON.parse( localStorage.paperProgramsDataByProgramNumber || '{}' );
 
@@ -162,6 +168,11 @@ const updateBoard = presentPaperProgramInfo => {
          programSpecificData.paperPlaygroundData.updateTime > lastUpdateTime ) {
 
       lastUpdateTime = programSpecificData.paperPlaygroundData.updateTime;
+
+      // put all detected markers in the sharedData so that they are available for callbacks (keeping reference to
+      // array provided to sharedData)
+      markers.length = 0;
+      currentMarkersInfo.forEach( marker => markers.push( marker ) );
 
       // If there are no handlers for this program, it means that it just appeared in the detection window.
       const paperProgramJustAppeared = !mapOfProgramNumbersToEventHandlers.has( paperProgramNumber );
@@ -217,6 +228,81 @@ const updateBoard = presentPaperProgramInfo => {
     if ( paperProgramHasMoved ) {
       mapOfPaperProgramNumbersToPreviousPoints.set( paperProgramNumber, currentPaperProgramPoints );
     }
+
+    // Handle any changing markers - addition/removal/or position change
+    const currentMarkersForProgram = _.filter( currentMarkersInfo, marker => marker.paperNumber === paperProgramNumber );
+    const previousMarkersForProgram = mapOfPaperProgramNumbersToPreviousMarkers.get( paperProgramNumber ) || [];
+    let markersMoved = false;
+
+    if ( currentMarkersForProgram.length > previousMarkersForProgram.length ) {
+      boardConsole.log( `Marker added to program: ${paperProgramNumber}` );
+      if ( eventHandlers && eventHandlers.onProgramMarkersAdded ) {
+        eval( eventHandlers.onProgramMarkersAdded )(
+          paperProgramNumber,
+          currentPaperProgramPoints,
+          mapOfProgramNumbersToScratchpadObjects.get( paperProgramNumber ),
+          sharedData,
+          currentMarkersForProgram
+        );
+      }
+
+      // a marker was just added, we want to eagerly call the markers moved callback (if it exists)
+      markersMoved = true;
+    }
+    else if ( currentMarkersForProgram.length < previousMarkersForProgram.length ) {
+      boardConsole.log( `Marker removed from program: ${paperProgramNumber}` );
+      if ( eventHandlers && eventHandlers.onProgramMarkersRemoved ) {
+        eval( eventHandlers.onProgramMarkersRemoved )(
+          paperProgramNumber,
+          currentPaperProgramPoints,
+          mapOfProgramNumbersToScratchpadObjects.get( paperProgramNumber ),
+          sharedData,
+          currentMarkersForProgram
+        );
+      }
+
+      // A marker was just removed, update the map ()
+      mapOfPaperProgramNumbersToPreviousMarkers.set( paperProgramNumber, currentMarkersForProgram );
+    }
+    else if ( currentMarkersForProgram.length > 0 ) {
+
+      // The number of markers stayed the same and there is at least one on the program - detect if it has moved since
+      // the last update
+      const currentPositions = currentMarkersForProgram.map( marker => marker.position );
+      const previousPositions = previousMarkersForProgram.map( marker => marker.position );
+
+      // The markers are not identifiable, and order in storage is not guaranteed. Sorting the before/after positions
+      // with the same comparator should allow us to compare positions to detect a change. If the positions are
+      // equal, sort should apply to both the same way.
+      const sortX = position => position.x;
+      const sortY = position => position.y;
+      const sortedCurrent = _.sortBy( currentPositions, [ sortX, sortY ] );
+      const sortedPrevious = _.sortBy( previousPositions, [ sortX, sortY ] );
+
+      // Produces an array of booleans where `true` means the current position is different from the previous
+      // position within the tolerance interval
+      const zippedPointsDifferent = _.zipWith( sortedCurrent, sortedPrevious, ( a, b ) => {
+
+        // graceful when arrays are different length
+        return ( a && b ) ? !arePointsEqual( a, b, boardConfigObject.positionInterval ) : true;
+      } );
+      markersMoved = _.some( zippedPointsDifferent );
+    }
+
+    if ( markersMoved ) {
+
+      // At least one marker moved! Use program callback and save markers for next comparison.
+      if ( eventHandlers && eventHandlers.onProgramMarkersChangedPosition ) {
+        eval( eventHandlers.onProgramMarkersChangedPosition )(
+          paperProgramNumber,
+          currentPaperProgramPoints,
+          mapOfProgramNumbersToScratchpadObjects.get( paperProgramNumber ),
+          sharedData,
+          currentMarkersForProgram
+        );
+      }
+      mapOfPaperProgramNumbersToPreviousMarkers.set( paperProgramNumber, currentMarkersForProgram );
+    }
   } );
 
   // Run removal handlers for any paper programs that have disappeared.
@@ -225,7 +311,19 @@ const updateBoard = presentPaperProgramInfo => {
   mapOfProgramNumbersToEventHandlers.forEach( ( eventHandlers, paperProgramNumber ) => {
     if ( !presentPaperProgramNumbers.includes( paperProgramNumber ) ) {
 
-      // This paper program has disappeared.  Run its removal method and clear its data.
+      // This paper program has disappeared.  Run its removal method and clear its data. Markers have
+      // also been removed from this program.
+      if ( eventHandlers && eventHandlers.onProgramMarkersRemoved ) {
+        eval( eventHandlers.onProgramMarkersRemoved )(
+          paperProgramNumber,
+          mapOfPaperProgramNumbersToPreviousPoints.get( paperProgramNumber ),
+          mapOfProgramNumbersToScratchpadObjects.get( paperProgramNumber ),
+          sharedData,
+          [] // empty markers - none since paper is being removed
+        );
+      }
+      mapOfPaperProgramNumbersToPreviousMarkers.delete( paperProgramNumber );
+
       if ( eventHandlers.onProgramRemoved ) {
         eval( eventHandlers.onProgramRemoved )(
           paperProgramNumber,
@@ -243,6 +341,7 @@ const updateBoard = presentPaperProgramInfo => {
 // Note: Through experimentation, we (PhET devs) found that this is called every second even if nothing changes as long
 // as there is at least one paper program in the detection window.
 let paperProgramsInfo = [];
+let currentMarkersInfo = [];
 addEventListener( 'storage', () => {
   const currentPaperProgramsInfo = JSON.parse( localStorage.paperProgramsProgramsToRender );
 
@@ -263,6 +362,9 @@ addEventListener( 'storage', () => {
   // Update our local copy of the paper programs information.
   paperProgramsInfo = currentPaperProgramsInfo;
 
+  // get all info about detected markers
+  currentMarkersInfo = JSON.parse( localStorage.paperProgramsMarkers );
+
   // Update the sim design board.
-  updateBoard( currentPaperProgramsInfo );
+  updateBoard( currentPaperProgramsInfo, currentMarkersInfo );
 } );
