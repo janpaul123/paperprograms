@@ -11,6 +11,7 @@
  */
 
 const fs = require( 'fs' );
+const os = require( 'os' );
 
 const USAGE_STRING = 'Usage: node get-programs-from-db.js <path-to-backup-dir>';
 
@@ -19,6 +20,9 @@ if ( process.argv.length !== 3 || ( process.argv.length === 3 && process.argv[ 2
   console.log( USAGE_STRING );
   process.exit( 1 );
 }
+
+// Helper function to fix end-of-line issues so that this works on any OS.
+const fixEOL = string => string.split( '\r' ).join( '' ).split( '\n' ).join( os.EOL );
 
 const pathToBackupDirectory = process.argv[ 2 ];
 
@@ -66,7 +70,7 @@ if ( !fs.existsSync( pathToBackupDirectory ) ) {
       programInfo.forEach( programInfoObject => {
         console.log( `    Getting program #${programInfoObject.number}, "${extractTitleFromCode( programInfoObject.currentCode )}"` );
         const filePath = `${playSpaceSubdirectory}/${programInfoObject.number.toString()}.js`;
-        fs.writeFileSync( filePath, programInfoObject.currentCode );
+        fs.writeFileSync( filePath, fixEOL( programInfoObject.currentCode ) );
       } );
     }
   }
