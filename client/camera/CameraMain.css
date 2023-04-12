@@ -58,13 +58,6 @@
   fill: rgba(255,255,255,0.5);
 }
 
-/*.btn-close:after {*/
-/*  content: "\2705";*/
-/*  position: relative;*/
-/*  left: -3px;*/
-/*  top: -3px;*/
-/*}*/
-
 :local(.note) {
   font-size: 0.9em;
 }
@@ -240,7 +233,7 @@
   font-size: 18px;
   text-align: center;
   border-style: double;
-  border-radius: 3;
+  border-radius: 3px;
 }
 
 /*bootstrap*/
