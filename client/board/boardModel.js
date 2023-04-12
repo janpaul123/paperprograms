@@ -127,7 +127,6 @@ const removeListenerFromModelChangeEmitter = ( observerId, listener, addOrRemove
 
   if ( !listenerMap.has( observerId ) ) {
     boardConsole.error( 'listenerMap does not have provided listener.' );
-    throw new Error( 'listenerMap does not have provided listener.' );
   }
   else {
     const listeners = listenerMap.get( observerId );
@@ -141,7 +140,6 @@ const removeListenerFromModelChangeEmitter = ( observerId, listener, addOrRemove
     }
     else {
       boardConsole.error( 'listener was not in the array for component' );
-      throw new Error( 'listener was not in the array for component' );
     }
   }
 };
@@ -223,7 +221,7 @@ paperLand.addModelObserver = ( componentName, handleComponentAttach, handleCompo
 paperLand.removeModelObserver = ( componentName, observerId ) => {
   if ( idToComponentDetachMap.has( observerId ) ) {
     if ( !boardModel.has( componentName ) ) {
-      throw new Error( 'We still have a detach listener, if the component is not available something went wrong.' );
+      boardConsole.error( 'Failure in removeModelObserver. componentName could be incorrect or something else went wrong.' );
     }
     idToComponentDetachMap.get( observerId )( boardModel.get( componentName ) );
     idToComponentDetachMap.delete( observerId );
@@ -258,11 +256,17 @@ paperLand.addModelPropertyLink = ( componentName, listener ) => {
   return paperLand.addModelObserver(
     componentName,
     component => {
-      if ( !component.link ) { throw new Error( 'Model component is not a Property' ); }
+      if ( !component.link ) {
+        boardConsole.error( 'component is not an axon.Property.' );
+        throw new Error( 'Model component is not a Property' );
+      }
       component.link( listener );
     },
     component => {
-      if ( !component.unlink ) { throw new Error( 'Model component is not a Property' ); }
+      if ( !component.unlink ) {
+        boardConsole.error( 'component is not an axon.Property.' );
+        throw new Error( 'Model component is not a Property' );
+      }
       component.unlink( listener );
     }
   );
