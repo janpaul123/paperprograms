@@ -8,7 +8,14 @@
 
 const restrictedSpacesList = [
   'jb-tests',
-  'templates'
+  'jg-tests',
+  'templates',
+  'altitude-demo',
+  'density-demo',
+  'lunar-lander',
+  'idrc-design-crit-2023',
+  'simple-demos',
+  'quadrilateral-sim-demo'
 ];
 
 module.exports = restrictedSpacesList;
