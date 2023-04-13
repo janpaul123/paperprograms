@@ -14,6 +14,24 @@ export function add( v1, v2 ) {
   return v1.map( ( value, index ) => value + v2[ index ] );
 }
 
+/**
+ * Returns a new {x,y} pair rotated around the provided x,y
+ * @param v - vector to rotate
+ * @param x - rotate about this x
+ * @param y - rotate about this y
+ * @param angle - angle of rotation
+ * @returns {{x: number, y: number}}
+ */
+export function rotateAboutXY( v, x, y, angle ) {
+  const dx = v.x - x;
+  const dy = v.y - y;
+  const cos = Math.cos( angle );
+  const sin = Math.sin( angle );
+  const newX = x + dx * cos - dy * sin;
+  const newY = y + dx * sin + dy * cos;
+  return { x: newX, y: newY };
+}
+
 export function diff( v1, v2 ) {
   if ( v1.x !== undefined ) {
     return { x: v1.x - v2.x, y: v1.y - v2.y };

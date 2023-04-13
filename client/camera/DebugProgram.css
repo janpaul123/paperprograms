@@ -36,3 +36,16 @@
 :local(.resizeHandle):hover {
   background: rgb(0, 0, 0);
 }
+
+:local(.rotateHandle) {
+  position: absolute;
+  right: 0px;
+  top: 0px;
+  width: 20px;
+  height: 20px;
+  background: rgb(100, 190, 100);
+}
+
+:local(.rotateHandle):hover {
+  background: rgb(0, 0, 0);
+}
