@@ -14,6 +14,7 @@ import boardConsole from './boardConsole.js';
 import styles from './BoardMain.css';
 import BoardMain from './BoardMain.js';
 import boardModel from './boardModel.js';
+import './boardUtils.js';
 
 // constants
 const DISPLAY_SIZE = new phet.dot.Dimension2(
