@@ -91,11 +91,9 @@ class CreateProgramsDialog extends React.Component {
    */
   async _handleCreateNewProgramsButtonClicked( spaceName ) {
     if ( this.state.programCreateMode === ProgramCreateModes.COPY_EXISTING ) {
-
       if ( this.state.codeFromSelectedPrograms.length > 0 ) {
         for ( const programCode of this.state.codeFromSelectedPrograms ) {
           await this._createProgramCopyFromCode( spaceName, programCode );
-          console.log( 'created a program' );
         }
       }
       else {
@@ -150,14 +148,21 @@ class CreateProgramsDialog extends React.Component {
       return programSoFar;
     }, '' );
 
-    xhr.post(
-      getApiUrl( spaceName, '/programs' ),
-      { json: { code: copiedProgram } },
-      error => {
-        if ( error ) {
-          alert( `Error creating program "${codeToName( copiedProgram )}": ${error}` );
-          console.error( error );
-        }
+    // Wrap the post request that will create the program in a Promise so that clients of this function can await the
+    // completion of the create request.
+    return new Promise(
+      resolve => {
+        xhr.post(
+          getApiUrl( spaceName, '/programs' ),
+          { json: { code: copiedProgram } },
+          error => {
+            if ( error ) {
+              alert( `Error creating program "${codeToName( copiedProgram )}": ${error}` );
+              console.error( error );
+            }
+            resolve();
+          }
+        );
       }
     );
   }
