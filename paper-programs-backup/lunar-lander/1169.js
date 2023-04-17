@@ -1,4 +1,4 @@
-// World
+// World (Model)
 // Keywords: gravity, physics, model
 // ------------------------------- //
 // Required Programs (dependencies) [none]

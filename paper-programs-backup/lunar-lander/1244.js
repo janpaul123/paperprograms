@@ -116,7 +116,6 @@ importScripts('paper.js');
 
     // update the mass for the p2 lander body when the model Property changes
     scratchpad.massObserverId = phet.paperLand.addModelPropertyLink( 'landerMassProperty', mass => {
-      phet.paperLand.console.log( mass );
       scratchpad.shipBody.mass = mass;
     } );
 
