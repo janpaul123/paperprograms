@@ -10,6 +10,7 @@
  * @author John Blanco (PhET Interactive Simulations)
  */
 
+const pushProgramToDatabase = require( './common/pushProgramToDatabase' );
 const fs = require( 'fs' );
 
 const USAGE_STRING = 'Usage: node push-program-to-database.js <space-name> <program-number> <path-to-backup-dir>';
@@ -51,61 +52,10 @@ const sourceFileContents = fs.readFileSync( sourceFilePath, 'utf-8' );
 // enclosed in an async function.
 ( async () => {
 
-  try {
-
-    // Make sure the space exists.  It's not possible to create a new one using this script.
-    const spaceInfo = await knex( 'programs' )
-      .select( [ 'number' ] )
-      .where( { spaceName } );
-    console.log( `spaceInfo = ${spaceInfo}` );
-    if ( spaceInfo.length === 0 ) {
-      console.log( `  Error: Specified space ${spaceName} does not exist in DB, aborting.` );
-    }
-
-    // Get the current version of the code from the DB.
-    const programInfo = await knex
-      .select( [ 'currentCode' ] )
-      .from( 'programs' )
-      .where( { spaceName, number: programNumber } );
-
-    // There should be at most one match in the DB.  If there are more, something is wrong.
-    if ( programInfo.length > 1 ) {
-      console.error( `  Expected at most one matching program, found ${programInfo.length}, aborting.` );
-      process.exit( 1 );
-    }
-
-    if ( programInfo.length === 0 ) {
-
-      // This program wasn't found in the DB.  That most likely means that it was accidentally deleted and this is a
-      // restore operation.
-      console.log( `  Adding new paper program ${programNumber} to space ${spaceName}.` );
-      knex( 'programs' )
-        .insert( {
-          spaceName,
-          number: programNumber,
-          currentCode: sourceFileContents,
-          originalCode: sourceFileContents
-        } );
-    }
-    else if ( programInfo[ 0 ].currentCode !== sourceFileContents ) {
-
-      // The local program content is different from what is in the DB, so push the local content.
-      await knex( 'programs' )
-        .update( { currentCode: sourceFileContents } )
-        .where( { spaceName, number: programNumber } );
-    }
-    else {
-      console.log( 'The source file and the code in the DB are the same, skipping update.' );
-    }
-
-    process.exit();
-  }
-  catch( e ) {
-    console.log( `  Error:  = ${e}` );
-  }
+  await pushProgramToDatabase( spaceName, programNumber, sourceFileContents, knex );
 
   // Close the database connection.
-  console.log( '  Terminating DB connection.' );
+  console.log( 'Terminating DB connection.' );
   await knex.destroy();
   console.log( 'Done.' );
 } )();

@@ -9,7 +9,7 @@
  * @author John Blanco (PhET Interactive Simulations)
  */
 
-const pushProgramToDatabase = require( './common/pushProgramToDatabase.js' );
+const pushProgramToDatabase = require( './common/pushProgramToDatabase' );
 const { execSync } = require( 'child_process' );
 const fs = require( 'fs' );
 
