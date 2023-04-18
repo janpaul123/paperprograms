@@ -112,11 +112,14 @@ export default class CameraMain extends React.Component {
           this.setState( { spaceData: response.body }, () => {
             this._programsChange( this.props.paperProgramsProgramsToRender );
 
-            // If the currently selected program is no longer in the selected space, load a default.
-            const programIsInSpace = !!this.state.programInEditor && this.state.spaceData.programs.find(
+            // Determine whether the program that is currently selected in the editor is in the selected space.
+            const selectedProgramInSpace = !!this.state.programInEditor && this.state.spaceData.programs.find(
               program => program.number === this.state.programInEditor.number
             ) !== undefined;
-            if ( !programIsInSpace ) {
+            if ( !selectedProgramInSpace ) {
+
+              // The selected space does not contain the currently selected program, probably because the user chose
+              // a new space.  Load a default program from the selected space into the editor.
               this._loadEditorWithDefault();
             }
           } );
@@ -335,7 +338,23 @@ export default class CameraMain extends React.Component {
         },
         error => {
           if ( error ) {
-            console.error( error );
+            alert( `Error saving program: ${error}` );
+          }
+          else {
+
+            // The save succeeded.  Update the code associated with the editor.
+            const programInEditor = this.state.programInEditor;
+            programInEditor.currentCode = codeInEditor;
+            this.setState( { programInEditor } );
+
+            // Update the space data.  This would be updated on the next poll anyway, but it's probably best to make
+            // sure that they aren't out of sync, even briefly.
+            const spaceData = this.state.spaceData;
+            const programInSpaceData = this.state.spaceData.programs.find(
+              program => program.number === programInEditor.number
+            );
+            programInSpaceData.currentCode = codeInEditor;
+            this.setState( { spaceData } );
           }
         }
       );
