@@ -1,5 +1,7 @@
 # Paper Programs
 
+Note: most active development based on this project is probably ["Paper Playground"](https://github.com/phetsims/paper-land).
+
 **Run Javascript on pieces of paper!**
 
 - See [the website](https://paperprograms.org) for an overview.
