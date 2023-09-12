@@ -182,10 +182,7 @@ export default class CameraMain extends React.Component {
                 const colorsRGB = this.props.config.colorsRGB.slice();
                 colorsRGB[this.state.selectedColorIndex] = color.map(value => Math.round(value));
 
-                const paperDotSizes = this.props.config.paperDotSizes.slice();
-                paperDotSizes[this.state.selectedColorIndex] = size;
-
-                this.props.onConfigChange({ ...this.props.config, colorsRGB, paperDotSizes });
+                this.props.onConfigChange({ ...this.props.config, colorsRGB });
                 this.setState({ selectedColorIndex: -1 });
               }}
               debugPrograms={this.state.debugPrograms}

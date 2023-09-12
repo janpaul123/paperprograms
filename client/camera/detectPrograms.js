@@ -162,11 +162,6 @@ export default function detectPrograms({
   debugPrograms = [],
 }) {
   const startTime = Date.now();
-  const paperDotSizes = config.paperDotSizes;
-  const paperDotSizeVariance = // difference min/max size * 2
-    Math.max(1, Math.max.apply(null, paperDotSizes) - Math.min.apply(null, paperDotSizes)) * 2;
-  const avgPaperDotSize = paperDotSizes.reduce((sum, value) => sum + value) / paperDotSizes.length;
-  const markerSizeThreshold = avgPaperDotSize + paperDotSizeVariance;
 
   const videoMat = new cv.Mat(videoCapture.video.height, videoCapture.video.width, cv.CV_8UC4);
   videoCapture.read(videoMat);
@@ -187,7 +182,7 @@ export default function detectPrograms({
 
   const videoROI = knobPointsToROI(config.knobPoints, videoMat);
   const clippedVideoMat = videoMat.roi(videoROI);
-  let allPoints = simpleBlobDetector(clippedVideoMat, {
+  let keyPoints = simpleBlobDetector(clippedVideoMat, {
     filterByCircularity: true,
     minCircularity: 0.9,
     minArea: 25,
@@ -197,7 +192,7 @@ export default function detectPrograms({
   });
 
   clippedVideoMat.delete();
-  allPoints.forEach(keyPoint => {
+  keyPoints.forEach(keyPoint => {
     keyPoint.matchedShape = false; // is true if point has been recognised as part of a shape
     keyPoint.pt.x += videoROI.x;
     keyPoint.pt.y += videoROI.y;
@@ -207,10 +202,6 @@ export default function detectPrograms({
     keyPoint.colorIndex =
       keyPoint.colorIndex || colorIndexForColor(keyPoint.avgColor, config.colorsRGB);
   });
-
-  let [markers, keyPoints] = allBlobsAreKeyPoints
-    ? [[], allPoints]
-    : partition(allPoints, ({ size }) => size > markerSizeThreshold);
 
   // Sort by x position. We rely on this when scanning through the circles
   // to find connected components, and when calibrating.
@@ -301,7 +292,7 @@ export default function detectPrograms({
   const avgKeyPointSize =
     keyPointSizes.reduce((sum, value) => sum + value, 0) / keyPointSizes.length;
 
-  allPoints.forEach(keyPoint => {
+  keyPoints.forEach((keyPoint) => {
     if (displayMat) {
       if (config.showOverlayKeyPointCircles) {
         // Draw circles around `keyPoints`.
@@ -436,7 +427,9 @@ export default function detectPrograms({
   });
 
   // Markers
-  markers = markers.map(({ colorIndex, avgColor, pt, size }) => {
+  const markers = keyPoints.filter((_, index) => {
+    return !seenIndexes.has(index);
+  }).map(({ colorIndex, avgColor, pt, size }) => {
     const markerPosition = projectPointToUnitSquare(pt, videoMat, config.knobPoints);
 
     const colorName = {
